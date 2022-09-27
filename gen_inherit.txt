@@ -1,0 +1,15 @@
+template<> struct SuperType<poplar::program::Execute> { typedef poplar::program::Program type; };
+template<> struct SuperType<poplar::program::Sequence> { typedef poplar::program::Program type; };
+template<> struct SuperType<poplar::program::Repeat> { typedef poplar::program::Program type; };
+template<> struct SuperType<poplar::program::RepeatWhileFalse> { typedef poplar::program::Program type; };
+template<> struct SuperType<poplar::program::RepeatWhileTrue> { typedef poplar::program::Program type; };
+template<> struct SuperType<poplar::program::If> { typedef poplar::program::Program type; };
+template<> struct SuperType<poplar::program::Switch> { typedef poplar::program::Program type; };
+template<> struct SuperType<poplar::program::Copy> { typedef poplar::program::Program type; };
+template<> struct SuperType<poplar::program::CrossReplicaCopy> { typedef poplar::program::Program type; };
+template<> struct SuperType<poplar::program::WriteUndef> { typedef poplar::program::Program type; };
+template<> struct SuperType<poplar::program::Sync> { typedef poplar::program::Program type; };
+template<> struct SuperType<poplar::program::Call> { typedef poplar::program::Program type; };
+template<> struct SuperType<poplar::program::PrintTensor> { typedef poplar::program::Program type; };
+template<> struct SuperType<poplar::program::ErrorProgram> { typedef poplar::program::Program type; };
+template<> struct SuperType<poplar::LegacyStreamCallback> { typedef poplar::StreamCallback type; };
