@@ -1,0 +1,26 @@
+In file included from /home/lukb/opt/julia-1.6.6/include/julia/julia.h:1784,
+                 from /home/lukb/.julia/artifacts/2a6fdb6b1893826a3949ec0b4857a8277daa2eb9/include/jlcxx/type_conversion.hpp:4,
+                 from /home/lukb/.julia/artifacts/2a6fdb6b1893826a3949ec0b4857a8277daa2eb9/include/jlcxx/array.hpp:4,
+                 from /home/lukb/.julia/artifacts/2a6fdb6b1893826a3949ec0b4857a8277daa2eb9/include/jlcxx/jlcxx.hpp:13,
+                 from template.cpp:1:
+/home/lukb/opt/julia-1.6.6/include/julia/locks.h: In function ‘void jl_mutex_lock(jl_mutex_t*)’:
+/home/lukb/opt/julia-1.6.6/include/julia/locks.h:75:31: warning: ‘++’ expression of ‘volatile’-qualified type is deprecated [-Wvolatile]
+   75 |         jl_get_ptls_states()->defer_signal++;   \
+      |         ~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~
+/home/lukb/opt/julia-1.6.6/include/julia/locks.h:87:5: note: in expansion of macro ‘JL_SIGATOMIC_BEGIN’
+   87 |     JL_SIGATOMIC_BEGIN();
+      |     ^~~~~~~~~~~~~~~~~~
+/home/lukb/opt/julia-1.6.6/include/julia/locks.h: In function ‘int jl_mutex_trylock(jl_mutex_t*)’:
+/home/lukb/opt/julia-1.6.6/include/julia/locks.h:75:31: warning: ‘++’ expression of ‘volatile’-qualified type is deprecated [-Wvolatile]
+   75 |         jl_get_ptls_states()->defer_signal++;   \
+      |         ~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~
+/home/lukb/opt/julia-1.6.6/include/julia/locks.h:112:9: note: in expansion of macro ‘JL_SIGATOMIC_BEGIN’
+  112 |         JL_SIGATOMIC_BEGIN();
+      |         ^~~~~~~~~~~~~~~~~~
+/home/lukb/opt/julia-1.6.6/include/julia/locks.h: In function ‘void jl_mutex_unlock(jl_mutex_t*)’:
+/home/lukb/opt/julia-1.6.6/include/julia/locks.h:80:37: warning: ‘--’ expression of ‘volatile’-qualified type is deprecated [-Wvolatile]
+   80 |         if (--jl_get_ptls_states()->defer_signal == 0) {        \
+      |               ~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~
+/home/lukb/opt/julia-1.6.6/include/julia/locks.h:134:5: note: in expansion of macro ‘JL_SIGATOMIC_END’
+  134 |     JL_SIGATOMIC_END();
+      |     ^~~~~~~~~~~~~~~~
