@@ -57,7 +57,7 @@ function get_full_name(cursor, funcargs::Bool=true, buf="")
         cursor_name = split(cursor_name, "(")[1]
     end
 
-    if parent_kind != "TranslationUnit" && parent_kind != "InvalidFile" 
+    if parent_kind != "TranslationUnit" && parent_kind != "InvalidFile"
         buf = get_full_name(parent, funcargs, buf)
     end
     if buf == ""
@@ -77,18 +77,18 @@ function get_namespace(cursor::CLCursor)
     if get_full_name(tmpcursor) == ""
 
         tmpcursor = Clang.clang_getCursorDefinition(cursor)
-    
+
         while spelling(kind(tmpcursor)) != "Namespace" && get_lexical_parent(tmpcursor) != tmpcursor
             tmpcursor = get_lexical_parent(tmpcursor)
         end
 
         return get_full_name(tmpcursor)
-    
+
     end
 
 
     return get_full_name(tmpcursor)
-end 
+end
 
 function get_class_name(cursor::CLCursor)
     tmpcursor = cursor
@@ -107,7 +107,7 @@ function get_inline_varname(cursor::CLCursor)
     vname = replace(vname, "poplar::" => "")
 
     vname = uppercasefirst(vname)
-    
+
     replace(vname, "::" => "")
 
 end
@@ -126,7 +126,7 @@ function object_decl_handler(ctx::BindgenContext, classdecl::CLCursor)::Tuple{Un
     wrapper_var_name = get_inline_varname(classdecl)
 
     # handle simple inheritance
-    if length(children(classdecl)) > 1 && kind(children(classdecl)[1]) == Clang.CXCursor_CXXBaseSpecifier 
+    if length(children(classdecl)) > 1 && kind(children(classdecl)[1]) == Clang.CXCursor_CXXBaseSpecifier
 
         if startswith(get_full_name(children(classdecl)[1]), "class ")
             base_class = split(get_full_name(children(classdecl)[1]), "class ")[2]
@@ -146,7 +146,7 @@ function optionals(method::CLCursor)
     num = 0
     for arg in args
         for token in tokenize(arg)
-            if token.text == "=" 
+            if token.text == "="
                 num += 1
             end
         end
@@ -187,12 +187,12 @@ function arg_list(method::CLCursor, types=true::Bool, cutoff=Inf, varnames=true:
             continue
         end
 
-        cur *= chr    
+        cur *= chr
     end
     if cur != ""
         push!(argssplit, cur)
     end
-    
+
     total = ""
     varname = 'a'
 
@@ -216,7 +216,7 @@ function arg_list(method::CLCursor, types=true::Bool, cutoff=Inf, varnames=true:
             else
                 total *= "$pre$item, "
             end
-        else 
+        else
             if should_wrap(item)
                 total *= "jlcxxToPoplar($varname), "
             else
@@ -239,8 +239,8 @@ function constructor_handler(ctx::BindgenContext, method::CLCursor)::Tuple{Union
     m_kind = kind(method)
     base_var = get_inline_varname(method)
 
-    get_class_name(method) == "" && return nothing, "constructor_missing_class" 
-    
+    get_class_name(method) == "" && return nothing, "constructor_missing_class"
+
     # workaround: ostreams really don't like being copied
     contains(arg_list(method), "ostream") && return nothing, "ostream_blacklist"
     contains(arg_list(method), "istream") && return nothing, "istream_blacklist"
@@ -256,9 +256,9 @@ function constructor_handler(ctx::BindgenContext, method::CLCursor)::Tuple{Union
 
     out = "{ using namespace $(get_namespace(method)); \n"
 
-    num_args = length(function_args(method)) 
+    num_args = length(function_args(method))
     num_required = num_args - optionals(method)
-    if num_required == 0 
+    if num_required == 0
         num_required = 1
     end
 
@@ -283,7 +283,7 @@ function method_handler(ctx::BindgenContext, method::CLCursor)::Tuple{Union{Noth
     julia_name = get_julia_name(method)
     func_name = get_full_name(method, false)
 
-    get_class_name(method) == "" && return nothing, "constructor_missing_class" 
+    get_class_name(method) == "" && return nothing, "constructor_missing_class"
 
     contains(func_name, "::operator") && return  nothing, "operator_unsupported"
     contains(arg_list(method), "&&") && return nothing, "rvalue_unsupported"
@@ -292,7 +292,7 @@ function method_handler(ctx::BindgenContext, method::CLCursor)::Tuple{Union{Noth
     contains(arg_list(method), "ostream") && return nothing, "ostream_blacklist"
     contains(arg_list(method), "istream") && return nothing, "istream_blacklist"
 
-    # Workaround: getImpl (on various poplar types) returns an incomplete class which messes with cxxwrap 
+    # Workaround: getImpl (on various poplar types) returns an incomplete class which messes with cxxwrap
     (m_name == "getImpl()" || m_name == "getPImpl()") && return nothing, "getimpl_blacklist"
 
     contains(m_name, "connectStreamToCallback") && return nothing, "calls_deleted_function"
@@ -304,7 +304,7 @@ function method_handler(ctx::BindgenContext, method::CLCursor)::Tuple{Union{Noth
 
     out = "{ using namespace $(get_namespace(method)); \n"
 
-    num_args = length(function_args(method)) 
+    num_args = length(function_args(method))
     num_required = num_args - optionals(method)
     if num_required == 0
         out = out * "JL$base_var.method(\"$julia_name\", []($(get_class_name(method))& cl) {return cl.$name_small();} ); \n"
@@ -383,17 +383,17 @@ function gen_json(ctx::BindgenContext, decl, id, handled=false, not_handled_reas
     spelling(decl_kind) ∈ ["EnumDecl", "ClassDecl", "StructDecl", "CXXMethod", "FunctionTemplate", "FunctionDecl", "CXXConstructor", "EnumConstantDecl"] || return ""
     fname = filename(decl)
 
-    !any(x -> contains(fname, split(x, "/include/")[1]), ctx.searched_headers) && return 
+    !any(x -> contains(fname, split(x, "/include/")[1]), ctx.searched_headers) && return
 
     fname = split(fname, "/include/")[2]
-    
+
     tokenstr = ""
     for token in tokenize(decl)
         tokenstr *= token.text * " "
     end
     tokenstr = tokenstr[1:end-1]
 
-    #if length(tokenstr) > 150 
+    #if length(tokenstr) > 150
     #    tokenstr = tokenstr[1:150]
     #end
 
@@ -419,14 +419,14 @@ function iterate_children(ctx::BindgenContext, childvec::Vector{CLCursor})
         child_header ∈ ctx.blacklisted_headers && (valid = false; reason = "header_blacklisted")
 
         !any(x -> startswith(get_namespace(child), x), allowed_namespaces) && (valid = false; reason = "not_allowed_namespace")
-        
+
 
         child_id = get_full_name(child) * "__" * spelling(child_kind)
         child_id = replace(child_id, "poplar::StringRef" => "std::string")
 
         # prevents duplicate codegen(+error), TODO: check if still necessary
         child_id == "poplar::FieldData::SizeT::size()__CXXMethod" && (valid = false; reason = "filedata_size_blacklist")
-        
+
         # Popops expressions are causing all kinds of problems
         contains(child_id, "expr::") && (valid = false; "expr_blacklisted")
         contains(child_id, "popops::expr") && (valid = false; "expr_blacklisted")
@@ -455,9 +455,9 @@ function iterate_children(ctx::BindgenContext, childvec::Vector{CLCursor})
                     code, reason = res
                     if code !== nothing
                         handled = true
-                        ctx.outputDecls *= "// " * child_id * "\n" * code * "\n" 
+                        ctx.outputDecls *= "// " * child_id * "\n" * code * "\n"
                         push!(ctx.handled_symbols, child_id)
-                    end    
+                    end
                 end
 
 
@@ -473,13 +473,13 @@ function iterate_children(ctx::BindgenContext, childvec::Vector{CLCursor})
                     code, reason = res
                     if code !== nothing
                         handled = true
-                        ctx.outputMembers *= "// " * child_id * "\n" * code * "\n" 
+                        ctx.outputMembers *= "// " * child_id * "\n" * code * "\n"
                         push!(ctx.handled_symbols, child_id)
                     end
-    
+
                 end
             end
-            
+
 
             if spelling(child_kind) ∈ supported_nodes
                 gen_json(ctx, child, child_id, handled, reason)
@@ -488,7 +488,7 @@ function iterate_children(ctx::BindgenContext, childvec::Vector{CLCursor})
             push!(ctx.seen_symbols, child_id)
 
         end
-        
+
 
         iterate_children(ctx, children(child))
     end
@@ -503,7 +503,7 @@ function gen_bindings(headers::Array{String}, blacklist::Array{String})
     ctx = DefaultBindgenContext()
     ctx.searched_headers = resolve_headers(headers, includes)
     ctx.blacklisted_headers = resolve_headers(blacklist, includes)
-    clangctx = DefaultContext() 
+    clangctx = DefaultContext()
 
     parse_headers!(clangctx, ctx.searched_headers, args=[""], includes=includes)
     for trans_unit in clangctx.trans_units
@@ -516,38 +516,39 @@ function gen_bindings(headers::Array{String}, blacklist::Array{String})
 end
 
 function build_bindings(path::String, compile::Bool=true)
-    artifact_dir = libcxxwrap_julia_jll.artifact_dir
-
-    gen_inline, gen_inherit = gen_bindings(["poplar/VectorLayout.hpp", "poplar/DeviceManager.hpp", "poplar/Engine.hpp", 
-                                              "poplar/Graph.hpp", "poplar/IPUModel.hpp", "popops/ElementWise.hpp", "popops/codelets.hpp"], 
+    gen_inline, gen_inherit = gen_bindings(["poplar/VectorLayout.hpp", "poplar/DeviceManager.hpp", "poplar/Engine.hpp",
+                                              "poplar/Graph.hpp", "poplar/IPUModel.hpp", "popops/ElementWise.hpp", "popops/codelets.hpp"],
                                               ["poplar/StringRef.hpp", "poplar/VectorRef.hpp", "poplar/ArrayRef.hpp"])
     #gen_inline = replace(gen_inline, "\n" => "\nprintf(\"Line is %d\\n\", __LINE__);\n")
 
     # Workaround for CxxWrap not liking any types name "Type"
-    gen_inline = replace(gen_inline, "\"Type\"" => "\"Type_\"") 
+    gen_inline = replace(gen_inline, "\"Type\"" => "\"Type_\"")
 
     write("gen_inline.txt", gen_inline)
     write("gen_inherit.txt", gen_inherit)
 
-    header_path = abspath(artifact_dir * "/include")
+    cxxwrap_include_dir = joinpath(libcxxwrap_julia_jll.artifact_dir, "include")
 
     res = ""
 
     if compile
-        # TODO: avoid patching cxxwrap 
-        try 
-            run(`patch --silent -d $artifact_dir/include/jlcxx/ -i $(pwd())/cxx.patch`)
-        catch 
+        # TODO: avoid patching cxxwrap
+        try
+            run(`patch --silent -d $(cxxwrap_include_dir)/jlcxx/ -i $(pwd())/cxx.patch`)
+        catch
         end
-        
+
         # TODO: automatically get julia path
         try
-            res = read(`sh -c "g++-10 -O0 -std=c++20 -fPIC -shared -I/home/lukb/opt/julia-1.6.6/include/julia -I$header_path -o $path template.cpp -lpopops -lpoplar 2>error.log"`, String)
+            cxx = get(ENV, "CXX", "g++-10")
+            julia_include_dir = joinpath(ENV["JULIA_INCLUDE_DIR"], "julia") # TODO: find a nice default for the include dir
+            res = readchomp(pipeline(`$(cxx) -O0 -std=c++20 -fPIC -shared -I$(julia_include_dir) -I$(cxxwrap_include_dir) -o $(path) template.cpp -lpopops -lpoplar`;
+                                     stderr=joinpath(dirname(@__DIR__), "error.log")))
         catch e
             println(e)
             res = ""
         end
-        run(`patch --silent -d $artifact_dir/include/jlcxx/ -i $(pwd())/cxx.patch -R`)
+        run(`patch --silent -d $(cxxwrap_include_dir)/jlcxx/ -i $(pwd())/cxx.patch -R`)
     end
     return res
 end
