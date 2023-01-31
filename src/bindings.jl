@@ -1,8 +1,8 @@
 module Poplar
 using CxxWrap
-using Libdl
+using Scratch
 
-@wrapmodule(joinpath(pwd(), "libpoc.so"))
+@wrapmodule(joinpath(@get_scratch!("libpoc"), "libpoc.so"))
 
 function __init__()
     @initcxx

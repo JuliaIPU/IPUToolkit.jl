@@ -5,13 +5,14 @@ using Clang_jll #Clang.LibClang.Clang_jll
 using Match
 using JSON
 using libcxxwrap_julia_jll
-
+using Scratch
 ##
 
-const allowed_namespaces = ["poplar", "popops"]
+const libpoc_dir = @get_scratch!("libpoc")
+const allowed_namespaces = ("poplar", "popops")
 
 # TODO: I really shouldn't be using strings everywhere for these
-const supported_nodes = ["EnumDecl", "ClassDecl", "StructDecl", "CXXMethod", "FunctionTemplate", "FunctionDecl", "CXXConstructor", "EnumConstantDecl"]
+const supported_nodes = ("EnumDecl", "ClassDecl", "StructDecl", "CXXMethod", "FunctionTemplate", "FunctionDecl", "CXXConstructor", "EnumConstantDecl")
 
 abstract type BindgenContext end
 
@@ -509,7 +510,8 @@ function gen_bindings(headers::Array{String}, blacklist::Array{String})
     return ctx.outputDecls * ctx.outputMembers, ctx.outputSupertypes
 end
 
-function build_bindings(path::String, compile::Bool=true)
+function build_bindings(compile::Bool=true)
+    path = joinpath(libpoc_dir, "libpoc.so")
     gen_inline, gen_inherit = gen_bindings(["poplar/VectorLayout.hpp", "poplar/DeviceManager.hpp", "poplar/Engine.hpp",
                                               "poplar/Graph.hpp", "poplar/IPUModel.hpp", "popops/ElementWise.hpp", "popops/codelets.hpp"],
                                               ["poplar/StringRef.hpp", "poplar/VectorRef.hpp", "poplar/ArrayRef.hpp"])
