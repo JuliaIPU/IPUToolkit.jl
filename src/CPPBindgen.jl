@@ -532,12 +532,6 @@ function build_bindings(path::String, compile::Bool=true)
     res = ""
 
     if compile
-        # TODO: avoid patching cxxwrap
-        try
-            run(`patch --silent -d $(cxxwrap_include_dir)/jlcxx/ -i $(pwd())/cxx.patch`)
-        catch
-        end
-
         # TODO: automatically get julia path
         try
             cxx = get(ENV, "CXX", "g++-10")
@@ -548,7 +542,6 @@ function build_bindings(path::String, compile::Bool=true)
             println(e)
             res = ""
         end
-        run(`patch --silent -d $(cxxwrap_include_dir)/jlcxx/ -i $(pwd())/cxx.patch -R`)
     end
     return res
 end
