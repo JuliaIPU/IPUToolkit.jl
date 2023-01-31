@@ -3,33 +3,38 @@
 This is a small test repository containing WIP work and a playground full of joy to
 be released into the world of Julia Researchers working with AI/ML Accelerators.
 
-## How to setup this mess
+## Requirements
 
-We are currently depending on julia `1.6`, `g++-10` as compiler, and `poplar v1.3.0`.
-Start Julia activating the provided environment with the command:
+We currently require `1.6` (only this minor version is supported), GCC 10 as compiler (it
+requires support for the C++20 standard), and the Poplar SDK v1.3.0.
 
-```shell
-julia --project=.
+## Installation
+
+After cloning the repository, enter inside this directory and start Julia with
+
+```
+julia --project
 ```
 
-To setup the code:
+and then build the package with
 
 ```julia
-julia> using Pkg; Pkg.instantiate()
-julia> using CPPBindgen
-julia> CPPBindgen.build_bindings()
+using Pkg
+Pkg.build()
 ```
 
-## Use the bindings
+This step will compile a wrapper around the Poplar SDK that can be used by Julia.  It will
+take a while, without printing an update to screen, hold on.
 
-Using the bindings in julia is facilitated by cxxwarp, refer to `src/bindings.jl`.
+## Usage
 
-To finally use the generated library:
+After having built the package, you can start using it by loading the `Poplar` module:
 
 ```julia
-julia> include("bindings.jl")
-julia> m = Poplar.DeviceManager()
+julia> using Poplar
+
+julia> dm = Poplar.DeviceManager();
+
 julia> Int(Poplar.DeviceManagerGetNumDevices(m))
+129
 ```
-
----
