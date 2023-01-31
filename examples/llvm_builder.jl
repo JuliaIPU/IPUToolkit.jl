@@ -1,6 +1,4 @@
 # based on GPUCompiler example https://github.com/JuliaGPU/GPUCompiler.jl/blob/master/examples/kernel.jl
-using StaticArrays
-
 module llvmBuilder
 using GPUCompiler
 using StaticArrays

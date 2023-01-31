@@ -1,7 +1,4 @@
-##
-include("bindings.jl")
-##
-using CxxWrap
+using Poplar
 
 model = Poplar.IPUModel()
 device = Poplar.IPUModelCreateDevice(model)
