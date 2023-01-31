@@ -1,19 +1,24 @@
 using Test
 using Poplar
 
+# We often want to check that some CxxWrap objects are not NULL.
+macro cxxtest(ex)
+    return :( Test.@test $(esc(ex)).cpp_object != C_NULL )
+end
+
 @testset "Poplar.jl" begin
-    @test Poplar.Tensor().cpp_object != C_NULL
+    @cxxtest Poplar.Tensor()
     dm = Poplar.DeviceManager()
     @test Poplar.DeviceManagerGetNumDevices(dm) > 0
 
     # Some simple code (NOTE: very incomplete at the moment)
     model = Poplar.IPUModel()
-    @test model.cpp_object != C_NULL
+    @cxxtest model
     device = Poplar.IPUModelCreateDevice(model)
-    @test device.cpp_object != C_NULL
+    @cxxtest device
     target = Poplar.DeviceGetTarget(device)
-    @test target.cpp_object != C_NULL
+    @cxxtest target
     graph = Poplar.Graph(target)
-    @test graph.cpp_object != C_NULL
+    @cxxtest graph
     Poplar.PopopsAddCodelets(graph)
 end
