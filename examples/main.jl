@@ -1,5 +1,5 @@
-include("../llvm_builder.jl")
-include("bindings.jl")
+include(joinpath(@__DIR__, "llvm_builder.jl"))
+using Poplar
 using GPUCompiler
 
 ##
