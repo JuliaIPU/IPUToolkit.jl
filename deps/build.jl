@@ -1,7 +1,5 @@
-module CPPBindgen
 ##
 using Clang
-using Clang_jll #Clang.LibClang.Clang_jll
 using Match
 using JSON
 using libcxxwrap_julia_jll
@@ -510,11 +508,10 @@ function gen_bindings(headers::Array{String}, blacklist::Array{String})
     return ctx.outputDecls * ctx.outputMembers, ctx.outputSupertypes
 end
 
-function build_bindings(compile::Bool=true)
-    path = joinpath(libpoc_dir, "libpoc.so")
+function build_bindings(; path::String=joinpath(libpoc_dir, "libpoc.so"), compile::Bool=true)
     gen_inline, gen_inherit = gen_bindings(["poplar/VectorLayout.hpp", "poplar/DeviceManager.hpp", "poplar/Engine.hpp",
-                                              "poplar/Graph.hpp", "poplar/IPUModel.hpp", "popops/ElementWise.hpp", "popops/codelets.hpp"],
-                                              ["poplar/StringRef.hpp", "poplar/VectorRef.hpp", "poplar/ArrayRef.hpp"])
+                                            "poplar/Graph.hpp", "poplar/IPUModel.hpp", "popops/ElementWise.hpp", "popops/codelets.hpp"],
+                                           ["poplar/StringRef.hpp", "poplar/VectorRef.hpp", "poplar/ArrayRef.hpp"])
     #gen_inline = replace(gen_inline, "\n" => "\nprintf(\"Line is %d\\n\", __LINE__);\n")
 
     # Workaround for CxxWrap not liking any types name "Type"
@@ -525,25 +522,13 @@ function build_bindings(compile::Bool=true)
 
     cxxwrap_include_dir = joinpath(libcxxwrap_julia_jll.artifact_dir, "include")
 
-    res = ""
-
     if compile
         # TODO: automatically get julia path
-        try
-            cxx = get(ENV, "CXX", "g++-10")
-            julia_include_dir = joinpath(ENV["JULIA_INCLUDE_DIR"], "julia") # TODO: find a nice default for the include dir
-            res = readchomp(pipeline(`$(cxx) -O0 -std=c++20 -fPIC -shared -I$(julia_include_dir) -I$(cxxwrap_include_dir) -o $(path) template.cpp -lpopops -lpoplar`;
-                                     stderr=joinpath(dirname(@__DIR__), "error.log")))
-        catch e
-            println(e)
-            res = ""
-        end
+        cxx = get(ENV, "CXX", "g++-10")
+        julia_include_dir = joinpath(ENV["JULIA_INCLUDE_DIR"], "julia") # TODO: find a nice default for the include dir
+        run(pipeline(`$(cxx) -O0 -std=c++20 -fPIC -shared -I$(julia_include_dir) -I$(cxxwrap_include_dir) -o $(path) $(joinpath(@__DIR__, "template.cpp")) -lpopops -lpoplar`))
     end
-    return res
+    return nothing
 end
 
-export get_system_includes
-
-##
-
-end # module
+build_bindings()

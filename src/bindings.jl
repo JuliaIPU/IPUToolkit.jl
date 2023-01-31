@@ -1,10 +1,16 @@
-module Poplar
 using CxxWrap
 using Scratch
 
-@wrapmodule(joinpath(@get_scratch!("libpoc"), "libpoc.so"))
+const libpoc = joinpath(@get_scratch!("libpoc"), "libpoc.so")
+@wrapmodule(libpoc)
 
 function __init__()
+    if !isfile(libpoc)
+        error("""
+              `libpoc.so` expected to exist at path `$(libpoc)`, but could not be found.
+              Run `using Pkg; Pkg.build()` to trigger recompilation of `libpoc.so`.
+              """)
+    end
     @initcxx
 end
 
@@ -28,6 +34,4 @@ end
 
 function getIPU()
     getIPUs(1)[1]
-end
-
 end

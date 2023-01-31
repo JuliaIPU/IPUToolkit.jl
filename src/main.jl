@@ -17,9 +17,6 @@ model = Poplar.IPUModel()
 device = Poplar.IPUModelCreateDevice(model)
 # device = Poplar.getIPU()
 
-
-
-
 target = Poplar.DeviceGetTarget(device)
 graph = Poplar.Graph(target)
 
