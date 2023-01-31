@@ -5,23 +5,14 @@ be released into the world of Julia Researchers working with AI/ML Accelerators.
 
 ## How to setup this mess
 
-We are currently depending on julia `1.6.0-rc2` and `g++-10` and `poplar v1.3.0`.
+We are currently depending on julia `1.6`, `g++-10` as compiler, and `poplar v1.3.0`.
+Start Julia activating the provided environment with the command:
 
 ```shell
-# We currently need to patch cxxwrap
-git submodule init
-git submodule update
-```
-
-To setup the project run:
-
-```shell
-cd popc4-clang
-
 julia --project=.
 ```
 
-To Setup the code:
+To setup the code:
 
 ```julia
 julia> using Pkg; Pkg.instantiate()
