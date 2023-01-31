@@ -27,25 +27,24 @@ end
 DefaultBindgenContext() = DefaultBindgenContext([], [], Set([]), Set([]), "", "", "")
 
 
-function get_system_includes()::Array{String}
-    out_s = read(`sh -c "echo '' | g++ -x c++ -E -Wp,-v - -fsyntax-only 2>/dev/stdout"`, String)
-    m = match(r"#include <\.\.\.> search starts here:(.*)End of search list\."s, out_s)[1]
-    m = split(m[2:end - 1], "\n")
-    m = map(x -> x[2:end], m)
-
-    return m
+function get_system_includes()::Vector{String}
+    cxx = get(ENV, "CXX", "g++-10")
+    io = IOBuffer()
+    readchomp(pipeline(`$(cxx) -x c++ -E -Wp,-v - -fsyntax-only`; stdin=IOBuffer(""), stderr=io))
+    m = match(r"#include <\.\.\.> search starts here:(.*)End of search list\."s, String(take!(io)))[1]
+    return strip.(split(m[2:end - 1], "\n"))
 end
 
 
-function resolve_headers(headers::Array{String}, includepaths::Array{String})::Array{String}
-    fullheaders = []
+function resolve_headers(headers::Array{String}, includepaths::Array{String})::Vector{String}
+    fullheaders = String[]
     for header in headers
         for include in includepaths
-            path = include * "/" * header
+            path = joinpath(include, header)
             isfile(path) && push!(fullheaders, path)
         end
     end
-    fullheaders
+    return fullheaders
 end
 
 
@@ -75,17 +74,12 @@ function get_namespace(cursor::CLCursor)
     end
 
     if get_full_name(tmpcursor) == ""
-
         tmpcursor = Clang.clang_getCursorDefinition(cursor)
-
         while spelling(kind(tmpcursor)) != "Namespace" && get_lexical_parent(tmpcursor) != tmpcursor
             tmpcursor = get_lexical_parent(tmpcursor)
         end
-
         return get_full_name(tmpcursor)
-
     end
-
 
     return get_full_name(tmpcursor)
 end
@@ -496,7 +490,7 @@ end
 
 function gen_bindings(headers::Array{String}, blacklist::Array{String})
 
-    try rm("out.json") catch end
+    rm("out.json"; force=true)
 
     touch("out.json")
     includes = get_system_includes()
