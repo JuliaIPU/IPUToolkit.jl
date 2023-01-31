@@ -17,7 +17,7 @@ To setup the code:
 ```julia
 julia> using Pkg; Pkg.instantiate()
 julia> using CPPBindgen
-julia> CPPBindgen.build_bindings("libpoc.so")
+julia> CPPBindgen.build_bindings()
 ```
 
 ## Use the bindings
