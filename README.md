@@ -35,6 +35,6 @@ julia> using Poplar
 
 julia> dm = Poplar.DeviceManager();
 
-julia> Int(Poplar.DeviceManagerGetNumDevices(m))
+julia> Int(Poplar.DeviceManagerGetNumDevices(dm))
 129
 ```
