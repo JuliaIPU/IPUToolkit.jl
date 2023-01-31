@@ -1,4 +1,6 @@
-using Poplar
+module Poplar
+include("../src/bindings.jl")
+end
 
 model = Poplar.IPUModel()
 device = Poplar.IPUModelCreateDevice(model)
