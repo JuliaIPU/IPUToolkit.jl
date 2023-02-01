@@ -525,9 +525,8 @@ function build_bindings(; path::String=joinpath(libpoc_dir, "libpoc.so"), compil
     cxxwrap_include_dir = joinpath(libcxxwrap_julia_jll.artifact_dir, "include")
 
     if compile
-        # TODO: automatically get julia path
         cxx = get(ENV, "CXX", "g++-10")
-        julia_include_dir = joinpath(ENV["JULIA_INCLUDE_DIR"], "julia") # TODO: find a nice default for the include dir
+        julia_include_dir = joinpath(dirname(Sys.BINDIR), "include", "julia")
         run(pipeline(`$(cxx) -O0 -std=c++20 -fPIC -shared -I$(julia_include_dir) -I$(cxxwrap_include_dir) -o $(path) $(joinpath(@__DIR__, "template.cpp")) -lpopops -lpoplar`))
     end
     return nothing
