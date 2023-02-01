@@ -2,7 +2,6 @@ using CxxWrap
 using Scratch
 
 const libpoc = joinpath(@get_scratch!("libpoc"), "libpoc.so")
-@wrapmodule(libpoc)
 
 function __init__()
     if !isfile(libpoc)
@@ -11,7 +10,10 @@ function __init__()
               Run `using Pkg; Pkg.build()` to trigger recompilation of `libpoc.so`.
               """)
     end
-    @initcxx
+    # TODO: keeping `wrapmodule` inside `__init__` is a hack, it should be moved back to
+    # top-level once we solve <https://github.com/giordano/julia-ipu/issues/1>.
+    @wrapmodule(libpoc)
+    @initcxx()
 end
 
 function startPtr(data::AbstractArray, i=1)
