@@ -9,8 +9,8 @@ graph = Poplar.Graph(target)
 
 Poplar.PopopsAddCodelets(graph)
 
-v1 = Poplar.GraphAddVariable(graph, Poplar.FLOAT, UInt64[2, 2], "v1")
-v2 = Poplar.GraphAddVariable(graph, Poplar.FLOAT, UInt64[2, 2], "v2")
+v1 = Poplar.GraphAddVariable(graph, Poplar.FLOAT(), UInt64[2, 2], "v1")
+v2 = Poplar.GraphAddVariable(graph, Poplar.FLOAT(), UInt64[2, 2], "v2")
 
 for i in 0:1
     for j in 0:1
@@ -21,8 +21,8 @@ end
 
 prog = Poplar.ProgramSequence()
 
-c1 = Poplar.GraphAddConstant(graph, Poplar.FLOAT, UInt64[4], Float32[1.0, 1.5, 2.0, 2.5])
-c2 = Poplar.GraphAddConstant(graph, Poplar.FLOAT, UInt64[4], Float32[4.0, 3.0, 2.0, 1.0])
+c1 = Poplar.GraphAddConstant(graph, Poplar.FLOAT(), UInt64[4], Float32[1.0, 1.5, 2.0, 2.5])
+c2 = Poplar.GraphAddConstant(graph, Poplar.FLOAT(), UInt64[4], Float32[4.0, 3.0, 2.0, 1.0])
 Poplar.GraphSetTileMapping(graph, c1, 0)
 Poplar.GraphSetTileMapping(graph, c2, 0)
 

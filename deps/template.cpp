@@ -125,20 +125,25 @@ define_julia_module(jlcxx::Module &mod)
   // Errors! ^ Can't be named "Type"
   #include"gen_inline.txt"
 
-  mod.set_const("BOOL", BOOL);
-  mod.set_const("CHAR", CHAR);
-  mod.set_const("UNSIGNED_CHAR", UNSIGNED_CHAR);
-  mod.set_const("SIGNED_CHAR", SIGNED_CHAR);
-  mod.set_const("UNSIGNED_SHORT", UNSIGNED_SHORT);
-  mod.set_const("SHORT", SHORT);
-  mod.set_const("UNSIGNED_INT", UNSIGNED_INT);
-  mod.set_const("INT", INT);
-  mod.set_const("UNSIGNED_LONG", UNSIGNED_LONG);
-  mod.set_const("LONG", LONG);
-  mod.set_const("UNSIGNED_LONGLONG", UNSIGNED_LONGLONG);
-  mod.set_const("LONGLONG", LONGLONG);
-  mod.set_const("HALF", HALF);
-  mod.set_const("FLOAT", FLOAT);
+  // Contrary to what you may expect, these numerical types (`BOOL`, `INT`, `FLOAT`, etc.)
+  // aren't static enums which could be defined with, e.g.
+  //    mod.set_const("BOOL", BOOL);
+  // Instead, they are dynamic pointers which have to be referenced at runtime: if we
+  // serialised them when compiling the Julia package, those pointers would be garbage.
+  mod.method("BOOL", [&] () -> poplar::Type { return BOOL; });
+  mod.method("CHAR", [&] () -> poplar::Type { return CHAR; });
+  mod.method("UNSIGNED_CHAR", [&] () -> poplar::Type { return UNSIGNED_CHAR; });
+  mod.method("SIGNED_CHAR", [&] () -> poplar::Type { return SIGNED_CHAR; });
+  mod.method("UNSIGNED_SHORT", [&] () -> poplar::Type { return UNSIGNED_SHORT; });
+  mod.method("SHORT", [&] () -> poplar::Type { return SHORT; });
+  mod.method("UNSIGNED_INT", [&] () -> poplar::Type { return UNSIGNED_INT; });
+  mod.method("INT", [&] () -> poplar::Type { return INT; });
+  mod.method("UNSIGNED_LONG", [&] () -> poplar::Type { return UNSIGNED_LONG; });
+  mod.method("LONG", [&] () -> poplar::Type { return LONG; });
+  mod.method("UNSIGNED_LONGLONG", [&] () -> poplar::Type { return UNSIGNED_LONGLONG; });
+  mod.method("LONGLONG", [&] () -> poplar::Type { return LONGLONG; });
+  mod.method("HALF", [&] () -> poplar::Type { return HALF; });
+  mod.method("FLOAT", [&] () -> poplar::Type { return FLOAT; });
 
 
   // TODO: automate getindex

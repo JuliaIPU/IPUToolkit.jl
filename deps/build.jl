@@ -4,9 +4,11 @@ using Match
 using JSON
 using libcxxwrap_julia_jll
 using Scratch
+using Pkg.TOML
+using UUIDs
 ##
 
-const libpoc_dir = @get_scratch!("libpoc")
+const libpoc_dir = get_scratch!(UUID(TOML.parsefile(joinpath(dirname(@__DIR__), "Project.toml"))["uuid"]), "libpoc")
 const allowed_namespaces = ("poplar", "popops")
 
 # TODO: I really shouldn't be using strings everywhere for these

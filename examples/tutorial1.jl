@@ -7,10 +7,10 @@ device = Poplar.IPUModelCreateDevice(model)
 target = Poplar.DeviceGetTarget(device)
 graph = Poplar.Graph(target)
 
-v1 = Poplar.GraphAddVariable(graph, Poplar.FLOAT, UInt64[4], "v1")
-v2 = Poplar.GraphAddVariable(graph, Poplar.FLOAT, UInt64[4], "v2")
-v3 = Poplar.GraphAddVariable(graph, Poplar.FLOAT, UInt64[4, 4], "v3")
-v4 = Poplar.GraphAddVariable(graph, Poplar.INT, UInt64[10], "v4")
+v1 = Poplar.GraphAddVariable(graph, Poplar.FLOAT(), UInt64[4], "v1")
+v2 = Poplar.GraphAddVariable(graph, Poplar.FLOAT(), UInt64[4], "v2")
+v3 = Poplar.GraphAddVariable(graph, Poplar.FLOAT(), UInt64[4, 4], "v3")
+v4 = Poplar.GraphAddVariable(graph, Poplar.INT(), UInt64[10], "v4")
 
 Poplar.GraphSetTileMapping(graph, v1, 0)
 
@@ -23,7 +23,7 @@ Poplar.GraphSetTileMapping(graph, v4, 0)
 
 prog = Poplar.ProgramSequence()
 
-c1 = Poplar.GraphAddConstant(graph, Poplar.FLOAT, UInt64[4], Float32[1.0, 1.5, 2.0, 2.5])
+c1 = Poplar.GraphAddConstant(graph, Poplar.FLOAT(), UInt64[4], Float32[1.0, 1.5, 2.0, 2.5])
 Poplar.GraphSetTileMapping(graph, c1, 0)
 
 Poplar.ProgramSequenceAdd(prog, Poplar.ProgramCopy(c1, v1))
@@ -39,7 +39,7 @@ v1slice = Poplar.TensorSlice(v1, 0, 3)
 v3slice = Poplar.TensorSlice(v3, UInt64[1, 1], UInt64[2, 4])
 Poplar.ProgramSequenceAdd(prog, Poplar.ProgramCopy(v1slice, v3slice))
 
-inStream = Poplar.GraphAddHostToDeviceFIFO(graph, "v4-input-stream", Poplar.INT, 10)
+inStream = Poplar.GraphAddHostToDeviceFIFO(graph, "v4-input-stream", Poplar.INT(), 10)
 
 Poplar.ProgramSequenceAdd(prog, Poplar.ProgramCopy(inStream, v4))
 Poplar.ProgramSequenceAdd(prog, Poplar.ProgramPrintTensor("v4-0", v4))
