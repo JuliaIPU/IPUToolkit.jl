@@ -33,10 +33,6 @@ for fun in (:EngineWriteTensor, :EngineConnectStream) # Methods which take 2 poi
     end
 end
 
-# These two functions were defined for convenience, but aren't really needed
-startPtr(data::AbstractArray, i=1) = Ptr{Nothing}(pointer(data, i))
-endPtr(data::AbstractArray, i=length(data)) = Ptr{Nothing}(pointer(data, i+1))
-
 # Be sure to quit all julia sessions which hold devices!!!
 ipu_devices = []
 function getIPUs(n::Int)
