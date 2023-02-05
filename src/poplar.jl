@@ -18,15 +18,18 @@ function __init__()
 end
 
 # More user-friendly methods
-for fun in (:EngineReadTensor, :EngineWriteTensor) # Method which take at 1 pointer as last argument
+for fun in (:EngineReadTensor,) # Method which take at 1 pointer as last argument
     @eval begin
         $(fun)(arg1, arg2, ptr::Ptr{<:Number}) = $(fun)(arg1, arg2, Ptr{Cvoid}(ptr))
-        $(fun)(arg1, arg2, obj::AbstractArray{<:Number}) = $(fun)(arg1, arg2, Ptr{Cvoid}(pointer(obj)))
+        $(fun)(arg1, arg2, array::AbstractArray{<:Number}) = $(fun)(arg1, arg2, Ptr{Cvoid}(pointer(array)))
     end
 end
-for fun in (:EngineWriteTensor,) # Methods which take 2 pointers as last arguments
+for fun in (:EngineWriteTensor, :EngineConnectStream) # Methods which take 2 pointers as last arguments
     @eval begin
         $(fun)(arg1, arg2, ptr1::Ptr{<:Number}, ptr2::Ptr{<:Number}) = $(fun)(arg1, arg2, Ptr{Cvoid}(ptr1), Ptr{Cvoid}(ptr2))
+        $(fun)(arg1, arg2, array::AbstractArray{<:Number}) =
+            # NOTE: we need to get the pointer to the _end_ of the array, hence `lastindex+1`.
+            $(fun)(arg1, arg2, Ptr{Cvoid}(pointer(array, firstindex(array))), Ptr{Cvoid}(pointer(array, lastindex(array)+1)))
     end
 end
 
