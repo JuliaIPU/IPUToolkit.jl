@@ -84,11 +84,11 @@ dereference(T::DataType, ptr::Poplar.Type_Allocated) = dereference(T, ptr.cpp_ob
         Poplar.EngineLoadAndRun(engine, device)
 
         # Read back some tensors and check the expected values.
-        Poplar.EngineReadTensor(engine, "v3-read", Poplar.startPtr(h3))
+        Poplar.EngineReadTensor(engine, "v3-read", h3)
         @test h3 == h1 + h2
-        Poplar.EngineReadTensor(engine, "v4-read", Poplar.startPtr(h4))
+        Poplar.EngineReadTensor(engine, "v4-read", h4)
         @test h4 == h3 + h2
-        Poplar.EngineReadTensor(engine, "v5-read", Poplar.startPtr(h5))
+        Poplar.EngineReadTensor(engine, "v5-read", h5)
         # TODO: try to write this test in terms of the other tensors.
         @test h5 == Float32[5.0, 3.5, 5.0, 3.5]
     end

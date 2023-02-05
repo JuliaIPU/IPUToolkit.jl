@@ -55,7 +55,7 @@ Poplar.EngineLoad(engine, device)
 h3 = Array{Float32}(zeros(4*4))
 h3 .= zero(h3)
 
-Poplar.EngineWriteTensor(engine, "v3-write", Poplar.startPtr(h3))
+Poplar.EngineWriteTensor(engine, "v3-write", h3)
 
 inData = Array{Int32}(zeros(30))
 for i in 1:30
@@ -66,7 +66,7 @@ Poplar.EngineConnectStream(engine, "v4-input-stream", Poplar.startPtr(inData), P
 
 Poplar.EngineRun(engine, 0)
 
-Poplar.EngineReadTensor(engine, "v3-read", Poplar.startPtr(h3))
+Poplar.EngineReadTensor(engine, "v3-read", h3)
 
 println("h3 data:")
 for i in 0:3
