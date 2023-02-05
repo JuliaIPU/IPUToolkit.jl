@@ -1,4 +1,4 @@
-# Test the world, publish later
+# IPUToolkit.jl
 
 This is a small test repository containing WIP work and a playground full of joy to
 be released into the world of Julia Researchers working with AI/ML Accelerators.
@@ -28,10 +28,12 @@ take a while, without printing an update to screen, hold on.
 
 ## Usage
 
-After having built the package, you can start using it by loading the `Poplar` module:
+### Interface to Poplar SDK
+
+After having built the package, you can start using it by loading the `IPUToolkit.Poplar` module:
 
 ```julia
-julia> using Poplar
+julia> using IPUToolkit.Poplar
 
 julia> dm = Poplar.DeviceManager();
 
