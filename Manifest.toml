@@ -253,8 +253,8 @@ uuid = "8f36deef-c2a5-5394-99ed-8e07531fb29a"
 
 [[libcxxwrap_julia_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "6bc7dfa18805398e5d76e279c03b0f634bcc65a3"
-repo-rev = "317a2b81049610d95b5fa9d106c9a34398df1306"
+git-tree-sha1 = "11ad28603075bc1230cc3c8ab3206526b1491f55"
+repo-rev = "05c2c7d6a0585c2331c6d1f21fe95df7d9768ae8"
 repo-url = "https://github.com/giordano/libcxxwrap_julia_jll.jl.git"
 uuid = "3eaa8342-bff7-56a5-9981-c04077f7cee7"
 version = "0.9.3+1"
