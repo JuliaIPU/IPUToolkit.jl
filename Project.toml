@@ -1,4 +1,4 @@
-name = "Poplar"
+name = "IPUToolkit"
 uuid = "92e0b95a-4011-435a-96f4-10064551ddbe"
 authors = ["Emily Dietrich <jakibaki@live.com>", "Luk Burchard <luk.burchard@gmail.com>"]
 version = "0.1.0"

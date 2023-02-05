@@ -1,4 +1,4 @@
-using Poplar
+using IPUToolkit.Poplar
 
 model = Poplar.IPUModel()
 device = Poplar.IPUModelCreateDevice(model)

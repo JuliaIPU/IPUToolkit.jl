@@ -1,3 +1,4 @@
+module Poplar
 using CxxWrap
 using Scratch
 
@@ -37,3 +38,5 @@ end
 function getIPU()
     getIPUs(1)[1]
 end
+
+end # module Poplar
