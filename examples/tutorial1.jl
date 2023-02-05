@@ -52,17 +52,13 @@ Poplar.OptionFlagsSet(flags, "debug.instrument", "true")
 engine = Poplar.Engine(graph, prog, flags)
 Poplar.EngineLoad(engine, device)
 
-h3 = Array{Float32}(zeros(4*4))
-h3 .= zero(h3)
+h3 = zeros(Float32, 4*4)
 
 Poplar.EngineWriteTensor(engine, "v3-write", h3)
 
-inData = Array{Int32}(zeros(30))
-for i in 1:30
-    inData[i] = (i-1)
-end
+inData = Int32.(0:29)
 
-Poplar.EngineConnectStream(engine, "v4-input-stream", Poplar.startPtr(inData), Poplar.endPtr(inData))
+Poplar.EngineConnectStream(engine, "v4-input-stream", inData)
 
 Poplar.EngineRun(engine, 0)
 
