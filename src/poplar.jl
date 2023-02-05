@@ -17,14 +17,22 @@ function __init__()
     @initcxx()
 end
 
-function startPtr(data::AbstractArray, i=1)
-    Base.unsafe_convert(Ptr{Nothing}, pointer(data, i))
+# More user-friendly methods
+for fun in (:EngineReadTensor, :EngineWriteTensor) # Method which take at 1 pointer as last argument
+    @eval begin
+        $(fun)(arg1, arg2, ptr::Ptr{<:Number}) = $(fun)(arg1, arg2, Ptr{Cvoid}(ptr))
+        $(fun)(arg1, arg2, obj::AbstractArray{<:Number}) = $(fun)(arg1, arg2, Ptr{Cvoid}(pointer(obj)))
+    end
+end
+for fun in (:EngineWriteTensor,) # Methods which take 2 pointers as last arguments
+    @eval begin
+        $(fun)(arg1, arg2, ptr1::Ptr{<:Number}, ptr2::Ptr{<:Number}) = $(fun)(arg1, arg2, Ptr{Cvoid}(ptr1), Ptr{Cvoid}(ptr2))
+    end
 end
 
-function endPtr(data::AbstractArray, i=length(data))
-    Base.unsafe_convert(Ptr{Nothing}, pointer(data, i+1))
-end
-
+# These two functions were defined for convenience, but aren't really needed
+startPtr(data::AbstractArray, i=1) = Ptr{Nothing}(pointer(data, i))
+endPtr(data::AbstractArray, i=length(data)) = Ptr{Nothing}(pointer(data, i+1))
 
 # Be sure to quit all julia sessions which hold devices!!!
 ipu_devices = []
