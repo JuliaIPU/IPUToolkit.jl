@@ -12,8 +12,6 @@ function __init__()
               Run `using Pkg; Pkg.build()` to trigger recompilation of `libpoc.so`.
               """)
     end
-    # TODO: keeping `wrapmodule` inside `__init__` is a hack, it should be moved back to
-    # top-level once we solve <https://github.com/giordano/julia-ipu/issues/1>.
     @initcxx()
 end
 
