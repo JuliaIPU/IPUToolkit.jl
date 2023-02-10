@@ -8,7 +8,7 @@ using Pkg.TOML
 using UUIDs
 ##
 
-const libpoc_dir = get_scratch!(UUID(TOML.parsefile(joinpath(dirname(@__DIR__), "Project.toml"))["uuid"]), "libpoc")
+const libpoplar_dir = joinpath(get_scratch!(UUID(TOML.parsefile(joinpath(dirname(@__DIR__), "Project.toml"))["uuid"]), "libpoplar"), "v$(Base.thispatch(VERSION))")
 const allowed_namespaces = ("poplar", "popops")
 
 # TODO: I really shouldn't be using strings everywhere for these
@@ -511,7 +511,7 @@ function gen_bindings(headers::Vector{String}, blacklist::Vector{String})
     return ctx.outputDecls * ctx.outputMembers, ctx.outputSupertypes
 end
 
-function build_bindings(; path::String=joinpath(libpoc_dir, "libpoc.so"), compile::Bool=true)
+function build_bindings(; path::String=joinpath(libpoplar_dir, "libpoplar_julia.so"), compile::Bool=true)
     gen_inline, gen_inherit = gen_bindings(["poplar/VectorLayout.hpp", "poplar/DeviceManager.hpp", "poplar/Engine.hpp",
                                             "poplar/Graph.hpp", "poplar/IPUModel.hpp", "popops/ElementWise.hpp", "popops/codelets.hpp"],
                                            ["poplar/StringRef.hpp", #= "poplar/VectorRef.hpp", =# "poplar/ArrayRef.hpp"])
@@ -528,6 +528,7 @@ function build_bindings(; path::String=joinpath(libpoc_dir, "libpoc.so"), compil
     if compile
         cxx = get(ENV, "CXX", "g++-10")
         julia_include_dir = joinpath(dirname(Sys.BINDIR), "include", "julia")
+        mkpath(dirname(path))
         run(pipeline(`$(cxx) -O0 -std=c++20 -fPIC -shared -I$(julia_include_dir) -I$(cxxwrap_include_dir) -o $(path) $(joinpath(@__DIR__, "template.cpp")) -lpopops -lpoplar`))
     end
     return nothing
