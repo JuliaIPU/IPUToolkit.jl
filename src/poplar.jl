@@ -2,14 +2,16 @@ module Poplar
 using CxxWrap
 using Scratch
 
-const libpoc = joinpath(@get_scratch!("libpoc"), "libpoc.so")
-@wrapmodule(libpoc)
+const libpoplar_dir = joinpath(@get_scratch!("libpoplar"), "v$(Base.thispatch(VERSION))")
+const libpoplar = joinpath(libpoplar_dir, "libpoplar_julia.so")
+
+@wrapmodule(libpoplar)
 
 function __init__()
-    if !isfile(libpoc)
+    if !isfile(libpoplar)
         error("""
-              `libpoc.so` expected to exist at path `$(libpoc)`, but could not be found.
-              Run `using Pkg; Pkg.build()` to trigger recompilation of `libpoc.so`.
+              `$(basename(libpoplar))` expected to exist at path `$(libpoplar)`, but could not be found.
+              Run `using Pkg; Pkg.build()` to trigger recompilation of `$(basename(libpoplar))`.
               """)
     end
     @initcxx()
