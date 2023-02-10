@@ -17,8 +17,8 @@ const supported_nodes = ("EnumDecl", "ClassDecl", "StructDecl", "CXXMethod", "Fu
 abstract type BindgenContext end
 
 mutable struct DefaultBindgenContext <: BindgenContext
-    searched_headers::Array{String}
-    blacklisted_headers::Array{String}
+    searched_headers::Vector{String}
+    blacklisted_headers::Vector{String}
     handled_symbols::Set{String}
     seen_symbols::Set{String}
     outputDecls::String
@@ -33,21 +33,22 @@ function get_system_includes()::Vector{String}
     io = IOBuffer()
     readchomp(pipeline(`$(cxx) -x c++ -E -Wp,-v - -fsyntax-only`; stdin=IOBuffer(""), stderr=io))
     m = match(r"#include <\.\.\.> search starts here:(.*)End of search list\."s, String(take!(io)))[1]
-    return strip.(split(m[2:end - 1], "\n"))
+    return abspath.(strip.(split(m[2:end - 1], "\n")))
 end
 
-
-function resolve_headers(headers::Array{String}, includepaths::Array{String})::Vector{String}
-    fullheaders = String[]
-    for header in headers
-        for include in includepaths
-            path = joinpath(include, header)
-            isfile(path) && push!(fullheaders, path)
+# Find the header file in one of the include paths
+function resolve_header(header::String, include_paths::Vector{String})::String
+    for include in include_paths
+        path = joinpath(include, header)
+        if isfile(path)
+            return path
         end
     end
-    return fullheaders
+    error("Couldn't resolve $(header)")
 end
-
+# Find header files in the include paths
+resolve_headers(headers::Vector{String}, include_paths::Vector{String})::Vector{String} =
+    resolve_header.(headers, Ref(include_paths))
 
 function get_full_name(cursor, funcargs::Bool=true, buf="")
     parent = get_lexical_parent(cursor)
@@ -489,7 +490,7 @@ function iterate_children(ctx::BindgenContext, childvec::Vector{CLCursor})
     end
 end
 
-function gen_bindings(headers::Array{String}, blacklist::Array{String})
+function gen_bindings(headers::Vector{String}, blacklist::Vector{String})
 
     rm("out.json"; force=true)
 
@@ -513,7 +514,7 @@ end
 function build_bindings(; path::String=joinpath(libpoc_dir, "libpoc.so"), compile::Bool=true)
     gen_inline, gen_inherit = gen_bindings(["poplar/VectorLayout.hpp", "poplar/DeviceManager.hpp", "poplar/Engine.hpp",
                                             "poplar/Graph.hpp", "poplar/IPUModel.hpp", "popops/ElementWise.hpp", "popops/codelets.hpp"],
-                                           ["poplar/StringRef.hpp", "poplar/VectorRef.hpp", "poplar/ArrayRef.hpp"])
+                                           ["poplar/StringRef.hpp", #= "poplar/VectorRef.hpp", =# "poplar/ArrayRef.hpp"])
     #gen_inline = replace(gen_inline, "\n" => "\nprintf(\"Line is %d\\n\", __LINE__);\n")
 
     # Workaround for CxxWrap not liking any types name "Type"
