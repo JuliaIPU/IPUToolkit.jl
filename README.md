@@ -39,4 +39,15 @@ julia> dm = Poplar.DeviceManager();
 
 julia> Int(Poplar.DeviceManagerGetNumDevices(dm))
 129
+
+julia> device = only(Poplar.get_devices(1))
+[ Info: Trying to attach to device 0...
+[ Info: Successfully attached to device 0
+[ Info: Attached to devices with IDs [0]
+IPUToolkit.Poplar.DeviceAllocated(Ptr{Nothing} @0x00000000016bd680)
+
+julia> Int(Poplar.DeviceGetId(device))
+0
+
+julia> Poplar.DeviceDetach(device)
 ```

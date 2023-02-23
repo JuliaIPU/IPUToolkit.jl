@@ -55,29 +55,6 @@ poplar::ArrayRef<T> jlcxxToPoplar(jlcxx::ArrayRef<T> arr)
   return poplar::ArrayRef<T>(arr.data(), arr.size());
 }
 
-
-Device getRealIPU() {
-	  DeviceManager manager = DeviceManager::createDeviceManager();
-
-  Device device;
-  bool success = false;
-  // Loop over all single IPU devices on the host
-  // Break the loop when an IPU is successfully acquired
-  for (auto &hwDevice : manager.getDevices(poplar::TargetType::IPU, 1)) {
-    device = std::move(hwDevice);
-    std::cerr << "Trying to attach to IPU " << device.getId() << std::endl;
-    if ((success = device.attach())) {
-      std::cerr << "Attached to IPU " << device.getId() << std::endl;
-      break;
-    }
-  }
-  if (!success) {
-    std::cerr << "Error attaching to device" << std::endl;
-  }
-
-  return std::move(device);	
-}
-
 namespace jlcxx {
   #include"gen_inherit.txt"
   //template<> struct SuperType<poplar::program::Execute> { typedef poplar::program::Program type; };
@@ -91,7 +68,7 @@ define_julia_module(jlcxx::Module &mod)
   // mod.add_type<poplar::VariableInterval>("VariableInterval");
   // Workaround!
   // This is suppposed to auto-generate but for some reason doesn't do so until it's already being used
-  
+
 
   mod.add_type<ArrayRef<std::string>>("ArrayRefString");
   mod.add_type<ArrayRef<std::size_t>>("ArrayRefSizeT");
@@ -117,8 +94,6 @@ define_julia_module(jlcxx::Module &mod)
 
   mod.add_type<poplar::ProgressFunc>("ProgressFunc");
 
-  
-
   // auto JLType = mod.add_type<poplar::Type>("Type");
   // Errors! ^ Can't be named "Type"
   #include"gen_inline.txt"
@@ -143,7 +118,6 @@ define_julia_module(jlcxx::Module &mod)
   mod.method("HALF", [&] () -> poplar::Type { return HALF; });
   mod.method("FLOAT", [&] () -> poplar::Type { return FLOAT; });
 
-
   // TODO: automate getindex
   JLVertexRef.module().set_override_module(jl_base_module);
   JLVertexRef.method("getindex", [](const VertexRef& v, std::string i) {return v[i];});
@@ -152,8 +126,6 @@ define_julia_module(jlcxx::Module &mod)
   JLTensor.module().set_override_module(jl_base_module);
   JLTensor.method("getindex", [](const Tensor& v, std::size_t i) {return v[i];});
   JLTensor.module().unset_override_module();
-
-  mod.method("getRealIPU", getRealIPU);
 
   // Workaround: cxxwrap single inheritance doesn't seem to work for constructors??
   JLEngine.constructor<const poplar::Graph &, poplar::program::Sequence>();
