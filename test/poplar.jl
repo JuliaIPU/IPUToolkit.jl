@@ -72,7 +72,6 @@ function test_program(device)
     @test h5 == Float32[5.0, 3.5, 5.0, 3.5]
 end
 
-
 @testset "Poplar.jl" begin
     @cxxtest Poplar.Tensor()
 
@@ -96,11 +95,28 @@ end
         model = @cxxtest Poplar.IPUModel()
         device = @cxxtest Poplar.IPUModelCreateDevice(model)
         test_program(device)
+        Poplar.DeviceDetach(device)
     end
 
     # Same test, but with a real IPU
     @testset "Hardware IPU" begin
-        device = @cxxtest Poplar.getIPU()
+        # Make sure `get_devices` works when you request 0 devices.
+        device = @test_logs (:info, r"^Attached to devices with IDs [\w\d]+\[\]") Poplar.get_devices(0)
+        @test isempty(device)
+        # Simple test for `get_devices` with a range as second argument.
+        Poplar.DeviceDetach.(@test_logs((:info, r"^Trying to attach to device 0..."),
+                                        (:info, r"^Attached to devices with IDs"),
+                                        match_mode=:any,
+                                        Poplar.get_devices(1, 0:0)))
+        # Get a device
+        device = @cxxtest only(@test_logs((:info, r"^Trying to attach to device"),
+                                          (:info, r"^Successfully attached to device"),
+                                          (:info, r"^Attached to devices with IDs"),
+                                          match_mode=:any,
+                                          Poplar.get_devices(1)))
+        # Run a test program
         test_program(device)
+        # Release the device
+        Poplar.DeviceDetach(device)
     end
 end

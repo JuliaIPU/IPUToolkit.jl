@@ -34,16 +34,44 @@ for fun in (:EngineWriteTensor, :EngineConnectStream) # Methods which take 2 poi
 end
 
 # Be sure to quit all julia sessions which hold devices!!!
-ipu_devices = []
-function getIPUs(n::Int)
-    while n > length(ipu_devices)
-        push!(ipu_devices, getRealIPU())
-    end
-    return Tuple(ipu_devices[1:n])
-end
+"""
+    get_devices(n::Int, hint::Union{AbstractVector{<:Integer},Integer}=0)
 
-function getIPU()
-    getIPUs(1)[1]
+Try to attach to `n` IPU devices, returns a vector of the pointers to the
+devices successfully attached to.  You can release them with
+`Poplar.DeviceDetach`.
+
+The second optional argument `hint` suggests to which device IDs to try and
+attach.  It can have different types:
+
+* if of type `Integer`, try to attach to `n` devices, starting from the one
+  with index `hint`.  The default is `hint=0`;
+* if of type `AbstractVector`, try to attach to `n` devices from that list of
+  IDs.
+"""
+function get_devices(n::Int, hint::Union{AbstractVector{<:Integer},Integer}=0)
+    device_manager = Poplar.DeviceManager()
+    try_ids = if hint isa AbstractVector
+        hint
+    else
+        max_dev_id = Int(Poplar.DeviceManagerGetNumDevices(device_manager))
+        hint:(max_dev_id - 1)
+    end
+    attached_devices = Poplar.DeviceAllocated[]
+    for id in try_ids
+        if length(attached_devices) >= n
+            break
+        end
+        device = Poplar.DeviceManagerGetDevice(device_manager, id)
+        @info "Trying to attach to device $(id)..."
+        res = Poplar.DeviceAttach(device)
+        if res
+            @info "Successfully attached to device $(id)"
+            push!(attached_devices, device)
+        end
+    end
+    @info "Attached to devices with IDs $(Int.(Poplar.DeviceGetId.(attached_devices)))"
+    return attached_devices
 end
 
 end # module Poplar
