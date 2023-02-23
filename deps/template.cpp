@@ -115,8 +115,6 @@ define_julia_module(jlcxx::Module &mod)
 
   mod.add_type<std::pair<std::int32_t, poplar::program::Program>>("PairIntProgram");
 
-  mod.add_type<StringRef>("StringRef");
-
   mod.add_type<poplar::ProgressFunc>("ProgressFunc");
 
   

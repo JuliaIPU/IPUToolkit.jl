@@ -394,7 +394,7 @@ function gen_json(ctx::BindgenContext, decl, id, handled=false, not_handled_reas
     #end
 
 
-    d = Dict("Implemented" => handled, "Text" => tokenstr, "Namespace" => get_namespace(decl), "Token type" => spelling(decl_kind), "Name" => get_full_name(decl), "Filename" => fname, "FaliureReason" => not_handled_reason)
+    d = Dict("Implemented" => handled, "Text" => tokenstr, "Namespace" => get_namespace(decl), "Token type" => spelling(decl_kind), "Name" => get_full_name(decl), "Filename" => fname, "FailureReason" => not_handled_reason)
 
     open("out.json", "a") do file
 
@@ -424,18 +424,36 @@ function iterate_children(ctx::BindgenContext, childvec::Vector{CLCursor})
         child_id == "poplar::FieldData::SizeT::size()__CXXMethod" && (valid = false; reason = "filedata_size_blacklist")
 
         # Popops expressions are causing all kinds of problems
-        contains(child_id, "expr::") && (valid = false; "expr_blacklisted")
-        contains(child_id, "popops::expr") && (valid = false; "expr_blacklisted")
+        contains(child_id, "expr::") && (valid = false; reason = "expr_blacklisted")
+        contains(child_id, "popops::expr") && (valid = false; reason = "expr_blacklisted")
 
         # TODO: Find and document reason
-        contains(child_id, "equivalent_device_type") && (valid = false; "equivalent_device_type_blacklist")
+        contains(child_id, "equivalent_device_type") && (valid = false; reason = "equivalent_device_type_blacklist")
 
         # workaround (returning vector of Device causes issues)
-        contains(child_id, "getDevices") && (valid = false; "getdevices_blacklist")
+        contains(child_id, "getDevices") && (valid = false; reason = "getdevices_blacklist")
+
+        # Skip everything related to poplar::core (like Target.getTargetOptions)
+        contains(child_id, "core::") && (valid = false; reason = "core_blacklisted")
+        contains(child_id, "getTargetOptions") && (valid = false; reason = "core_blacklisted")
+
+        # `VertexPerfEstimate` triggers a static assertion failure during compilation
+        contains(child_id, "PerfEstimate") && (valid = false; reason = "vertexperfestimate_blacklisted")
+
+        # This conversion `ArrayRef<std::string>` to `ArrayRef<poplar::StringRef>` isn't handled correctly
+        contains(child_id, "poplar::Graph::trace(ArrayRef<std::string>") && (valid = false; reason = "arrayrefstring_blacklisted")
+
+        # `DebugContext` constructors which cause ambiguous overload calls
+        contains(child_id, r"^poplar::DebugContext::DebugContext.*__CXXConstructor$") && (valid = false; reason = "debugcontext_blacklisted")
+
+        # This causes the error
+        #    no matching function for call to ‘poplar::program::Sequence::add_many(std::__cxx11::basic_string<char>&)’
+        contains(child_id, r"poplar::program::Sequence::Sequence.*__CXXConstructor$") && (valid = false; reason = "programsequence_blacklisted")
+
+        # Avoid duplicate definition during precompilation of the CxxWrap module
+        contains(child_id, "poplar::layout::to_string(const poplar::layout::VectorList)__FunctionDecl") && (valid = false; reason = "duplicate_definition")
 
         handled = false
-
-
         if !(child_id ∈ ctx.handled_symbols)
             if valid
                 code, reason = nothing, nothing
@@ -514,7 +532,7 @@ end
 function build_bindings(; path::String=joinpath(libpoplar_dir, "libpoplar_julia.so"), compile::Bool=true)
     gen_inline, gen_inherit = gen_bindings(["poplar/VectorLayout.hpp", "poplar/DeviceManager.hpp", "poplar/Engine.hpp",
                                             "poplar/Graph.hpp", "poplar/IPUModel.hpp", "popops/ElementWise.hpp", "popops/codelets.hpp"],
-                                           ["poplar/StringRef.hpp", #= "poplar/VectorRef.hpp", =# "poplar/ArrayRef.hpp"])
+                                           String[])
     #gen_inline = replace(gen_inline, "\n" => "\nprintf(\"Line is %d\\n\", __LINE__);\n")
 
     # Workaround for CxxWrap not liking any types name "Type"
