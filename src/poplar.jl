@@ -7,6 +7,8 @@ const libpoplar = joinpath(libpoplar_dir, "libpoplar_julia.so")
 
 @wrapmodule(libpoplar)
 
+const SDK_VERSION = VersionNumber(match(r"[\d.]+", String(Poplar.getVersionString())).match)
+
 function __init__()
     if !isfile(libpoplar)
         error("""
@@ -17,21 +19,26 @@ function __init__()
     @initcxx()
 end
 
-# More user-friendly methods.  NOTE: from Poplar SDK v2.3.0 (I think?) `EngineReadTensor`
-# takes two arguments, like the other function below.  TODO: have a way to check the version
-# of the SDK, serialising or accessing `poplar::versionString()` is complicated.
-for fun in (:EngineReadTensor,) # Methods which take 1 pointer as last argument
-    @eval begin
-        $(fun)(arg1, arg2, ptr::Ptr{<:Number}) = $(fun)(arg1, arg2, Ptr{Cvoid}(ptr))
-        $(fun)(arg1, arg2, array::AbstractArray{<:Number}) = $(fun)(arg1, arg2, Ptr{Cvoid}(pointer(array)))
+# More user-friendly methods.
+let
+    # Methods which take 1 pointer as last argument.  NOTE: `readTensor` changed API in
+    # v2.1.0, from taking one pointer to two, like `writeTensor`.
+    one_ptr = SDK_VERSION < v"2.1.0" ? (:EngineReadTensor,) : ()
+    # Methods which take 2 pointers as last arguments
+    two_ptr = SDK_VERSION < v"2.1.0" ? (:EngineWriteTensor, :EngineConnectStream,)  : (:EngineWriteTensor, :EngineConnectStream, :EngineReadTensor)
+    for fun in one_ptr
+        @eval begin
+            $(fun)(arg1, arg2, ptr::Ptr{<:Number}) = $(fun)(arg1, arg2, Ptr{Cvoid}(ptr))
+            $(fun)(arg1, arg2, array::AbstractArray{<:Number}) = $(fun)(arg1, arg2, Ptr{Cvoid}(pointer(array)))
+        end
     end
-end
-for fun in (:EngineWriteTensor, :EngineConnectStream) # Methods which take 2 pointers as last arguments
-    @eval begin
-        $(fun)(arg1, arg2, ptr1::Ptr{<:Number}, ptr2::Ptr{<:Number}) = $(fun)(arg1, arg2, Ptr{Cvoid}(ptr1), Ptr{Cvoid}(ptr2))
-        $(fun)(arg1, arg2, array::AbstractArray{<:Number}) =
-            # NOTE: we need to get the pointer to the _end_ of the array, hence `lastindex+1`.
-            $(fun)(arg1, arg2, Ptr{Cvoid}(pointer(array, firstindex(array))), Ptr{Cvoid}(pointer(array, lastindex(array)+1)))
+    for fun in two_ptr
+        @eval begin
+            $(fun)(arg1, arg2, ptr1::Ptr{<:Number}, ptr2::Ptr{<:Number}) = $(fun)(arg1, arg2, Ptr{Cvoid}(ptr1), Ptr{Cvoid}(ptr2))
+            $(fun)(arg1, arg2, array::AbstractArray{<:Number}) =
+                # NOTE: we need to get the pointer to the _end_ of the array, hence `lastindex+1`.
+                $(fun)(arg1, arg2, Ptr{Cvoid}(pointer(array, firstindex(array))), Ptr{Cvoid}(pointer(array, lastindex(array)+1)))
+        end
     end
 end
 
