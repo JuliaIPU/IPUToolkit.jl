@@ -293,8 +293,7 @@ function method_handler(ctx::BindgenContext, method::CLCursor)::Tuple{Union{Noth
 
     contains(m_name, "connectStreamToCallback") && return nothing, "calls_deleted_function"
     contains(m_name, "registerCycleEstimator") && return nothing, "calls_deleted_function"
-
-
+    contains(m_name, "poplar::Engine::connectHostFunction") && return nothing, "calls_deleted_function"
 
     # contains(arg_list(method), "TypeTraits") && return
 
@@ -437,8 +436,10 @@ function iterate_children(ctx::BindgenContext, childvec::Vector{CLCursor})
         contains(child_id, "core::") && (valid = false; reason = "core_blacklisted")
         contains(child_id, "getTargetOptions") && (valid = false; reason = "core_blacklisted")
 
-        # `VertexPerfEstimate` triggers a static assertion failure during compilation
-        contains(child_id, "PerfEstimate") && (valid = false; reason = "vertexperfestimate_blacklisted")
+        # These cause error
+        #    error: static assertion failed: Mirrored types (marked with IsMirroredType) can't be added using add_type, map them directly to a struct instead and use map_type or explicitly disable mirroring for this type, e.g. define template<> struct IsMirroredType<Foo> : std::false_type { };
+        contains(child_id, "PerfEstimate") && (valid = false; reason = "mirrored_type")
+        contains(child_id, "poplar::ErrorLocationHash__StructDecl") && (valid = false; reason = "mirrored_type")
 
         # This conversion `ArrayRef<std::string>` to `ArrayRef<poplar::StringRef>` isn't handled correctly
         contains(child_id, "poplar::Graph::trace(ArrayRef<std::string>") && (valid = false; reason = "arrayrefstring_blacklisted")
@@ -452,6 +453,9 @@ function iterate_children(ctx::BindgenContext, childvec::Vector{CLCursor})
 
         # Avoid duplicate definition during precompilation of the CxxWrap module
         contains(child_id, "poplar::layout::to_string(const poplar::layout::VectorList)__FunctionDecl") && (valid = false; reason = "duplicate_definition")
+
+        # error: invalid use of incomplete type ‘class pva::Report’
+        contains(child_id, "poplar::Engine::getReport") && (valid = false; reason = "incomplete_type")
 
         handled = false
         if !(child_id ∈ ctx.handled_symbols)
