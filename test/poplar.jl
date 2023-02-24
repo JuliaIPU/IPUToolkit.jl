@@ -100,20 +100,24 @@ end
 
     # Same test, but with a real IPU
     @testset "Hardware IPU" begin
-        # Make sure `get_devices` works when you request 0 devices.
-        device = @test_logs (:info, r"^Attached to devices with IDs [\w\d]+\[\]") Poplar.get_devices(0)
+        # Make sure `get_ipu_devices` works when you request 0 devices.
+        device = @test_logs (:info, r"^Attached to devices with IDs [\w\d]+\[\]") Poplar.get_ipu_devices(0)
         @test isempty(device)
-        # Simple test for `get_devices` with a range as second argument.
+        # Simple test for `get_ipu_devices` with a range as second argument.
         Poplar.DeviceDetach.(@test_logs((:info, r"^Trying to attach to device 0..."),
                                         (:info, r"^Attached to devices with IDs"),
                                         match_mode=:any,
-                                        Poplar.get_devices(1, 0:0)))
+                                        Poplar.get_ipu_devices(1, 0:0)))
+        # Couldn't attach to all requested devices
+        @test_logs((:warn, "Requested 2 devices, but could attach only to 0"),
+                   (:info, r"^Attached to devices with IDs [\w\d]+\[\]"),
+                   Poplar.get_ipu_devices(2, 0:-1))
         # Get a device
-        device = @cxxtest only(@test_logs((:info, r"^Trying to attach to device"),
-                                          (:info, r"^Successfully attached to device"),
-                                          (:info, r"^Attached to devices with IDs"),
-                                          match_mode=:any,
-                                          Poplar.get_devices(1)))
+        device = @cxxtest @test_logs((:info, r"^Trying to attach to device"),
+                                     (:info, r"^Successfully attached to device"),
+                                     (:info, r"^Attached to devices with IDs"),
+                                     match_mode=:any,
+                                     Poplar.get_ipu_device())
         # Run a test program
         test_program(device)
         # Release the device

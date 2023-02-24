@@ -35,11 +35,12 @@ end
 
 # Be sure to quit all julia sessions which hold devices!!!
 """
-    get_devices(n::Int, hint::Union{AbstractVector{<:Integer},Integer}=0)
+    get_ipu_devices(n::Int, hint::Union{AbstractVector{<:Integer},Integer}=0)
 
-Try to attach to `n` IPU devices, returns a vector of the pointers to the
-devices successfully attached to.  You can release them with
-`Poplar.DeviceDetach`.
+Try to attach to `n` IPU devices, returns a vector of the pointers to the devices
+successfully attached to.  You can release them with `Poplar.DeviceDetach` (note that this
+function takes a single pointer as input, so you have to use broadcasting
+`Poplar.DeviceDetach.(devices)` to release a vector of pointers).
 
 The second optional argument `hint` suggests to which device IDs to try and
 attach.  It can have different types:
@@ -48,8 +49,10 @@ attach.  It can have different types:
   with index `hint`.  The default is `hint=0`;
 * if of type `AbstractVector`, try to attach to `n` devices from that list of
   IDs.
+
+See [`get_ipu_device`](@ref) for requesting exactly one IPU device.
 """
-function get_devices(n::Int, hint::Union{AbstractVector{<:Integer},Integer}=0)
+function get_ipu_devices(n::Int, hint::Union{AbstractVector{<:Integer},Integer}=0)
     device_manager = Poplar.DeviceManager()
     try_ids = if hint isa AbstractVector
         hint
@@ -70,8 +73,34 @@ function get_devices(n::Int, hint::Union{AbstractVector{<:Integer},Integer}=0)
             push!(attached_devices, device)
         end
     end
+    if length(attached_devices) < n
+        @warn "Requested $(n) devices, but could attach only to $(length(attached_devices))"
+    end
     @info "Attached to devices with IDs $(Int.(Poplar.DeviceGetId.(attached_devices)))"
     return attached_devices
+end
+
+"""
+    get_ipu_device(hint::Union{AbstractVector{<:Integer},Integer}=0)
+
+Similar to [`get_ipu_devices`](@ref), but request exactly one IPU device.  If it can attach
+to a device, return that pointer only (not in a vector, like `get_ipu_devices`), otherwise
+return `nothing`.  You can release the device with `Poplar.DeviceDetach`.
+
+The optional argument `hint` suggests to which device IDs to try and
+attach.  It can have different types:
+
+* if of type `Integer`, try to attach to `n` devices, starting from the one
+  with index `hint`.  The default is `hint=0`;
+* if of type `AbstractVector`, try to attach to `n` devices from that list of
+  IDs.
+"""
+function get_ipu_device(hint::Union{AbstractVector{<:Integer},Integer}=0)
+    device = get_ipu_devices(1, hint)
+    if isone(length(device))
+        return only(device)
+    end
+    return nothing
 end
 
 end # module Poplar

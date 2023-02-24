@@ -5,7 +5,7 @@ be released into the world of Julia Researchers working with AI/ML Accelerators.
 
 ## Requirements
 
-We currently require `1.6` (only this minor version is supported), GCC 10 as compiler (it requires support for the C++20 standard), and the Poplar SDK v1.3.0 and v2.0.0.
+We currently require `1.6` (only this minor version is supported), GCC 10 as compiler (it requires support for the C++20 standard), and the Poplar SDK v1.3.0 or v2.0.0.
 Other versions of the Poplar SDK are not currently supported.
 
 ## Installation
@@ -40,7 +40,7 @@ julia> dm = Poplar.DeviceManager();
 julia> Int(Poplar.DeviceManagerGetNumDevices(dm))
 129
 
-julia> device = only(Poplar.get_devices(1))
+julia> device = Poplar.get_device()
 [ Info: Trying to attach to device 0...
 [ Info: Successfully attached to device 0
 [ Info: Attached to devices with IDs [0]
