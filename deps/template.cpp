@@ -123,6 +123,8 @@ define_julia_module(jlcxx::Module &mod)
   mod.method("HALF", [&] () -> poplar::Type { return HALF; });
   mod.method("FLOAT", [&] () -> poplar::Type { return FLOAT; });
 
+  mod.method("getVersionString", [] () -> std::string { return std::string(poplar::versionString()); });
+
   // TODO: automate getindex
   JLVertexRef.module().set_override_module(jl_base_module);
   JLVertexRef.method("getindex", [](const VertexRef& v, std::string i) {return v[i];});
