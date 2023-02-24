@@ -94,6 +94,11 @@ define_julia_module(jlcxx::Module &mod)
 
   mod.add_type<poplar::ProgressFunc>("ProgressFunc");
 
+  // Work around for errors like
+  //    C++ exception while wrapping module Poplar: No appropriate factory for type N6poplar8ArrayRefISt5tupleIJNS_4TypeEmEEEE
+  // To demangle it, use `c++filt _ZN6poplar8ArrayRefISt5tupleIJNS_4TypeEmEEEE`.
+  mod.add_type<ArrayRef<std::tuple<poplar::Type, unsigned long> >>("ArrayRefTupleTypeULong");
+
   // auto JLType = mod.add_type<poplar::Type>("Type");
   // Errors! ^ Can't be named "Type"
   #include"gen_inline.txt"
