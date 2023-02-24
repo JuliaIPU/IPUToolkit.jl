@@ -5,7 +5,7 @@ be released into the world of Julia Researchers working with AI/ML Accelerators.
 
 ## Requirements
 
-We currently require `1.6` (only this minor version is supported), GCC 10+ as compiler (it requires support for the C++20 standard), and the Poplar SDK v1.3, v2.0, v2.1, v2.2, v2.3, or v2.4.
+We currently require Julia v1.6 (only this minor version is supported), GCC 10+ as compiler (it requires support for the C++20 standard), and the Poplar SDK v1.3, v2.0, v2.1, v2.2, v2.3, or v2.4.
 Other versions of the Poplar SDK are not currently supported.
 
 ## Installation
