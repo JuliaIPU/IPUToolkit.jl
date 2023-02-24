@@ -17,8 +17,10 @@ function __init__()
     @initcxx()
 end
 
-# More user-friendly methods
-for fun in (:EngineReadTensor,) # Method which take at 1 pointer as last argument
+# More user-friendly methods.  NOTE: from Poplar SDK v2.3.0 (I think?) `EngineReadTensor`
+# takes two arguments, like the other function below.  TODO: have a way to check the version
+# of the SDK, serialising or accessing `poplar::versionString()` is complicated.
+for fun in (:EngineReadTensor,) # Methods which take 1 pointer as last argument
     @eval begin
         $(fun)(arg1, arg2, ptr::Ptr{<:Number}) = $(fun)(arg1, arg2, Ptr{Cvoid}(ptr))
         $(fun)(arg1, arg2, array::AbstractArray{<:Number}) = $(fun)(arg1, arg2, Ptr{Cvoid}(pointer(array)))

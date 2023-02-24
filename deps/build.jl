@@ -293,7 +293,7 @@ function method_handler(ctx::BindgenContext, method::CLCursor)::Tuple{Union{Noth
 
     contains(m_name, "connectStreamToCallback") && return nothing, "calls_deleted_function"
     contains(m_name, "registerCycleEstimator") && return nothing, "calls_deleted_function"
-    contains(m_name, "poplar::Engine::connectHostFunction") && return nothing, "calls_deleted_function"
+    contains(m_name, "connectHostFunction") && return nothing, "calls_deleted_function"
 
     # contains(arg_list(method), "TypeTraits") && return
 
