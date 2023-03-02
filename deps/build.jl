@@ -1,6 +1,6 @@
 ##
 using Clang
-using Clang.Generators
+using Clang.LibClang
 using Match
 using JSON
 using libcxxwrap_julia_jll
@@ -522,14 +522,37 @@ function gen_bindings(headers::Vector{String}, blacklist::Vector{String})
     ctx = DefaultBindgenContext()
     ctx.searched_headers = resolve_headers(headers, includes)
     ctx.blacklisted_headers = resolve_headers(blacklist, includes)
-    clangctx = create_context(ctx.searched_headers)
 
-    for trans_unit in clangctx.trans_units
-        root_cursor = Clang.getTranslationUnitCursor(trans_unit)
-        println(root_cursor)
-        clang_children = children(root_cursor)
-        iterate_children(ctx, clang_children)
+    # bootstrap a Clang ASTUnit for parsing the headers
+    flags = CXTranslationUnit_DetailedPreprocessingRecord |
+            CXTranslationUnit_SkipFunctionBodies
+    idx = clang_createIndex(false, true)
+    @assert idx != C_NULL "failed to create libclang index."
+    tus = []
+    symbol_names = String[]
+    # add compiler flags
+    clang_args = ["-I"*inc for inc in includes]
+    try
+        for h in ctx.searched_headers
+            tu = clang_parseTranslationUnit(idx, h, clang_args, length(clang_args), C_NULL, 0, flags)
+            @assert tu != C_NULL "failed to parse header: $h."
+            push!(tus, tu)
+        end
+
+        for trans_unit in tus
+            root_cursor = Clang.getTranslationUnitCursor(trans_unit)
+            println(root_cursor)
+            clang_children = children(root_cursor)
+            iterate_children(ctx, clang_children)
+        end
+    finally
+        # Release resources
+        for trans_unit in tus
+            clang_disposeTranslationUnit(trans_unit)
+        end
+        clang_disposeIndex(idx)
     end
+
     return ctx.outputDecls * ctx.outputMembers, ctx.outputSupertypes
 end
 
