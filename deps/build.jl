@@ -1,5 +1,6 @@
 ##
 using Clang
+using Clang.Generators
 using Match
 using JSON
 using libcxxwrap_julia_jll
@@ -51,7 +52,7 @@ resolve_headers(headers::Vector{String}, include_paths::Vector{String})::Vector{
     resolve_header.(headers, Ref(include_paths))
 
 function get_full_name(cursor, funcargs::Bool=true, buf="")
-    parent = get_lexical_parent(cursor)
+    parent = Clang.getCursorLexicalParent(cursor)
     parent_kind = spelling(kind(parent))
     cursor_name = name(cursor)
     if !funcargs
@@ -71,14 +72,14 @@ end
 function get_namespace(cursor::CLCursor)
     tmpcursor = cursor
 
-    while spelling(kind(tmpcursor)) != "Namespace" && get_lexical_parent(tmpcursor) != tmpcursor
-        tmpcursor = get_lexical_parent(tmpcursor)
+    while spelling(kind(tmpcursor)) != "Namespace" && Clang.getCursorLexicalParent(tmpcursor) != tmpcursor
+        tmpcursor = Clang.getCursorLexicalParent(tmpcursor)
     end
 
     if get_full_name(tmpcursor) == ""
         tmpcursor = Clang.clang_getCursorDefinition(cursor)
-        while spelling(kind(tmpcursor)) != "Namespace" && get_lexical_parent(tmpcursor) != tmpcursor
-            tmpcursor = get_lexical_parent(tmpcursor)
+        while spelling(kind(tmpcursor)) != "Namespace" && Clang.getCursorLexicalParent(tmpcursor) != tmpcursor
+            tmpcursor = Clang.getCursorLexicalParent(tmpcursor)
         end
         return get_full_name(tmpcursor)
     end
@@ -88,8 +89,8 @@ end
 
 function get_class_name(cursor::CLCursor)
     tmpcursor = cursor
-    while spelling(kind(tmpcursor)) != "StructDecl" && spelling(kind(tmpcursor)) != "ClassDecl" && get_lexical_parent(tmpcursor) != tmpcursor
-        tmpcursor = get_lexical_parent(tmpcursor)
+    while spelling(kind(tmpcursor)) != "StructDecl" && spelling(kind(tmpcursor)) != "ClassDecl" && Clang.getCursorLexicalParent(tmpcursor) != tmpcursor
+        tmpcursor = Clang.getCursorLexicalParent(tmpcursor)
     end
     return get_full_name(tmpcursor)
 end
@@ -138,7 +139,7 @@ end
 
 
 function optionals(method::CLCursor)
-    args = function_args(method)
+    args = get_function_args(method)
     num = 0
     for arg in args
         for token in tokenize(arg)
@@ -156,9 +157,9 @@ function should_wrap(item::AbstractString)
 end
 
 function arg_list(method::CLCursor, types=true::Bool, cutoff=Inf, varnames=true::Bool)
-    length(function_args(method)) == 0 && return ""
+    length(get_function_args(method)) == 0 && return ""
     cutoff == 0 && return ""
-    args = function_args(method)
+    args = get_function_args(method)
     arglist = get_full_name(method)
     arglist = split(arglist, "(")[2]
     arglist = split(arglist, ")")[1]
@@ -229,7 +230,7 @@ function constructor_handler(ctx::BindgenContext, method::CLCursor)::Tuple{Union
     Clang.clang_getCXXAccessSpecifier(method) != Clang.CX_CXXPublic && return nothing, "insufficient_access"
 
 
-    m_header = filename(method)
+    m_header = spelling(method)
     m_name = name(method)
     name_small = split(m_name, "(")[1]
     m_kind = kind(method)
@@ -252,7 +253,7 @@ function constructor_handler(ctx::BindgenContext, method::CLCursor)::Tuple{Union
 
     out = "{ using namespace $(get_namespace(method)); \n"
 
-    num_args = length(function_args(method))
+    num_args = length(get_function_args(method))
     num_required = num_args - optionals(method)
     if num_required == 0
         num_required = 1
@@ -271,7 +272,7 @@ end
 function method_handler(ctx::BindgenContext, method::CLCursor)::Tuple{Union{Nothing, String}, Union{Nothing, String}}
     Clang.clang_getCXXAccessSpecifier(method) != Clang.CX_CXXPublic && return nothing, "insufficient_access"
 
-    m_header = filename(method)
+    m_header = spelling(method)
     m_name = name(method)
     name_small = split(m_name, "(")[1]
     m_kind = kind(method)
@@ -299,7 +300,7 @@ function method_handler(ctx::BindgenContext, method::CLCursor)::Tuple{Union{Noth
 
     out = "{ using namespace $(get_namespace(method)); \n"
 
-    num_args = length(function_args(method))
+    num_args = length(get_function_args(method))
     num_required = num_args - optionals(method)
     if num_required == 0
         out = out * "JL$base_var.method(\"$julia_name\", []($(get_class_name(method))& cl) {return cl.$name_small();} ); \n"
@@ -364,7 +365,7 @@ function enum_const_handler(ctx::BindgenContext, decl::CLCursor)::Tuple{Union{No
 
     full_name = get_full_name(decl)
     julia_name = get_julia_name(decl)
-    parent_name = get_julia_name(get_lexical_parent(decl))
+    parent_name = get_julia_name(Clang.getCursorLexicalParent(decl))
     return "mod.set_const(\"$parent_name$julia_name\", $full_name);", nothing
 end
 
@@ -376,7 +377,7 @@ function gen_json(ctx::BindgenContext, decl, id, handled=false, not_handled_reas
 
     decl_kind = kind(decl)
     spelling(decl_kind) ∈ ["EnumDecl", "ClassDecl", "StructDecl", "CXXMethod", "FunctionTemplate", "FunctionDecl", "CXXConstructor", "EnumConstantDecl"] || return ""
-    fname = filename(decl)
+    fname = spelling(decl)
 
     !any(x -> contains(fname, split(x, "/include/")[1]), ctx.searched_headers) && return
 
@@ -407,7 +408,7 @@ function iterate_children(ctx::BindgenContext, childvec::Vector{CLCursor})
         valid = true
         reason = nothing
 
-        child_header = filename(child)
+        child_header = spelling(child)
         child_name = name(child)
         child_kind = kind(child)
         startswith(child_name, "__") && (valid = false; reason = "skip_compiler_definitions")  # skip compiler definitions
@@ -521,11 +522,10 @@ function gen_bindings(headers::Vector{String}, blacklist::Vector{String})
     ctx = DefaultBindgenContext()
     ctx.searched_headers = resolve_headers(headers, includes)
     ctx.blacklisted_headers = resolve_headers(blacklist, includes)
-    clangctx = DefaultContext()
+    clangctx = create_context(ctx.searched_headers)
 
-    parse_headers!(clangctx, ctx.searched_headers, args=[""], includes=includes)
     for trans_unit in clangctx.trans_units
-        root_cursor = getcursor(trans_unit)
+        root_cursor = Clang.getTranslationUnitCursor(trans_unit)
         println(root_cursor)
         clang_children = children(root_cursor)
         iterate_children(ctx, clang_children)
