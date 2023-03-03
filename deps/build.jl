@@ -534,7 +534,7 @@ function gen_bindings(headers::Vector{String}, blacklist::Vector{String})
     clang_args = ["-I"*inc for inc in includes]
     try
         for h in ctx.searched_headers
-            tu = clang_parseTranslationUnit(idx, h, clang_args, length(clang_args), C_NULL, 0, flags)
+            tu = Clang.TranslationUnit(idx, h, clang_args, flags)
             @assert tu != C_NULL "failed to parse header: $h."
             push!(tus, tu)
         end
