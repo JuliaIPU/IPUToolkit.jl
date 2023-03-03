@@ -127,7 +127,7 @@ function buildCodelet(kernel, name, origKernel=function ()end)
         ""
     end
 
-    kernel_name = match(Regex("(julia_$(Symbol(kernel))_[0-9]+)"), output)[1]
+    kernel_name = match(Regex("(_Z[0-9]+jfptr_$(Symbol(kernel))_[0-9]+)"), output)[1]
 
     open("julia-code.ll", "w") do io
         write(io, output)
