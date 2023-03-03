@@ -4,11 +4,11 @@ using GPUCompiler
 
 ##
 
-llvmBuilder.@Codelet TimesTwo function (inconst::llvmBuilder.PoplarVec{Float32, llvmBuilder.In}, outvec::llvmBuilder.PoplarVec{Float32, llvmBuilder.Out})
-    (outvec .= inconst .* 2)
+IPUCompiler.@codelet function TimesTwo(inconst::IPUCompiler.PoplarVec{Float32, IPUCompiler.In}, outvec::IPUCompiler.PoplarVec{Float32, IPUCompiler.Out})
+    outvec .= inconst .* 2
 end
 
-llvmBuilder.@Codelet Sort function (invec::llvmBuilder.PoplarVec{Float32, llvmBuilder.In}, outvec::llvmBuilder.PoplarVec{Float32, llvmBuilder.Out})
+IPUCompiler.@codelet function Sort(invec::IPUCompiler.PoplarVec{Float32, IPUCompiler.In}, outvec::IPUCompiler.PoplarVec{Float32, IPUCompiler.Out})
     outvec .= invec
     sort!(outvec)
 end
