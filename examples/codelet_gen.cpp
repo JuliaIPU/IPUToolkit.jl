@@ -7,7 +7,6 @@ struct PoplarVector {
 };
 static PoplarVector* vertclass;
 
-
 uint32_t GET_VEC_NAME(uint32_t i, uint32_t type) {
   if(type == 0) 
     return vertclass[i].beginPtr;
@@ -18,7 +17,6 @@ uint32_t GET_VEC_NAME(uint32_t i, uint32_t type) {
 
 #include <poplar/Vertex.hpp>
 #include <poplar/StackSizeDefs.hpp>
-
 
 #ifdef DEF_STACK_USAGE
 static_assert(sizeof(void*) == 4);

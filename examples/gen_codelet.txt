@@ -1,2 +1,2 @@
-poplar::Input<poplar::Vector<float>> inconst;
+poplar::Input<poplar::Vector<float>> invec;
 poplar::Output<poplar::Vector<float>> outvec;
