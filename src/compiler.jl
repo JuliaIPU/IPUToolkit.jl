@@ -7,23 +7,21 @@ using Match
 module IpuRuntime
 
 # dummy methods
-signal_exception() = return
+signal_exception() = nothing
 
 # Todo: box/unbox for allowing proper type conversion
 # https://github.com/JuliaGPU/CUDAnative.jl/blob/a15d2db96274948d8090457a001e62e14be0d883/src/device/runtime.jl
-#function malloc(sz::Csize_t)
-#    return ccall("extern fake_malloc", llvmcall, Int64, (Csize_t,), sz)
-#end
+malloc(sz) = C_NULL
 
-report_oom(sz) = return
-report_exception(ex) = return
-report_exception_name(ex) = return
-report_exception_frame(idx, func, file, line) = return
+report_oom(sz) = nothing
+report_exception(ex) = nothing
+report_exception_name(ex) = nothing
+report_exception_frame(idx, func, file, line) = nothing
 
 end # module IpuRuntime
 
-struct TestCompilerParams <: AbstractCompilerParams end
-GPUCompiler.runtime_module(::CompilerJob{<:Any,TestCompilerParams}) = IpuRuntime
+struct IPUCompilerParams <: AbstractCompilerParams end
+GPUCompiler.runtime_module(::CompilerJob{<:Any,IPUCompilerParams}) = IpuRuntime
 
 abstract type In end
 abstract type Out end
@@ -102,7 +100,7 @@ function build_codelet(kernel, name, origKernel)
     source = FunctionSpec(kernel)
 
     target = NativeCompilerTarget()
-    params = TestCompilerParams()
+    params = IPUCompilerParams()
     job = CompilerJob(target, source, params, :func)
 
     llvm_ir = JuliaContext() do ctx
@@ -126,7 +124,7 @@ function build_codelet(kernel, name, origKernel)
             end
         end
 
-        input_file = joinpath(dir, "julia-code.ll")
+        input_file = joinpath(dir, "$(name).ll")
         write(input_file, llvm_ir)
 
         run(`popc -g -O0 -X -Wno-override-module -X -Qunused-arguments -DGET_VEC_NAME=getVec$(name) -DCLASS_NAME=$(name) -DFIRST_NAME=$(argnames[1]) -DKERNEL_NAME=$(kernel_name) -I$(dir) $(input_file) $(joinpath(@__DIR__, "codelet_gen.cpp")) -o $(output_path)`)

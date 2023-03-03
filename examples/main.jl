@@ -1,6 +1,5 @@
 using IPUToolkit.IPUCompiler
 using IPUToolkit.Poplar
-using GPUCompiler
 
 ##
 

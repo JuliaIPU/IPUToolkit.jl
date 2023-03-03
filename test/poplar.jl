@@ -1,22 +1,11 @@
+module PoplarTest
+
 using Test
 using IPUToolkit.Poplar
-using CxxWrap
 
-# We often want to check that some CxxWrap objects are not NULL.
-macro cxxtest(ex)
-    return quote
-        local out = $(esc(ex))
-        Test.@test out.cpp_object != C_NULL
-        out
-    end
-end
+include("common.jl")
 
-# https://giordano.github.io/blog/2019-05-03-julia-get-pointer-value/
-dereference(T::DataType, ptr::Ptr) = unsafe_load(Ptr{T}(ptr))
-dereference(T::DataType, ptr::CxxRef) = dereference(T, ptr.cpp_object)
-dereference(T::DataType, ptr::Poplar.Type_Allocated) = dereference(T, ptr.cpp_object)
-
-function test_program(device)
+function test_poplar_program(device)
     target = @cxxtest Poplar.DeviceGetTarget(device)
     graph = @cxxtest Poplar.Graph(target)
     Poplar.PopopsAddCodelets(graph)
@@ -70,9 +59,12 @@ function test_program(device)
     Poplar.EngineReadTensor(engine, "v5-read", h5)
     # TODO: try to write this test in terms of the other tensors.
     @test h5 == Float32[5.0, 3.5, 5.0, 3.5]
+
+    # Release the device at the end of the program
+    Poplar.DeviceDetach(device)
 end
 
-@testset "Poplar.jl" begin
+@testset "Poplar" begin
     @cxxtest Poplar.Tensor()
 
     @testset "Device manager" begin
@@ -94,8 +86,7 @@ end
     @testset "IPU Model" begin
         model = @cxxtest Poplar.IPUModel()
         device = @cxxtest Poplar.IPUModelCreateDevice(model)
-        test_program(device)
-        Poplar.DeviceDetach(device)
+        test_poplar_program(device)
     end
 
     # Same test, but with a real IPU
@@ -119,8 +110,8 @@ end
                                      match_mode=:any,
                                      Poplar.get_ipu_device())
         # Run a test program
-        test_program(device)
-        # Release the device
-        Poplar.DeviceDetach(device)
+        test_poplar_program(device)
     end
 end
+
+end # module PoplarTest
