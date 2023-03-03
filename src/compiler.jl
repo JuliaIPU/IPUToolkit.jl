@@ -98,20 +98,6 @@ function build_codelet(kernel, name, origKernel)
     # There doesn't seem to be a nicer way to do this
     argnames = split(methods(origKernel).ms[end].slot_syms, "\0")[2:methods(origKernel).ms[end].nargs]
 
-    open("gen_codelet.txt", "w") do io
-        for i in 1:length(args)
-            @match args[i] begin
-                PoplarVec{Int32, In} => println(io, "poplar::Input<poplar::Vector<int>> $(argnames[i]);")
-                PoplarVec{Float32, In} => println(io, "poplar::Input<poplar::Vector<float>> $(argnames[i]);")
-                PoplarVec{Int32, Out} => println(io, "poplar::Output<poplar::Vector<int>> $(argnames[i]);")
-                PoplarVec{Float32, Out} => println(io, "poplar::Output<poplar::Vector<float>> $(argnames[i]);")
-
-                PoplarVec{Int32, InOut} => println(io, "poplar::InOut<poplar::Vector<int>> $(argnames[i]);")
-                PoplarVec{Float32, InOut} => println(io, "poplar::InOut<poplar::Vector<float>> $(argnames[i]);")
-            end
-        end
-    end
-
     output_path = name * ".gp"
     source = FunctionSpec(kernel)
 
@@ -126,10 +112,24 @@ function build_codelet(kernel, name, origKernel)
     kernel_name = match(Regex("(_Z[0-9]+jfptr_$(kernel)_[0-9]+)"), llvm_ir)[1]
 
     mktempdir() do dir
+        open(joinpath(dir, "gen_codelet.txt"), "w") do io
+            for i in 1:length(args)
+                @match args[i] begin
+                    PoplarVec{Int32, In} => println(io, "poplar::Input<poplar::Vector<int>> $(argnames[i]);")
+                    PoplarVec{Float32, In} => println(io, "poplar::Input<poplar::Vector<float>> $(argnames[i]);")
+                    PoplarVec{Int32, Out} => println(io, "poplar::Output<poplar::Vector<int>> $(argnames[i]);")
+                    PoplarVec{Float32, Out} => println(io, "poplar::Output<poplar::Vector<float>> $(argnames[i]);")
+
+                    PoplarVec{Int32, InOut} => println(io, "poplar::InOut<poplar::Vector<int>> $(argnames[i]);")
+                    PoplarVec{Float32, InOut} => println(io, "poplar::InOut<poplar::Vector<float>> $(argnames[i]);")
+                end
+            end
+        end
+
         input_file = joinpath(dir, "julia-code.ll")
         write(input_file, llvm_ir)
 
-        run(`popc -g -O0 -X -Wno-override-module -X -Qunused-arguments -DGET_VEC_NAME=getVec$(name) -DCLASS_NAME=$(name) -DFIRST_NAME=$(argnames[1]) -DKERNEL_NAME=$(kernel_name) $(input_file) $(joinpath(@__DIR__, "codelet_gen.cpp")) -o $(output_path)`)
+        run(`popc -g -O0 -X -Wno-override-module -X -Qunused-arguments -DGET_VEC_NAME=getVec$(name) -DCLASS_NAME=$(name) -DFIRST_NAME=$(argnames[1]) -DKERNEL_NAME=$(kernel_name) -I$(dir) $(input_file) $(joinpath(@__DIR__, "codelet_gen.cpp")) -o $(output_path)`)
     end
 end
 
