@@ -527,14 +527,12 @@ function gen_bindings(headers::Vector{String}, blacklist::Vector{String})
     flags = CXTranslationUnit_DetailedPreprocessingRecord |
             CXTranslationUnit_SkipFunctionBodies
     idx = Clang.Index()
-    @assert idx != C_NULL "failed to create libclang index."
     tus = []
     symbol_names = String[]
     # add compiler flags
     clang_args = ["-I"*inc for inc in includes]
     for h in ctx.searched_headers
         tu = Clang.TranslationUnit(idx, h, clang_args, flags)
-        @assert tu != C_NULL "failed to parse header: $h."
         push!(tus, tu)
     end
 
