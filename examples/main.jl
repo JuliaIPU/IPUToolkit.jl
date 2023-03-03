@@ -1,4 +1,4 @@
-include(joinpath(@__DIR__, "llvm_builder.jl"))
+using IPUToolkit.IPUCompiler
 using IPUToolkit.Poplar
 using GPUCompiler
 

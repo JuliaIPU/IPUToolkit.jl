@@ -38,7 +38,7 @@ struct VectorBase {
 
   // Fields
   //poplar::InOut<poplar::Vector<int>> out;
-  #include"gen_codelet.txt"
+  #include "gen_codelet.txt"
 
   // Compute function
   bool compute() {
