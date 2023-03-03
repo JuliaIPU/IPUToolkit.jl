@@ -1,5 +1,5 @@
 # based on GPUCompiler example https://github.com/JuliaGPU/GPUCompiler.jl/blob/master/examples/kernel.jl
-module llvmBuilder
+module IPUCompiler
 
 using GPUCompiler
 using Match
@@ -63,11 +63,15 @@ end
     return PoplarVec{T, T2}(ccall(arg, llvmcall, Ptr{T}, (Int32, Int32), i, 0), ccall(arg, llvmcall, UInt32, (Int32, Int32), i, 1))
 end
 
-macro Codelet(name, usr_kern)
+macro codelet(usr_kern)
+    if usr_kern.head ∉ (:function, :(=)) || usr_kern.args[1].head !== :call
+        throw(ArgumentError("@codelet takes a named function definition in input"))
+    end
+    name = usr_kern.args[1].args[1]
     func = eval(usr_kern)
     args = methods(func).ms[end].sig.parameters[2:end]
 
-    kernargs = []
+    kernargs = Expr[]
     i = Int32(0)
 
     funcname = "extern getVec" * String(name)
@@ -84,11 +88,11 @@ macro Codelet(name, usr_kern)
             $kern_call
             return nothing
         end
-        $buildCodelet($(esc(name)), String(nameof($(esc(name)))), $usr_kern)
+        build_codelet($(esc(name)), String(nameof($(esc(name)))), $usr_kern)
     end
 end
 
-function buildCodelet(kernel, name, origKernel=function ()end)
+function build_codelet(kernel, name, origKernel)
     args = methods(origKernel).ms[end].sig.parameters[2:end]
 
     # There doesn't seem to be a nicer way to do this
@@ -97,42 +101,36 @@ function buildCodelet(kernel, name, origKernel=function ()end)
     open("gen_codelet.txt", "w") do io
         for i in 1:length(args)
             @match args[i] begin
-                PoplarVec{Int32, In} => write(io, "poplar::Input<poplar::Vector<int>> $(argnames[i]);\n")
-                PoplarVec{Float32, In} => write(io, "poplar::Input<poplar::Vector<float>> $(argnames[i]);\n")
-                PoplarVec{Int32, Out} => write(io, "poplar::Output<poplar::Vector<int>> $(argnames[i]);\n")
-                PoplarVec{Float32, Out} => write(io, "poplar::Output<poplar::Vector<float>> $(argnames[i]);\n")
+                PoplarVec{Int32, In} => println(io, "poplar::Input<poplar::Vector<int>> $(argnames[i]);")
+                PoplarVec{Float32, In} => println(io, "poplar::Input<poplar::Vector<float>> $(argnames[i]);")
+                PoplarVec{Int32, Out} => println(io, "poplar::Output<poplar::Vector<int>> $(argnames[i]);")
+                PoplarVec{Float32, Out} => println(io, "poplar::Output<poplar::Vector<float>> $(argnames[i]);")
 
-                PoplarVec{Int32, InOut} => write(io, "poplar::InOut<poplar::Vector<int>> $(argnames[i]);\n")
-                PoplarVec{Float32, InOut} => write(io, "poplar::InOut<poplar::Vector<float>> $(argnames[i]);\n")
+                PoplarVec{Int32, InOut} => println(io, "poplar::InOut<poplar::Vector<int>> $(argnames[i]);")
+                PoplarVec{Float32, InOut} => println(io, "poplar::InOut<poplar::Vector<float>> $(argnames[i]);")
             end
         end
     end
 
-    outputPath = name * ".gp"
+    output_path = name * ".gp"
     source = FunctionSpec(kernel)
 
     target = NativeCompilerTarget()
     params = TestCompilerParams()
     job = CompilerJob(target, source, params, :func)
 
-    output = try
-        JuliaContext() do ctx
-            string(GPUCompiler.compile(:llvm, job; ctx)[1])
-        end
-    catch
-        JuliaContext() do ctx
-            GPUCompiler.@device_code_warntype GPUCompiler.compile(:llvm, job; ctx)
-        end
-        ""
+    llvm_ir = JuliaContext() do ctx
+        string(GPUCompiler.compile(:llvm, job; ctx)[1])
     end
 
-    kernel_name = match(Regex("(_Z[0-9]+jfptr_$(Symbol(kernel))_[0-9]+)"), output)[1]
+    kernel_name = match(Regex("(_Z[0-9]+jfptr_$(kernel)_[0-9]+)"), llvm_ir)[1]
 
-    open("julia-code.ll", "w") do io
-        write(io, output)
-    end;
+    mktempdir() do dir
+        input_file = joinpath(dir, "julia-code.ll")
+        write(input_file, llvm_ir)
 
-    run(`popc -g -O0 -X -Wno-override-module -X -Qunused-arguments -DGET_VEC_NAME=getVec$name -DCLASS_NAME=$name -DFIRST_NAME=$(argnames[1]) -DKERNEL_NAME=$kernel_name julia-code.ll codelet_gen.cpp -o $outputPath`)
+        run(`popc -g -O0 -X -Wno-override-module -X -Qunused-arguments -DGET_VEC_NAME=getVec$(name) -DCLASS_NAME=$(name) -DFIRST_NAME=$(argnames[1]) -DKERNEL_NAME=$(kernel_name) $(input_file) $(joinpath(@__DIR__, "codelet_gen.cpp")) -o $(output_path)`)
+    end
 end
 
-end # module llvmBuilder
+end # module IPUCompiler
