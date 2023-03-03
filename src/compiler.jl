@@ -127,7 +127,21 @@ function build_codelet(kernel, name, origKernel)
         input_file = joinpath(dir, "$(name).ll")
         write(input_file, llvm_ir)
 
-        run(`popc -g -O0 -X -Wno-override-module -X -Qunused-arguments -DGET_VEC_NAME=getVec$(name) -DCLASS_NAME=$(name) -DFIRST_NAME=$(argnames[1]) -DKERNEL_NAME=$(kernel_name) -I$(dir) $(input_file) $(joinpath(@__DIR__, "codelet_gen.cpp")) -o $(output_path)`)
+        run(```
+            popc
+            -g
+            -O0
+            -X -Wno-override-module
+            -X -Qunused-arguments
+            -DGET_VEC_NAME=getVec$(name)
+            -DCLASS_NAME=$(name)
+            -DFIRST_NAME=$(argnames[1])
+            -DKERNEL_NAME=$(kernel_name)
+            -I$(dir)
+            $(input_file)
+            $(joinpath(@__DIR__, "codelet_gen.cpp"))
+            -o $(output_path)
+            ```)
     end
 end
 

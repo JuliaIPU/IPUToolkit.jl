@@ -551,7 +551,19 @@ function build_bindings(; path::String=joinpath(libpoplar_dir, "libpoplar_julia.
         cxx = get(ENV, "CXX", "g++-10")
         julia_include_dir = joinpath(dirname(Sys.BINDIR), "include", "julia")
         mkpath(dirname(path))
-        run(pipeline(`$(cxx) -O0 -std=c++20 -fPIC -shared -I$(julia_include_dir) -I$(cxxwrap_include_dir) -o $(path) $(joinpath(@__DIR__, "template.cpp")) -lpopops -lpoplar`))
+        run(```
+            $(cxx)
+            -O0
+            -std=c++20
+            -fPIC
+            -shared
+            -I$(julia_include_dir)
+            -I$(cxxwrap_include_dir)
+            -o $(path)
+            $(joinpath(@__DIR__, "template.cpp"))
+            -lpopops
+            -lpoplar
+            ```)
     end
     return nothing
 end
