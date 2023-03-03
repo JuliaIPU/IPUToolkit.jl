@@ -2,7 +2,6 @@
 module llvmBuilder
 
 using GPUCompiler
-using StaticArrays
 using Match
 
 module IpuRuntime
