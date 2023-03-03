@@ -526,31 +526,23 @@ function gen_bindings(headers::Vector{String}, blacklist::Vector{String})
     # bootstrap a Clang ASTUnit for parsing the headers
     flags = CXTranslationUnit_DetailedPreprocessingRecord |
             CXTranslationUnit_SkipFunctionBodies
-    idx = clang_createIndex(false, true)
+    idx = Clang.Index()
     @assert idx != C_NULL "failed to create libclang index."
     tus = []
     symbol_names = String[]
     # add compiler flags
     clang_args = ["-I"*inc for inc in includes]
-    try
-        for h in ctx.searched_headers
-            tu = Clang.TranslationUnit(idx, h, clang_args, flags)
-            @assert tu != C_NULL "failed to parse header: $h."
-            push!(tus, tu)
-        end
+    for h in ctx.searched_headers
+        tu = Clang.TranslationUnit(idx, h, clang_args, flags)
+        @assert tu != C_NULL "failed to parse header: $h."
+        push!(tus, tu)
+    end
 
-        for trans_unit in tus
-            root_cursor = Clang.getTranslationUnitCursor(trans_unit)
-            println(root_cursor)
-            clang_children = children(root_cursor)
-            iterate_children(ctx, clang_children)
-        end
-    finally
-        # Release resources
-        for trans_unit in tus
-            clang_disposeTranslationUnit(trans_unit)
-        end
-        clang_disposeIndex(idx)
+    for trans_unit in tus
+        root_cursor = Clang.getTranslationUnitCursor(trans_unit)
+        println(root_cursor)
+        clang_children = children(root_cursor)
+        iterate_children(ctx, clang_children)
     end
 
     return ctx.outputDecls * ctx.outputMembers, ctx.outputSupertypes
