@@ -40,7 +40,7 @@ julia> dm = Poplar.DeviceManager();
 julia> Int(Poplar.DeviceManagerGetNumDevices(dm))
 129
 
-julia> device = Poplar.get_device()
+julia> device = Poplar.get_ipu_device()
 [ Info: Trying to attach to device 0...
 [ Info: Successfully attached to device 0
 [ Info: Attached to devices with IDs [0]
