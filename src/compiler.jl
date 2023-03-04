@@ -65,28 +65,23 @@ macro codelet(usr_kern)
     if usr_kern.head ∉ (:function, :(=)) || usr_kern.args[1].head !== :call
         throw(ArgumentError("@codelet takes a named function definition in input"))
     end
+
     name = usr_kern.args[1].args[1]
-    func = eval(usr_kern)
-    args = methods(func).ms[end].sig.parameters[2:end]
-
-    kernargs = Expr[]
-    i = Int32(0)
-
+    args = usr_kern.args[1].args[2:end]
     funcname = "extern getVec" * String(name)
-
-    for arg in args
-        push!(kernargs, :($getVec{$arg}($funcname, Int32($i))))
-        i += Int32(1)
-    end
-    kern_call = Expr(:call, :($func), kernargs...)
+    i = Int32(-1)
+    kernargs = [:($getVec{$(arg.args[2])}($funcname, Int32($(i += one(i))))) for arg in args]
+    kern_call = Expr(:call, :($name), kernargs...)
 
     return quote
-
-        function $(esc(name))()
-            $kern_call
-            return nothing
+        let
+            $(usr_kern)
+            function $(esc(name))()
+                $kern_call
+                return nothing
+            end
+            build_codelet($(esc(name)), $(String(name)), $(name))
         end
-        build_codelet($(esc(name)), String(nameof($(esc(name)))), $usr_kern)
     end
 end
 
@@ -143,6 +138,8 @@ function build_codelet(kernel, name, origKernel)
             -o $(output_path)
             ```)
     end
+
+    return nothing
 end
 
 end # module IPUCompiler

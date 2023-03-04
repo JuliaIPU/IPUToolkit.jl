@@ -8,7 +8,7 @@ struct PoplarVector {
 static PoplarVector* vertclass;
 
 uint32_t GET_VEC_NAME(uint32_t i, uint32_t type) {
-  if(type == 0) 
+  if(type == 0)
     return vertclass[i].beginPtr;
   return vertclass[i].size_;
 }
@@ -43,7 +43,7 @@ struct VectorBase {
   // Compute function
   bool compute() {
     vertclass = (PoplarVector*) &FIRST_NAME;
-  
+
     KERNEL_NAME();
     return true;
   }
