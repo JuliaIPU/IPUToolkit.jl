@@ -122,6 +122,10 @@ function build_codelet(kernel, name, origKernel)
         input_file = joinpath(dir, "$(name).ll")
         write(input_file, llvm_ir)
 
+        # Remove any existing codelet file: in some weird cases, compilation may file and
+        # not produce an output codelet, and not error out either, so you may accidentally
+        # reuse an old codelet.
+        rm(output_path; force=true)
         run(```
             popc
             -g
