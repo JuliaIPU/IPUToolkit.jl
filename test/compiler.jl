@@ -7,8 +7,10 @@ using IPUToolkit.Poplar
 include("common.jl")
 
 function test_compiler_program(device)
+    # Define a local function to make sure macro hygiene is right
+    double(x) = x * 2
     timestwo_gp = IPUCompiler.@codelet function TimesTwo(inconst::IPUCompiler.PoplarVec{Float32, IPUCompiler.In}, outvec::IPUCompiler.PoplarVec{Float32, IPUCompiler.Out})
-        outvec .= inconst .* 2
+        outvec .= double.(inconst)
     end
 
     sort_gp = IPUCompiler.@codelet function Sort(invec::IPUCompiler.PoplarVec{Float32, IPUCompiler.In}, outvec::IPUCompiler.PoplarVec{Float32, IPUCompiler.Out})

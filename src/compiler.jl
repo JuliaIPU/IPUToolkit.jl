@@ -68,19 +68,20 @@ macro codelet(usr_kern)
 
     name = usr_kern.args[1].args[1]
     args = usr_kern.args[1].args[2:end]
+    codelet_fun = gensym(name)
     funcname = "extern getVec" * String(name)
     i = Int32(-1)
-    kernargs = [:($getVec{$(arg.args[2])}($funcname, Int32($(i += one(i))))) for arg in args]
-    kern_call = Expr(:call, :($name), kernargs...)
+    kernargs = [:($(getVec){$(arg.args[2])}($(funcname), Int32($(i += one(i))))) for arg in args]
+    kern_call = Expr(:call, :($(esc(name))), kernargs...)
 
     return quote
         let
-            $(usr_kern)
-            function $(esc(name))()
-                $kern_call
+            $(esc(usr_kern))
+            function $(codelet_fun)()
+                $(kern_call)
                 return nothing
             end
-            build_codelet($(esc(name)), $(String(name)), $(name))
+            build_codelet($(codelet_fun), $(String(name)), $(esc(name)))
         end
     end
 end
@@ -104,7 +105,7 @@ function build_codelet(kernel, name, origKernel)
         string(GPUCompiler.compile(:llvm, job; ctx)[1])
     end
 
-    kernel_name = match(Regex("(_Z[0-9]+jfptr_$(kernel)_[0-9]+)"), llvm_ir)[1]
+    kernel_name = match(Regex("(_Z[\\d]+jfptr[\\d_]+$(name)[\\d_]+)"), llvm_ir)[1]
 
     mktempdir() do dir
         open(joinpath(dir, "gen_codelet.txt"), "w") do io
