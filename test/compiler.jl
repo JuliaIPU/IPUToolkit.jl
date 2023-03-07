@@ -7,11 +7,11 @@ using IPUToolkit.Poplar
 include("common.jl")
 
 function test_compiler_program(device)
-    IPUCompiler.@codelet function TimesTwo(inconst::IPUCompiler.PoplarVec{Float32, IPUCompiler.In}, outvec::IPUCompiler.PoplarVec{Float32, IPUCompiler.Out})
+    timestwo_gp = IPUCompiler.@codelet function TimesTwo(inconst::IPUCompiler.PoplarVec{Float32, IPUCompiler.In}, outvec::IPUCompiler.PoplarVec{Float32, IPUCompiler.Out})
         outvec .= inconst .* 2
     end
 
-    IPUCompiler.@codelet function Sort(invec::IPUCompiler.PoplarVec{Float32, IPUCompiler.In}, outvec::IPUCompiler.PoplarVec{Float32, IPUCompiler.Out})
+    sort_gp = IPUCompiler.@codelet function Sort(invec::IPUCompiler.PoplarVec{Float32, IPUCompiler.In}, outvec::IPUCompiler.PoplarVec{Float32, IPUCompiler.Out})
         outvec .= invec
         sort!(outvec)
     end
@@ -19,8 +19,8 @@ function test_compiler_program(device)
     target = @cxxtest Poplar.DeviceGetTarget(device)
     graph = @cxxtest Poplar.Graph(target)
 
-    Poplar.GraphAddCodelets(graph, "TimesTwo.gp")
-    Poplar.GraphAddCodelets(graph, "Sort.gp")
+    Poplar.GraphAddCodelets(graph, timestwo_gp)
+    Poplar.GraphAddCodelets(graph, sort_gp)
 
     input = Float32[5, 2, 10, 102, -10, 2, 256, 15, 32, 100]
 

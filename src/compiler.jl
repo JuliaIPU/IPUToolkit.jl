@@ -91,7 +91,9 @@ function build_codelet(kernel, name, origKernel)
     # There doesn't seem to be a nicer way to do this
     argnames = split(methods(origKernel).ms[end].slot_syms, "\0")[2:methods(origKernel).ms[end].nargs]
 
-    output_path = name * ".gp"
+    # Create codelet file in temporary directory, so taht we don't pollute the
+    # file system with codelet files everywhere.
+    output_path = joinpath(mktempdir(), name * ".gp")
     source = FunctionSpec(kernel)
 
     target = NativeCompilerTarget()
@@ -122,10 +124,6 @@ function build_codelet(kernel, name, origKernel)
         input_file = joinpath(dir, "$(name).ll")
         write(input_file, llvm_ir)
 
-        # Remove any existing codelet file: in some weird cases, compilation may file and
-        # not produce an output codelet, and not error out either, so you may accidentally
-        # reuse an old codelet.
-        rm(output_path; force=true)
         run(```
             popc
             -g
@@ -143,7 +141,7 @@ function build_codelet(kernel, name, origKernel)
             ```)
     end
 
-    return nothing
+    return output_path
 end
 
 end # module IPUCompiler
