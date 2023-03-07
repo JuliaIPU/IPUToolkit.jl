@@ -18,21 +18,30 @@ function test_compiler_program(device)
         sort!(outvec)
     end
 
+    sin_gp = IPUCompiler.@codelet function Sin(invec::IPUCompiler.PoplarVec{Float32, IPUCompiler.In}, outvec::IPUCompiler.PoplarVec{Float32, IPUCompiler.Out})
+        for idx in eachindex(outvec)
+            @inbounds outvec[idx] = sin(invec[idx])
+        end
+    end
+
     target = @cxxtest Poplar.DeviceGetTarget(device)
     graph = @cxxtest Poplar.Graph(target)
 
     Poplar.GraphAddCodelets(graph, timestwo_gp)
     Poplar.GraphAddCodelets(graph, sort_gp)
+    Poplar.GraphAddCodelets(graph, sin_gp)
 
     input = Float32[5, 2, 10, 102, -10, 2, 256, 15, 32, 100]
 
     inconst = @cxxtest Poplar.GraphAddConstant(graph, Poplar.FLOAT(), UInt64[10], input)
     outvec1 = @cxxtest Poplar.GraphAddVariable(graph, Poplar.FLOAT(), UInt64[10], "outvec1");
     outvec2 = @cxxtest Poplar.GraphAddVariable(graph, Poplar.FLOAT(), UInt64[10], "outvec2");
+    outvec3 = @cxxtest Poplar.GraphAddVariable(graph, Poplar.FLOAT(), UInt64[10], "outvec3");
 
     Poplar.GraphSetTileMapping(graph, inconst, 0)
     Poplar.GraphSetTileMapping(graph, outvec1, 0)
     Poplar.GraphSetTileMapping(graph, outvec2, 0)
+    Poplar.GraphSetTileMapping(graph, outvec3, 0)
 
     prog = @cxxtest Poplar.ProgramSequence()
 
@@ -58,8 +67,23 @@ function test_compiler_program(device)
         # Poplar.GraphSetPerfEstimate(graph, SortVtx, 1)
     end
 
+    computeSetSin = @cxxtest Poplar.GraphAddComputeSet(graph, "computeSetSin")
+    SinVtx = @cxxtest Poplar.GraphAddVertex(graph, computeSetSin, "Sin")
+    Poplar.GraphConnect(graph, SinVtx["invec"], outvec2)
+    Poplar.GraphConnect(graph, SinVtx["outvec"], outvec3)
+    Poplar.GraphSetTileMapping(graph, SinVtx, 0)
+    if Poplar.SDK_VERSION < v"2.0"
+        Poplar.GraphSetCycleEstimate(graph, SinVtx, 1)
+    else
+        # Poplar.GraphSetPerfEstimate(graph, SinVtx, 1)
+    end
+
     Poplar.ProgramSequenceAdd(prog, Poplar.ProgramExecute(computeSetMul))
     Poplar.ProgramSequenceAdd(prog, Poplar.ProgramExecute(computeSetSort))
+    # The `@device_override` business works well only on Julia v1.7+
+    if VERSION ≥ v"1.7"
+        Poplar.ProgramSequenceAdd(prog, Poplar.ProgramExecute(computeSetSin))
+    end
 
     # Init some variables which will be used to read back from the IPU
     # the results of some basic operations.
@@ -67,6 +91,10 @@ function test_compiler_program(device)
     Poplar.GraphCreateHostRead(graph, "timestwo-read", outvec1)
     output_sort = similar(input)
     Poplar.GraphCreateHostRead(graph, "sort-read", outvec2)
+    if VERSION ≥ v"1.7"
+        output_sin = similar(input)
+        Poplar.GraphCreateHostRead(graph, "sin-read", outvec3)
+    end
 
     flags = @cxxtest Poplar.OptionFlags()
     Poplar.OptionFlagsSet(flags, "debug.instrument", "true")
@@ -79,6 +107,10 @@ function test_compiler_program(device)
     @test output_timestwo == 2 .* input
     Poplar.EngineReadTensor(engine, "sort-read", output_sort)
     @test output_sort == sort(output_timestwo)
+    if VERSION ≥ v"1.7"
+        Poplar.EngineReadTensor(engine, "sin-read", output_sin)
+        @test output_sin == sin.(output_sort)
+    end
 
     Poplar.DeviceDetach(device)
 end

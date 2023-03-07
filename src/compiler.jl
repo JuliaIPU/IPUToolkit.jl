@@ -5,26 +5,57 @@ using GPUCompiler
 using Match
 using ..Poplar
 
-module IpuRuntime
-
-# dummy methods
-signal_exception() = nothing
-
-# Todo: box/unbox for allowing proper type conversion
-# https://github.com/JuliaGPU/CUDAnative.jl/blob/a15d2db96274948d8090457a001e62e14be0d883/src/device/runtime.jl
-malloc(sz) = C_NULL
-
-report_oom(sz) = nothing
-report_exception(ex) = nothing
-report_exception_name(ex) = nothing
-report_exception_frame(idx, func, file, line) = nothing
-
-end # module IpuRuntime
+# list of overrides (only for Julia 1.6)
+const overrides = Expr[]
 
 struct IPUCompilerParams <: AbstractCompilerParams
     kernel_name::String
 end
-GPUCompiler.runtime_module(::CompilerJob{<:Any,IPUCompilerParams}) = IpuRuntime
+
+# local method table for device functions
+@static if isdefined(Base.Experimental, Symbol("@overlay"))
+Base.Experimental.@MethodTable(method_table)
+else
+const method_table = nothing
+end
+# the method table to use
+GPUCompiler.method_table(::CompilerJob{<:Any,IPUCompilerParams}) = method_table
+
+macro device_override(ex)
+    ex = macroexpand(__module__, ex)
+    if Meta.isexpr(ex, :call)
+        ex = eval(ex)
+        error()
+    end
+    code = quote
+        $GPUCompiler.@override($method_table, $ex)
+    end
+    if isdefined(Base.Experimental, Symbol("@overlay"))
+        return esc(code)
+    else
+        push!(overrides, code)
+        return
+    end
+end
+
+macro device_function(ex)
+    ex = macroexpand(__module__, ex)
+    def = splitdef(ex)
+
+    # generate a function that errors
+    def[:body] = quote
+        error("This function is not intended for use on the CPU")
+    end
+
+    esc(quote
+        $(combinedef(def))
+        @device_override $ex
+    end)
+end
+
+include("runtime.jl")
+
+GPUCompiler.runtime_module(::CompilerJob{<:Any,IPUCompilerParams}) = IPURuntime
 # `GPUCompiler.isintrinsic` specifies functions which are to be considered intrinsics for
 # the current job, and so don't have to be validated by the compilation pipeline.  We set
 # `getVec$(kernel_name)` to be considered intrinsic, as this is implemented in the
