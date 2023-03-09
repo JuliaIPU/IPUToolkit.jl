@@ -56,7 +56,7 @@ poplar::ArrayRef<T> jlcxxToPoplar(jlcxx::ArrayRef<T> arr)
 }
 
 namespace jlcxx {
-  #include"gen_inherit.txt"
+  #include "gen_inherit.cpp"
   //template<> struct SuperType<poplar::program::Execute> { typedef poplar::program::Program type; };
 }
 
@@ -101,7 +101,7 @@ define_julia_module(jlcxx::Module &mod)
 
   // auto JLType = mod.add_type<poplar::Type>("Type");
   // Errors! ^ Can't be named "Type"
-  #include"gen_inline.txt"
+  #include "gen_inline.cpp"
 
   // Contrary to what you may expect, these numerical types (`BOOL`, `INT`, `FLOAT`, etc.)
   // aren't static enums which could be defined with, e.g.

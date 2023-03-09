@@ -562,8 +562,8 @@ function build_bindings(; path::String=joinpath(libpoplar_dir, "libpoplar_julia.
     # Workaround for CxxWrap not liking any types name "Type"
     gen_inline = replace(gen_inline, "\"Type\"" => "\"Type_\"")
 
-    write("gen_inline.txt", gen_inline)
-    write("gen_inherit.txt", gen_inherit)
+    write("gen_inline.cpp", gen_inline)
+    write("gen_inherit.cpp", gen_inherit)
 
     cxxwrap_include_dir = joinpath(libcxxwrap_julia_jll.artifact_dir, "include")
 
