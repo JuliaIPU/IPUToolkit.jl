@@ -102,7 +102,8 @@ function build_codelet(kernel, name, origKernel)
     job = CompilerJob(target, source, params, :func)
 
     llvm_ir = JuliaContext() do ctx
-        string(GPUCompiler.compile(:llvm, job; ctx)[1])
+        # TODO: it'd be great to generate valid IR, so that we can turn `validate=true`.
+        string(GPUCompiler.compile(:llvm, job; ctx, validate=false)[1])
     end
 
     kernel_name = match(Regex("(_Z[\\d]+jfptr[\\d_]+$(name)[\\d_]+)"), llvm_ir)[1]
