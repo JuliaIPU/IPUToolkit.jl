@@ -1,4 +1,4 @@
 /build.log
-/gen_inherit.txt
-/gen_inline.txt
+/gen_inherit.*
+/gen_inline.*
 /out.json
