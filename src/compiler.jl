@@ -113,11 +113,15 @@ function build_codelet(kernel, name, origKernel)
             for i in 1:length(args)
                 @match args[i] begin
                     PoplarVec{Int32, In} => println(io, "poplar::Input<poplar::Vector<int>> $(argnames[i]);")
+                    PoplarVec{Float16, In} => println(io, "poplar::Input<poplar::Vector<half>> $(argnames[i]);")
                     PoplarVec{Float32, In} => println(io, "poplar::Input<poplar::Vector<float>> $(argnames[i]);")
+
                     PoplarVec{Int32, Out} => println(io, "poplar::Output<poplar::Vector<int>> $(argnames[i]);")
+                    PoplarVec{Float16, Out} => println(io, "poplar::Output<poplar::Vector<half>> $(argnames[i]);")
                     PoplarVec{Float32, Out} => println(io, "poplar::Output<poplar::Vector<float>> $(argnames[i]);")
 
                     PoplarVec{Int32, InOut} => println(io, "poplar::InOut<poplar::Vector<int>> $(argnames[i]);")
+                    PoplarVec{Float16, InOut} => println(io, "poplar::InOut<poplar::Vector<half>> $(argnames[i]);")
                     PoplarVec{Float32, InOut} => println(io, "poplar::InOut<poplar::Vector<float>> $(argnames[i]);")
                 end
             end
