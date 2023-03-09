@@ -9,6 +9,13 @@ using Pkg.TOML
 using UUIDs
 ##
 
+# Extend some Clang methods.  NOTE: this should really be a condition on `Clang.jl` version
+# (we need to apply this only to `Clang.jl` v0.14), but it's easier to check Julia version
+# number, and `Clang.jl` v0.14 is compatible only with Julia v1.6
+if Base.thisminor(VERSION) == v"1.6"
+    Clang.getNumArguments(c::Union{CXCursor,CLCursor})::Int = clang_Cursor_getNumArguments(c)
+end
+
 const libpoplar_dir = joinpath(get_scratch!(UUID(TOML.parsefile(joinpath(dirname(@__DIR__), "Project.toml"))["uuid"]), "libpoplar"), "v$(Base.thispatch(VERSION))")
 const allowed_namespaces = ("poplar", "popops")
 
@@ -157,7 +164,7 @@ function should_wrap(item::AbstractString)
 end
 
 function arg_list(method::CLCursor, types=true::Bool, cutoff=Inf, varnames=true::Bool)
-    length(get_function_args(method)) == 0 && return ""
+    Clang.getNumArguments(method) == 0 && return ""
     cutoff == 0 && return ""
     args = get_function_args(method)
     arglist = get_full_name(method)
