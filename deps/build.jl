@@ -13,7 +13,32 @@ using UUIDs
 # (we need to apply this only to `Clang.jl` v0.14), but it's easier to check Julia version
 # number, and `Clang.jl` v0.14 is compatible only with Julia v1.6
 if Base.thisminor(VERSION) == v"1.6"
-    Clang.getNumArguments(c::Union{CXCursor,CLCursor})::Int = clang_Cursor_getNumArguments(c)
+    @eval Clang begin
+        Clang.getNumArguments(c::Union{CXCursor,CLCursor})::Int = clang_Cursor_getNumArguments(c)
+        getArgument(c::CLConstructor, i::Integer)::CLCursor =
+            clang_Cursor_getArgument(c, Unsigned(i))
+    end
+else
+    # TODO: remove this branch after https://github.com/JuliaInterop/Clang.jl/pull/419 is
+    # resolved, merged and it makes it into a release.  NOTE: at the moment this is still
+    # not working!
+    @eval Clang begin
+        getArgument(c::CLConstructor, i::Integer)::CLCursor =
+            clang_Cursor_getArgument(c, Unsigned(i))
+
+        function getNumArguments(c::CLFunctionTemplate)::Int
+            baseDecl = children(c)[end]
+            if kind(baseDecl) == CXCursor_TypeRef
+                return getNumArguments(getCursorReferenced(baseDecl))
+            end
+            return getNumArguments(baseDecl)
+        end
+
+        function getCursorTypeRef(c::CLCursor)::CLCursor
+            @assert kind(c) == CXCursor_TypeRef
+            return getCursorReferenced(c)
+        end
+    end
 end
 
 const libpoplar_dir = joinpath(get_scratch!(UUID(TOML.parsefile(joinpath(dirname(@__DIR__), "Project.toml"))["uuid"]), "libpoplar"), "v$(Base.thispatch(VERSION))")
@@ -553,21 +578,22 @@ function gen_bindings(headers::Vector{String}, blacklist::Vector{String})
     return ctx.outputDecls * ctx.outputMembers, ctx.outputSupertypes
 end
 
-function build_bindings(; path::String=joinpath(libpoplar_dir, "libpoplar_julia.so"), compile::Bool=true)
-    gen_inline, gen_inherit = gen_bindings(["poplar/VectorLayout.hpp", "poplar/DeviceManager.hpp", "poplar/Engine.hpp",
-                                            "poplar/Graph.hpp", "poplar/IPUModel.hpp", "popops/ElementWise.hpp", "popops/codelets.hpp"],
-                                           String[])
-    #gen_inline = replace(gen_inline, "\n" => "\nprintf(\"Line is %d\\n\", __LINE__);\n")
+function build_bindings(; path::String=joinpath(libpoplar_dir, "libpoplar_julia.so"), generate_bindings::Bool=true, compile::Bool=true)
+    if generate_bindings
+        gen_inline, gen_inherit = gen_bindings(["poplar/VectorLayout.hpp", "poplar/DeviceManager.hpp", "poplar/Engine.hpp",
+                                                "poplar/Graph.hpp", "poplar/IPUModel.hpp", "popops/ElementWise.hpp", "popops/codelets.hpp"],
+                                               String[])
+        #gen_inline = replace(gen_inline, "\n" => "\nprintf(\"Line is %d\\n\", __LINE__);\n")
 
-    # Workaround for CxxWrap not liking any types name "Type"
-    gen_inline = replace(gen_inline, "\"Type\"" => "\"Type_\"")
+        # Workaround for CxxWrap not liking any types name "Type"
+        gen_inline = replace(gen_inline, "\"Type\"" => "\"Type_\"")
 
-    write("gen_inline.cpp", gen_inline)
-    write("gen_inherit.cpp", gen_inherit)
-
-    cxxwrap_include_dir = joinpath(libcxxwrap_julia_jll.artifact_dir, "include")
+        write("gen_inline.cpp", gen_inline)
+        write("gen_inherit.cpp", gen_inherit)
+    end
 
     if compile
+        cxxwrap_include_dir = joinpath(libcxxwrap_julia_jll.artifact_dir, "include")
         cxx = get(ENV, "CXX", "g++-10")
         julia_include_dir = joinpath(dirname(Sys.BINDIR), "include", "julia")
         mkpath(dirname(path))
