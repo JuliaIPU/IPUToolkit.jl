@@ -97,7 +97,7 @@ end
 
 function build_codelet(kernel, name, origKernel)
     target = NativeCompilerTarget()
-    source = FunctionSpec(kernel)
+    source = FunctionSpec(typeof(kernel))
     params = IPUCompilerParams(name)
     job = CompilerJob(target, source, params, :func)
     llvm_ir = JuliaContext() do ctx
