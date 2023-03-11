@@ -88,7 +88,7 @@ macro codelet(usr_kern)
             $(esc(usr_kern))
             function $(codelet_fun)()
                 $(kern_call)
-                return nothing
+                return $(esc(nothing))
             end
             build_codelet($(codelet_fun), $(String(name)), $(esc(name)))
         end
