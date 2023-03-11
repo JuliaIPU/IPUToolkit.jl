@@ -3,6 +3,7 @@ module IPUCompiler
 
 using GPUCompiler
 using Match
+using ..Poplar
 
 module IpuRuntime
 
@@ -148,6 +149,31 @@ function build_codelet(kernel, name, origKernel)
     end
 
     return output_path
+end
+
+# Mapping of the LLVM version used by each version of the Poplar SDK.  To find it, use `popc
+# --version`.
+const POPLAR_SDK_LLVM_MAPPING = Dict(
+    v"1.3.0" => v"11.0.0",
+    v"1.4.0" => v"11.0.0",
+    v"2.0.0" => v"11.0.0",
+    v"2.1.0" => v"13.0.0",
+    v"2.2.0" => v"13.0.0",
+    v"2.3.0" => v"14.0.0",
+    v"2.4.0" => v"14.0.0",
+    v"2.5.0" => v"14.0.0",
+    v"2.6.0" => v"15.0.0",
+    v"3.0.0" => v"15.0.0",
+)
+
+function __init__()
+    sdk_llvm_version = POPLAR_SDK_LLVM_MAPPING[Base.thisminor(Poplar.SDK_VERSION)]
+    if sdk_llvm_version != Base.thismajor(Base.libllvm_version)
+        @warn """
+              You are using Poplar SDK v$(Poplar.SDK_VERSION) which is coupled to LLVM v$(sdk_llvm_version), but your Julia uses LLVM v$(Base.libllvm_version).
+              IPUCompiler code generation may not work correctly.
+              """
+    end
 end
 
 end # module IPUCompiler
