@@ -614,4 +614,6 @@ function build_bindings(; path::String=joinpath(libpoplar_dir, "libpoplar_julia.
     return nothing
 end
 
-build_bindings()
+# Hack: until https://github.com/giordano/julia-ipu/issues/6 is fixed, don't generate
+# bindings with Julia v1.7+.
+build_bindings(; generate_bindings=VERSION<v"1.7")
