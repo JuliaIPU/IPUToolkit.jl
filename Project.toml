@@ -11,6 +11,7 @@ JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 Match = "7eb4fadd-790c-5f42-8a69-bfa0b872bfbf"
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 Scratch = "6c6a2e73-6563-6170-7368-637461726353"
+TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
 UUIDs = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 libcxxwrap_julia_jll = "3eaa8342-bff7-56a5-9981-c04077f7cee7"
 
