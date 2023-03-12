@@ -84,7 +84,7 @@ function test_compiler_program(device)
 end
 
 @testset "IPUCompiler" begin
-    if Base.JLOptions().check_bounds != 1 # --check-bounds != yes
+    if Poplar.SDK_VERSION ≥ v"2.2.0" || Base.JLOptions().check_bounds != 1 # --check-bounds != yes
         # Get a device
         device = @cxxtest @test_logs((:info, r"^Trying to attach to device"),
                                      (:info, r"^Successfully attached to device"),
@@ -95,7 +95,9 @@ end
         test_compiler_program(device)
     else
         # With --check-bounds=yes GPUCompiler generates a function mentioning an undefined
-        # symbol `gpu_malloc`.  Mark the test as broken until we sort this out.
+        # symbol `gpu_malloc`.  Mark the test as broken until we sort this out.  However
+        # this function is optimised away when compiling with `-O1` or higher, and for
+        # Poplar.SDK_VERSION ≥ v"2.2.0" we use `-O3`.
         @warn """
               Skipping IPUCompiler tests because bound checks are forced.  To run this testset use
                   using Pkg
