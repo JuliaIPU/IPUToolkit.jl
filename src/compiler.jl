@@ -32,9 +32,10 @@ GPUCompiler.runtime_module(::CompilerJob{<:Any,IPUCompilerParams}) = IpuRuntime
 GPUCompiler.isintrinsic(@nospecialize(job::CompilerJob{<:Any,IPUCompilerParams}), fn::String) =
     contains(fn, Regex("^get_vec_(ptr|size)_" * job.params.kernel_name * "\$"))
 
-abstract type In end
-abstract type Out end
-abstract type InOut end
+# Scope of the vectors in codelets.  These singletons are used only for dispatch.
+struct In end
+struct Out end
+struct InOut end
 
 struct PoplarVec{T, T2} <: AbstractVector{T}
     base::Ptr{T}
