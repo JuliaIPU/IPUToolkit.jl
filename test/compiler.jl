@@ -15,14 +15,7 @@ function test_compiler_program(device)
 
     sort_gp = IPUCompiler.@codelet function Sort(invec::IPUCompiler.PoplarVec{Float32, IPUCompiler.In}, outvec::IPUCompiler.PoplarVec{Float32, IPUCompiler.Out})
         outvec .= invec
-        # The default sorting algorithm in Julia v1.9 uses a scratch space, which requires
-        # allocating a new vector, which we can't do on the device.  Resort to using the
-        # `QuickSort` algorithm, which doesn't require the scratch space.
-        @static if VERSION ≥ v"1.9.0-"
-            sort!(outvec; alg=QuickSort)
-        else
-            sort!(outvec)
-        end
+        sort!(outvec)
     end
 
     target = @cxxtest Poplar.DeviceGetTarget(device)

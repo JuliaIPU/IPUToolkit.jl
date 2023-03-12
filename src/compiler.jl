@@ -64,6 +64,13 @@ end
     return false
 end
 
+# In Julia v1.9 the default algorithm for sorting arrays requires a scratch area, but we
+# can't use it on an IPU because it'd need to allocate an extra array, so let's default to
+# the simple fully in-place `QuickSort`.
+if VERSION ≥ v"1.9.0-"
+    Base.Sort.defalg(::PoplarVec) = QuickSort
+end
+
 macro codelet(usr_kern)
     if usr_kern.head ∉ (:function, :(=)) || usr_kern.args[1].head !== :call
         throw(ArgumentError("@codelet takes a named function definition in input"))
