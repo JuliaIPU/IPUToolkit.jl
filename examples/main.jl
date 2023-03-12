@@ -9,7 +9,11 @@ end
 
 sort_gp = IPUCompiler.@codelet function Sort(invec::IPUCompiler.PoplarVec{Float32, IPUCompiler.In}, outvec::IPUCompiler.PoplarVec{Float32, IPUCompiler.Out})
     outvec .= invec
-    sort!(outvec)
+    @static if VERSION ≥ v"1.9.0-"
+        sort!(outvec; alg=QuickSort)
+    else
+        sort!(outvec)
+    end
 end
 
 device = if Poplar.SDK_VERSION < v"2.0"
