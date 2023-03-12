@@ -103,6 +103,11 @@ macro codelet(usr_kern)
     end
 end
 
+# We have experienced some miscompilations of LLVM IR when using optimisation levels `-O1`
+# or higher with old `popc`, especially v1.3-2.0.  So, we default to `-O0` with older
+# versions, and `-O3` for newer versions.
+const POPC_FLAGS = Poplar.SDK_VERSION ≥ v"2.2.0" ? `-g -O3` : `-g -O0`
+
 function build_codelet(kernel, name, origKernel)
     target = NativeCompilerTarget()
     source = FunctionSpec(typeof(kernel))
@@ -146,8 +151,7 @@ function build_codelet(kernel, name, origKernel)
 
         run(```
             popc
-            -g
-            -O0
+            $(POPC_FLAGS)
             -X -Wno-override-module
             -X -Qunused-arguments
             -DGET_VEC_PTR_NAME=get_vec_ptr_$(name)
