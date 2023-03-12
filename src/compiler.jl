@@ -36,8 +36,6 @@ abstract type In end
 abstract type Out end
 abstract type InOut end
 
-struct getVec{T} end
-
 struct PoplarVec{T, T2} <: AbstractArray{T, 1}
     base::Ptr{T}
     size::UInt32
@@ -66,10 +64,6 @@ end
     return false
 end
 
-@inline function getVec{PoplarVec{T, T2}}(arg::String, i::Int32)::PoplarVec where {T, T2}
-    return PoplarVec{T, T2}(ccall(arg, llvmcall, Ptr{T}, (Int32, Int32), i, 0), ccall(arg, llvmcall, UInt32, (Int32, Int32), i, 1))
-end
-
 macro codelet(usr_kern)
     if usr_kern.head ∉ (:function, :(=)) || usr_kern.args[1].head !== :call
         throw(ArgumentError("@codelet takes a named function definition in input"))
@@ -80,7 +74,13 @@ macro codelet(usr_kern)
     codelet_fun = gensym(name)
     funcname = "extern getVec" * String(name)
     i = Int32(-1)
-    kernargs = [:($(getVec){$(arg.args[2])}($(funcname), Int32($(i += one(i))))) for arg in args]
+    kernargs = [
+        # TODO: I'd really like to avoid that `getfield`.
+        esc(:(
+            $(arg.args[2])($(Expr(:call, :ccall, funcname, :llvmcall, Ptr{getfield(@__MODULE__, arg.args[2].args[2])}, :((Int32, Int32)), Int32((i += one(i))), 0)),
+                           $(Expr(:call, :ccall, funcname, :llvmcall, UInt32,                                          :((Int32, Int32)), Int32((i)),           1)))
+        ))
+        for arg in args]
     kern_call = Expr(:call, :($(esc(name))), kernargs...)
 
     return quote
