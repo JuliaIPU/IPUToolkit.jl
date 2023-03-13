@@ -86,8 +86,8 @@ macro codelet(usr_kern)
     kernargs = [
         # TODO: I'd really like to avoid that `getfield`.
         esc(:(
-            $(arg.args[2])($(Expr(:call, :ccall, func_ptr,  :llvmcall, Ptr{getfield(@__MODULE__, arg.args[2].args[2])}, :((Int32,)), Int32((i += one(i))))),
-                           $(Expr(:call, :ccall, func_size, :llvmcall, UInt32,                                          :((Int32,)), Int32((i)),         )))
+            $(arg.args[2])($(Expr(:call, :ccall, func_ptr,  :llvmcall, Ptr{getfield(@__MODULE__, arg.args[2].args[2])}, :((Int32,)), i += one(i))),
+                           $(Expr(:call, :ccall, func_size, :llvmcall, UInt32,                                          :((Int32,)), i,         )))
         ))
         for arg in args]
     kern_call = Expr(:call, :($(esc(name))), kernargs...)
