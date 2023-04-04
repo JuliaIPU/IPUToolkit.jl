@@ -8,6 +8,7 @@ Clang = "40e3b903-d033-50b4-a0cc-940c62c95e31"
 CxxWrap = "1f15a43c-97ca-5a2a-ae31-89f07a497df4"
 GPUCompiler = "61eb1bfa-7361-4325-ad38-22787b887f55"
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
+LLVM = "929cbde3-209d-540e-8aea-75f648917ca0"
 Match = "7eb4fadd-790c-5f42-8a69-bfa0b872bfbf"
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 Scratch = "6c6a2e73-6563-6170-7368-637461726353"
@@ -17,10 +18,11 @@ libcxxwrap_julia_jll = "3eaa8342-bff7-56a5-9981-c04077f7cee7"
 
 [compat]
 Clang = "0.14, 0.17"
-GPUCompiler = "0.17"
+GPUCompiler = "0.19"
+LLVM = "5"
 Match = "1.2"
 Scratch = "1.1"
-julia = "~1.6, 1.7"
+julia = "1.6"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
