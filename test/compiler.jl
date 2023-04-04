@@ -24,12 +24,21 @@ function test_compiler_program(device)
         end
     end
 
+    print_gp = IPUCompiler.@codelet function Print(outvec::IPUCompiler.PoplarVec{Float32, IPUCompiler.Out})
+        @ipuprint "Hello, world!"
+        @ipuprint "Titire tu" " patule" " recubans sub tegmine " "fagi"
+        @ipuprint "The Answer to the Ultimate Question of Life, the Universe, and Everything is " 42
+        x = Int32(7)
+        @ipushow x
+    end
+
     target = @cxxtest Poplar.DeviceGetTarget(device)
     graph = @cxxtest Poplar.Graph(target)
 
     Poplar.GraphAddCodelets(graph, timestwo_gp)
     Poplar.GraphAddCodelets(graph, sort_gp)
     Poplar.GraphAddCodelets(graph, sin_gp)
+    Poplar.GraphAddCodelets(graph, print_gp)
 
     input = Float32[5, 2, 10, 102, -10, 2, 256, 15, 32, 100]
 
@@ -37,11 +46,13 @@ function test_compiler_program(device)
     outvec1 = @cxxtest Poplar.GraphAddVariable(graph, Poplar.FLOAT(), UInt64[10], "outvec1");
     outvec2 = @cxxtest Poplar.GraphAddVariable(graph, Poplar.FLOAT(), UInt64[10], "outvec2");
     outvec3 = @cxxtest Poplar.GraphAddVariable(graph, Poplar.FLOAT(), UInt64[10], "outvec3");
+    outvec4 = @cxxtest Poplar.GraphAddVariable(graph, Poplar.FLOAT(), UInt64[10], "outvec4");
 
     Poplar.GraphSetTileMapping(graph, inconst, 0)
     Poplar.GraphSetTileMapping(graph, outvec1, 0)
     Poplar.GraphSetTileMapping(graph, outvec2, 0)
     Poplar.GraphSetTileMapping(graph, outvec3, 0)
+    Poplar.GraphSetTileMapping(graph, outvec4, 0)
 
     prog = @cxxtest Poplar.ProgramSequence()
 
@@ -78,12 +89,23 @@ function test_compiler_program(device)
         # Poplar.GraphSetPerfEstimate(graph, SinVtx, 1)
     end
 
+    computeSetPrint = @cxxtest Poplar.GraphAddComputeSet(graph, "computeSetPrint")
+    PrintVtx = @cxxtest Poplar.GraphAddVertex(graph, computeSetPrint, "Print")
+    Poplar.GraphConnect(graph, PrintVtx["outvec"], outvec4)
+    Poplar.GraphSetTileMapping(graph, PrintVtx, 0)
+    if Poplar.SDK_VERSION < v"2.0"
+        Poplar.GraphSetCycleEstimate(graph, PrintVtx, 1)
+    else
+        # Poplar.GraphSetPerfEstimate(graph, PrintVtx, 1)
+    end
+
     Poplar.ProgramSequenceAdd(prog, Poplar.ProgramExecute(computeSetMul))
     Poplar.ProgramSequenceAdd(prog, Poplar.ProgramExecute(computeSetSort))
     # The `@device_override` business works well only on Julia v1.7+
     if VERSION ≥ v"1.7"
         Poplar.ProgramSequenceAdd(prog, Poplar.ProgramExecute(computeSetSin))
     end
+    Poplar.ProgramSequenceAdd(prog, Poplar.ProgramExecute(computeSetPrint))
 
     # Init some variables which will be used to read back from the IPU
     # the results of some basic operations.
@@ -100,7 +122,22 @@ function test_compiler_program(device)
     Poplar.OptionFlagsSet(flags, "debug.instrument", "true")
 
     engine = @cxxtest Poplar.Engine(graph, prog, flags)
-    Poplar.EngineLoadAndRun(engine, device)
+    # Load and run the program, but capture the stderr, so that we can test that
+    # it contains what we expect.
+    pipe = Pipe()
+    redirect_stderr(pipe) do
+        Poplar.EngineLoadAndRun(engine, device)
+    end
+    output = IOBuffer()
+    task = @async write(output, pipe)
+    close(pipe)
+    wait(task)
+    lines = split(String(take!(output)), '\n')
+    @test contains(lines[1], r"Hello, world!$")
+    @test contains(lines[2], r"Titire tu patule recubans sub tegmine fagi$")
+    @test contains(lines[3], r"The Answer to the Ultimate Question of Life, the Universe, and Everything is 42$")
+    @test_broken contains(lines[4], r"x = 7$")
+    @test lines[end] == ""
 
     # Read back some tensors and check the expected values.
     Poplar.EngineReadTensor(engine, "timestwo-read", output_timestwo)
