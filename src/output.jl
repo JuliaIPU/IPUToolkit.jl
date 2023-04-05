@@ -91,22 +91,10 @@ end
 
             str = globalstring_ptr!(builder, String(fmt))
 
-            # construct and fill args buffer
-            argtypes = LLVM.StructType("printf_args"; ctx)
-            elements!(argtypes, param_types)
-
-            args = alloca!(builder, argtypes)
-            for (i, param) in enumerate(parameters(llvm_f))
-                p = struct_gep!(builder, argtypes, args, i-1)
-                store!(builder, param, p)
-            end
-
-            buffer = bitcast!(builder, args, T_pint8)
-
             # invoke printf and return
             printf_typ = LLVM.FunctionType(T_int32, [T_pint8]; vararg=true)
             printf = LLVM.Function(mod, "printf", printf_typ)
-            chars = call!(builder, printf_typ, printf, [str, buffer])
+            chars = call!(builder, printf_typ, printf, [str, parameters(llvm_f)...])
 
             ret!(builder, chars)
         end
