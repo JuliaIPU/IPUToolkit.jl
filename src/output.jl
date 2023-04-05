@@ -244,7 +244,7 @@ end
 @doc (@doc @ipuprint) ->
 macro ipuprintln(parts...)
     esc(quote
-        IPUCompiler.@ipuprint($(parts...), "\n")
+            @ipuprint($(parts...), "\n")
     end)
 end
 
@@ -262,8 +262,8 @@ GPU analog of `Base.@show`. It comes with the same type restrictions as [`@ipupr
 macro ipushow(exs...)
     blk = Expr(:block)
     for ex in exs
-        push!(blk.args, :(IPUCompiler.@ipuprintln($(sprint(Base.show_unquoted,ex)*" = "),
-                                                  begin local value = $(esc(ex)) end)))
+        push!(blk.args, :(@ipuprintln($(sprint(Base.show_unquoted,ex)*" = "),
+                                      begin local value = $(esc(ex)) end)))
     end
     isempty(exs) || push!(blk.args, :value)
     blk
