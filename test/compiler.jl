@@ -136,7 +136,7 @@ function test_compiler_program(device)
     @test contains(lines[1], r"Hello, world!$")
     @test contains(lines[2], r"Titire tu patule recubans sub tegmine fagi$")
     @test contains(lines[3], r"The Answer to the Ultimate Question of Life, the Universe, and Everything is 42$")
-    @test_broken contains(lines[4], r"x = 7$")
+    @test contains(lines[4], r"x = 7$")
     @test lines[end] == ""
 
     # Read back some tensors and check the expected values.
