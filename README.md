@@ -30,13 +30,6 @@ Pkg.build()
 This step will compile a wrapper around the Poplar SDK that can be used by Julia.
 It will take a while, without printing an update to screen, hold on.
 
-### Notes about build script
-
-The build script uses the package [`Clang.jl`](https://github.com/JuliaInterop/Clang.jl) to automatically parse the headers of the Poplar SDK and generate a C++ file which is then compiled with [`CxxWrap.jl`](https://github.com/JuliaInterop/CxxWrap.jl), to be able to call the C++ methods in the SDK from Julia.
-
-Currently the build script works correctly only with the minor version of Julia v1.6 (more specifically, it requires `Clang.jl` v0.14, which is coupled to Julia v1.6 only), see issue [#6](https://github.com/giordano/julia-ipu/issues/6) for more details.
-This means that if you want to use Julia v1.7+, you need first to run with Julia v1.6 the build script for the Poplar SDK version you want to use.  When issue #6 will be fixed, this double pass will not be needed anymore.
-
 ## Usage
 
 The package is called IPUToolkit because it provides different tools to interface the IPU from Julia:
@@ -70,6 +63,8 @@ julia> Int(Poplar.DeviceGetId(device))
 julia> Poplar.DeviceDetach(device)
 ```
 
+A couple of complete basic examples of programs running on the IPU written using the interface to the Poplar SDK are available in the files [`examples/tutorial1.jl`](./examples/tutorial1.jl) and [`examples/tutorial2.jl`](./examples/tutorial2.jl).
+
 We automatically generate the bindings of the Poplar SDK using [`Clang.jl`](https://github.com/JuliaInterop/Clang.jl) and [`CxxWrap.jl`](https://github.com/JuliaInterop/CxxWrap.jl).
 There is not automatic documentation at the moment, but functions can be accessed from the `Poplar` submodule.
 Also, the `IPUToolkit.Poplar` submodule wraps a subset of the functionalities available in the Poplar SDK, do not expect to be able to use all functionalities.
@@ -84,3 +79,21 @@ Function naming convention and signature is usually as follows:
 In addition to this, for some functions (e.g. `EngineWriteTensor`, `EngineConnectStream`, `EngineReadTensor`) we provide more user-friendly methods where the last argument can be an `Array`, without having to pass additional arguments for pointers or array size.
 Furthermore, the custom functions `Poplar.get_ipu_device` and `Poplar.get_ipu_devices` can be used to access one more IPU devices, as shown in the example above.
 Read their docstrings for further details.
+
+### Writing codelets in Julia
+
+You can write codelets for the IPU in Julia with the `IPUCompiler.@codelet` macro, and use them inside a program, written using the interface to the Poplar SDK described above.
+This mechanism uses the [`GPUCompiler.jl`](https://github.com/JuliaGPU/GPUCompiler.jl) package, which is a generic framework for generating LLVM IR code for specialised targets, not limited to GPUs, despite the name.
+The `IPUCompiler.@codelet` macro takes as argument a function definition, and it returns the path to the compiled `*.gp` codelet that can be added to the program with `Poplar.GraphAddCodelets`.
+The arguments of a codelet function have to be `PoplarVec{T,S}`, a subtype of `AbstractVector{T}` which represents vectors living on the IPU.
+The parameters of `PoplarVec{T,S}` are
+
+* `T`: the type of the elements of the vector;
+* `S`: the scope of the vector in the codelet, `In`, `Out`, or `InOut`.
+
+An example of codelets written in Julia is shown in the file [`examples/main.jl`](./examples/main.jl).
+
+The code inside a codelet has the same limitations as all the compilation models based on [`GPUCompiler.jl`](https://github.com/JuliaGPU/GPUCompiler.jl):
+
+* the code has to be statically inferred and compiled, dynamic dispatch is not admitted;
+* you cannot use functionalities which require the Julia runtime, most notably the garbage collector.
