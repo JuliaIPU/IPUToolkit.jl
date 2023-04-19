@@ -12,22 +12,22 @@ function test_compiler_program(device)
 
     # Define a local function to make sure macro hygiene is right
     double(x) = x * 2
-    IPUCompiler.@codelet graph function TimesTwo(inconst::IPUCompiler.PoplarVec{Float32, IPUCompiler.In}, outvec::IPUCompiler.PoplarVec{Float32, IPUCompiler.Out})
+    @codelet graph function TimesTwo(inconst::PoplarVec{Float32, In}, outvec::PoplarVec{Float32, Out})
         outvec .= double.(inconst)
     end
 
-    IPUCompiler.@codelet graph function Sort(invec::IPUCompiler.PoplarVec{Float32, IPUCompiler.In}, outvec::IPUCompiler.PoplarVec{Float32, IPUCompiler.Out})
+    @codelet graph function Sort(invec::PoplarVec{Float32, In}, outvec::PoplarVec{Float32, Out})
         outvec .= invec
         sort!(outvec)
     end
 
-    IPUCompiler.@codelet graph function Sin(invec::IPUCompiler.PoplarVec{Float32, IPUCompiler.In}, outvec::IPUCompiler.PoplarVec{Float32, IPUCompiler.Out})
+    @codelet graph function Sin(invec::PoplarVec{Float32, In}, outvec::PoplarVec{Float32, Out})
         for idx in eachindex(outvec)
             @inbounds outvec[idx] = sin(invec[idx])
         end
     end
 
-    IPUCompiler.@codelet graph function Print(outvec::IPUCompiler.PoplarVec{Float32, IPUCompiler.Out})
+    @codelet graph function Print(outvec::PoplarVec{Float32, Out})
         @ipuprint "Hello, world!"
         @ipuprint "Titire tu" " patule" " recubans sub tegmine " "fagi"
         @ipuprint "The Answer to the Ultimate Question of Life, the Universe, and Everything is " 42
@@ -147,31 +147,65 @@ function test_compiler_program(device)
     Poplar.DeviceDetach(device)
 end
 
+function test_ipuprogram(device)
+    N = 10
+    input = randn(Float32, N)
+    outvec1 = PoplarVec{Float32, Out}(undef, N)
+    outvec2 = PoplarVec{Float32, Out}(undef, N)
+    outvec3 = PoplarVec{Float32, Out}(undef, N)
+    @ipuprogram device begin
+        function TimesTwo(inconst::PoplarVec{Float32, In}, outvec::PoplarVec{Float32, Out})
+            outvec .= 2 .* inconst
+        end
+        function Sort(invec::PoplarVec{Float32, In}, outvec::PoplarVec{Float32, Out})
+            outvec .= invec
+            sort!(outvec; rev=true)
+        end
+        function Exp(invec::PoplarVec{Float32, In}, outvec::PoplarVec{Float32, Out})
+            for idx in eachindex(outvec)
+                @inbounds outvec[idx] = exp(invec[idx])
+            end
+        end
+        TimesTwo(input, outvec1)
+        Sort(outvec1, outvec2)
+        Exp(outvec2, outvec3)
+        jl_outvec1 = outvec1
+        jl_outvec2 = outvec2
+        jl_outvec3 = outvec3
+    end
+    Poplar.DeviceDetach(device)
+    @test jl_outvec1 ≈ 2 .* input
+    @test jl_outvec2 ≈ sort(jl_outvec1; rev=true)
+    @test jl_outvec3 ≈ exp.(jl_outvec2)
+end
+
 @testset "IPUCompiler" begin
-    if Poplar.SDK_VERSION ≥ v"2.2.0" || Base.JLOptions().check_bounds != 1 # --check-bounds != yes
-        # Get a device
-        device = @cxxtest @test_logs((:info, r"^Trying to attach to device"),
-                                     (:info, r"^Successfully attached to device"),
-                                     (:info, r"^Attached to devices with IDs"),
-                                     match_mode=:any,
-                                     Poplar.get_ipu_device())
-        # Run a test program
-        test_compiler_program(device)
-    else
-        # With --check-bounds=yes GPUCompiler generates a function mentioning an undefined
-        # symbol `gpu_malloc`.  Mark the test as broken until we sort this out.  However
-        # this function is optimised away when compiling with `-O1` or higher, and for
-        # Poplar.SDK_VERSION ≥ v"2.2.0" we use `-O3`.
-        @warn """
-              Skipping IPUCompiler tests because bound checks are forced.  To run this testset use
-                  using Pkg
-                  Pkg.test("IPUToolkit"; julia_args=`--check-bounds=auto`)
-              """
-        @test_broken false
+    @testset "Test program: $(f)" for f in (test_compiler_program, test_ipuprogram)
+        if Poplar.SDK_VERSION ≥ v"2.2.0" || Base.JLOptions().check_bounds != 1 # --check-bounds != yes
+            # Get a device
+            device = @cxxtest @test_logs((:info, r"^Trying to attach to device"),
+                                         (:info, r"^Successfully attached to device"),
+                                         (:info, r"^Attached to devices with IDs"),
+                                         match_mode=:any,
+                                         Poplar.get_ipu_device())
+            # Run a test program
+            f(device)
+        else
+            # With --check-bounds=yes GPUCompiler generates a function mentioning an undefined
+            # symbol `gpu_malloc`.  Mark the test as broken until we sort this out.  However
+            # this function is optimised away when compiling with `-O1` or higher, and for
+            # Poplar.SDK_VERSION ≥ v"2.2.0" we use `-O3`.
+            @warn """
+                  Skipping IPUCompiler tests because bound checks are forced.  To run this testset use
+                      using Pkg
+                      Pkg.test("IPUToolkit"; julia_args=`--check-bounds=auto`)
+                  """
+            @test_broken false
+        end
     end
 
     @testset "PoplarVec" begin
-        vec = IPUCompiler.PoplarVec{Float32, IPUCompiler.Out}(undef, 10)
+        vec = PoplarVec{Float32, Out}(undef, 10)
         @test vec.base == C_NULL
         @test vec.size == 10
         @test contains(repr(vec), r"PoplarVec{Float32,.*Out}")
