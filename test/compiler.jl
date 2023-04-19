@@ -174,6 +174,17 @@ end
               """
         @test_broken false
     end
+
+    @testset "Printing to IPU" begin
+        # Printing is already tested in the program above, here we only check
+        # that disabling printing makes the `@ipu*` macros no-op.
+        IPUCompiler.DISABLE_PRINT[] = true
+        @test @macroexpand(@ipuprintf "Hello, world!") == :()
+        @test @macroexpand(@ipuprint "Hello, world!") == :()
+        @test @macroexpand(@ipushow x) == :()
+        # Restore `DISABLE_PRINT`
+        IPUCompiler.DISABLE_PRINT[] = false
+    end
 end
 
 end # module IPUCompilerTest
