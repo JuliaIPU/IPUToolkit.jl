@@ -3,10 +3,13 @@ struct In end
 struct Out end
 struct InOut end
 
-struct PoplarVec{T, T2} <: AbstractVector{T}
+struct PoplarVec{T, S} <: AbstractVector{T}
     base::Ptr{T}
     size::UInt32
 end
+
+PoplarVec{T, S}(::UndefInitializer, size) where {T, S} =
+    PoplarVec{T, S}(C_NULL, size)
 
 function Base.setindex!(vec::PoplarVec, f, i::Int)
     unsafe_store!(vec.base, f, i)
@@ -37,3 +40,7 @@ end
 if VERSION ≥ v"1.9.0-"
     Base.Sort.defalg(::PoplarVec) = QuickSort
 end
+
+# Simple methods, don't access the elements
+Base.show(io::IO, x::PoplarVec) = Base.show_default(io, x)
+Base.show(io::IO, ::MIME"text/plain", x::PoplarVec) = Base.show_default(io, x)
