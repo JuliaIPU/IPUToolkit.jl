@@ -84,7 +84,11 @@ Read their docstrings for further details.
 
 You can write codelets for the IPU in Julia with the `IPUCompiler.@codelet` macro, and use them inside a program, written using the interface to the Poplar SDK described above.
 This mechanism uses the [`GPUCompiler.jl`](https://github.com/JuliaGPU/GPUCompiler.jl) package, which is a generic framework for generating LLVM IR code for specialised targets, not limited to GPUs, despite the name.
-The `IPUCompiler.@codelet` macro takes as argument a function definition, and it returns the path to the compiled `*.gp` codelet that can be added to the program with `Poplar.GraphAddCodelets`.
+The `IPUCompiler.@codelet` macro takes two arguments:
+
+* the graph to which to add the codelet with the `Poplar.GraphAddCodelets` function
+* the function definition of the kernel you want to compile for the device.
+
 The arguments of a codelet function have to be `PoplarVec{T,S}`, a subtype of `AbstractVector{T}` which represents vectors living on the IPU.
 The parameters of `PoplarVec{T,S}` are
 

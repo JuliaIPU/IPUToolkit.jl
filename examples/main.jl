@@ -3,15 +3,6 @@ using IPUToolkit.Poplar
 
 ##
 
-timestwo_gp = IPUCompiler.@codelet function TimesTwo(inconst::IPUCompiler.PoplarVec{Float32, IPUCompiler.In}, outvec::IPUCompiler.PoplarVec{Float32, IPUCompiler.Out})
-    outvec .= inconst .* 2
-end
-
-sort_gp = IPUCompiler.@codelet function Sort(invec::IPUCompiler.PoplarVec{Float32, IPUCompiler.In}, outvec::IPUCompiler.PoplarVec{Float32, IPUCompiler.Out})
-    outvec .= invec
-    sort!(outvec)
-end
-
 device = if Poplar.SDK_VERSION < v"2.0"
     Poplar.IPUModelCreateDevice(Poplar.IPUModel())
 else
@@ -21,8 +12,14 @@ end
 target = Poplar.DeviceGetTarget(device)
 graph = Poplar.Graph(target)
 
-Poplar.GraphAddCodelets(graph, timestwo_gp)
-Poplar.GraphAddCodelets(graph, sort_gp)
+IPUCompiler.@codelet graph function TimesTwo(inconst::IPUCompiler.PoplarVec{Float32, IPUCompiler.In}, outvec::IPUCompiler.PoplarVec{Float32, IPUCompiler.Out})
+    outvec .= inconst .* 2
+end
+
+IPUCompiler.@codelet graph function Sort(invec::IPUCompiler.PoplarVec{Float32, IPUCompiler.In}, outvec::IPUCompiler.PoplarVec{Float32, IPUCompiler.Out})
+    outvec .= invec
+    sort!(outvec)
+end
 
 inconst = Poplar.GraphAddConstant(graph, Poplar.FLOAT(), UInt64[10], Float32[5, 2, 10, 102, -10, 2, 256, 15, 32, 100])
 outvec1 = Poplar.GraphAddVariable(graph, Poplar.FLOAT(), UInt64[10], "outvec1");
