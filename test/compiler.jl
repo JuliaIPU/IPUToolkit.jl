@@ -170,6 +170,13 @@ end
         @test_broken false
     end
 
+    @testset "PoplarVec" begin
+        vec = IPUCompiler.PoplarVec{Float32, IPUCompiler.Out}(undef, 10)
+        @test vec.base == C_NULL
+        @test vec.size == 10
+        @test contains(repr(vec), r"PoplarVec{Float32,.*Out}")
+    end
+
     @testset "Printing to IPU" begin
         # Printing is already tested in the program above, here we only check
         # that disabling printing makes the `@ipu*` macros no-op.
