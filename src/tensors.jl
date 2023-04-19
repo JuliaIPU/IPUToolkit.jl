@@ -44,3 +44,5 @@ end
 # Simple methods, don't access the elements
 Base.show(io::IO, x::PoplarVec) = Base.show_default(io, x)
 Base.show(io::IO, ::MIME"text/plain", x::PoplarVec) = Base.show_default(io, x)
+
+_similar(v::PoplarVec{T}) where {T} = Vector{T}(undef, v.size)
