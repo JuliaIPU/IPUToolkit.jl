@@ -106,7 +106,7 @@ if VERSION ≥ v"1.9.0-"
     Base.Sort.defalg(::PoplarVec) = QuickSort
 end
 
-macro codelet(graph, usr_kern)
+function _codelet(graph, usr_kern)
     if usr_kern.head ∉ (:function, :(=)) || usr_kern.args[1].head !== :call
         throw(ArgumentError("@codelet takes a named function definition in input"))
     end
@@ -136,6 +136,10 @@ macro codelet(graph, usr_kern)
             build_codelet($(esc(graph)), $(codelet_fun), $(String(name)), $(esc(name)))
         end
     end
+end
+
+macro codelet(graph, usr_kern)
+    return _codelet(graph, usr_kern)
 end
 
 # We have experienced some miscompilations of LLVM IR when using optimisation levels `-O1`
