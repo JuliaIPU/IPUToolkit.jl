@@ -118,9 +118,9 @@ function build_codelet(graph, kernel, name, origKernel)
         string(GPUCompiler.compile(:llvm, job; ctx)[1])
     end
 
-    args = methods(origKernel).ms[end].sig.parameters[2:end]
-    # There doesn't seem to be a nicer way to do this
-    argnames = split(methods(origKernel).ms[end].slot_syms, "\0")[2:methods(origKernel).ms[end].nargs]
+    method = methods(origKernel)[end]
+    args = method.sig.parameters[2:end]
+    argnames = string.(Base.method_argnames(method)[2:end])
 
     kernel_name = match(Regex("(_Z[\\d_]+$(name)[\\d_]+)"), llvm_ir)[1]
 
