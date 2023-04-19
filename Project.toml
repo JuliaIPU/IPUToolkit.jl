@@ -23,6 +23,7 @@ GPUCompiler = "0.19"
 LLVM = "5"
 Match = "1.2"
 Scratch = "1.1"
+libcxxwrap_julia_jll = "0.9.6"
 julia = "1.6"
 
 [extras]
