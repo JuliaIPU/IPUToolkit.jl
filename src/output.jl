@@ -7,6 +7,23 @@ using Core: LLVMPtr
 
 export @ipuprintf
 
+@doc @eval """
+    $(@__MODULE__).DISABLE_PRINT::Ref{Bool}
+
+Global constant which controls whether printing through the various `@ipuprint*`
+macros should be disabled or not.  You may want to completely disable printing
+for production runs, to avoid the cost of printing on the device, but keep it
+enabled during development.
+
+Examples:
+
+```julia
+$(@__MODULE__).DISABLE_PRINT[] = false # Do not disable printing, this is the default.
+$(@__MODULE__).DISABLE_PRINT[] = true  # Disable printing, the `@ipuprint*` macros are no-op.
+```
+"""
+const DISABLE_PRINT = Ref(false)
+
 @generated function promote_c_argument(arg)
     # > When a function with a variable-length argument list is called, the variable
     # > arguments are passed using C's old ``default argument promotions.'' These say that
@@ -32,8 +49,17 @@ Note that this is not a fully C-compliant `printf` implementation.
 
 Also beware that it is an untyped, and unforgiving `printf` implementation. Type widths need
 to match, eg. printing a 64-bit Julia integer requires the `%ld` formatting string.
+
+Printing can be completely disabled by setting
+```julia
+IPUCompiler.DISABLE_PRINT[] = true
+```
 """
 macro ipuprintf(fmt::String, args...)
+    if DISABLE_PRINT[]
+        return :()
+    end
+
     fmt_val = Val(Symbol(fmt))
 
     return :(_ipuprintf($fmt_val, $(map(arg -> :(promote_c_argument($arg)), esc.(args))...)))
@@ -196,7 +222,7 @@ end
     @ipuprint(xs...)
     @ipuprintln(xs...)
 
-Print a textual representation of values `xs` to standard output from the GPU. The
+Print a textual representation of values `xs` to standard output from the IPU. The
 functionality builds on `@ipuprintf`, and is intended as a more use friendly alternative of
 that API. However, that also means there's only limited support for argument types, handling
 16/32/64 signed and unsigned integers, 32 and 64-bit floating point numbers, `Cchar`s and
@@ -208,8 +234,17 @@ Limited string interpolation is also possible:
     @ipuprint("Hello, World ", 42, "\\n")
     @ipuprint "Hello, World \$(42)\\n"
 ```
+
+Printing can be completely disabled by setting
+```julia
+IPUCompiler.DISABLE_PRINT[] = true
+```
 """
 macro ipuprint(parts...)
+    if DISABLE_PRINT[]
+        return :()
+    end
+
     args = Union{Val,Expr,Symbol}[]
 
     parts = [parts...]
@@ -253,13 +288,22 @@ export @ipushow
 """
     @ipushow(ex)
 
-GPU analog of `Base.@show`. It comes with the same type restrictions as [`@ipuprintf`](@ref).
+IPU analog of `Base.@show`. It comes with the same type restrictions as [`@ipuprintf`](@ref).
 
 ```julia
-@ipushow threadIdx().x
+@ipushow x
+```
+
+Printing can be completely disabled by setting
+```julia
+IPUCompiler.DISABLE_PRINT[] = true
 ```
 """
 macro ipushow(exs...)
+    if DISABLE_PRINT[]
+        return :()
+    end
+
     blk = Expr(:block)
     for ex in exs
         push!(blk.args, :(@ipuprintln($(sprint(Base.show_unquoted,ex)*" = "),
