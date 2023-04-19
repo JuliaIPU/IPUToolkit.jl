@@ -106,7 +106,7 @@ if VERSION ≥ v"1.9.0-"
     Base.Sort.defalg(::PoplarVec) = QuickSort
 end
 
-macro codelet(usr_kern)
+macro codelet(graph, usr_kern)
     if usr_kern.head ∉ (:function, :(=)) || usr_kern.args[1].head !== :call
         throw(ArgumentError("@codelet takes a named function definition in input"))
     end
@@ -133,7 +133,7 @@ macro codelet(usr_kern)
                 $(kern_call)
                 return $(esc(nothing))
             end
-            build_codelet($(codelet_fun), $(String(name)), $(esc(name)))
+            build_codelet($(esc(graph)), $(codelet_fun), $(String(name)), $(esc(name)))
         end
     end
 end
@@ -143,7 +143,7 @@ end
 # versions, and `-O3` for newer versions.
 const POPC_FLAGS = Poplar.SDK_VERSION ≥ v"2.2.0" ? `-g -O3` : `-g -O0`
 
-function build_codelet(kernel, name, origKernel)
+function build_codelet(graph, kernel, name, origKernel)
     target = NativeCompilerTarget()
     source = methodinstance(typeof(kernel), Tuple{})
     params = IPUCompilerParams(name)
@@ -202,7 +202,8 @@ function build_codelet(kernel, name, origKernel)
             ```)
     end
 
-    return output_path
+    Poplar.GraphAddCodelets(graph, output_path)
+    return nothing
 end
 
 # Mapping of the LLVM version used by each version of the Poplar SDK.  To find it, use `popc

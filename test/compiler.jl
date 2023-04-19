@@ -7,38 +7,33 @@ using IPUToolkit.Poplar
 include("common.jl")
 
 function test_compiler_program(device)
+    target = @cxxtest Poplar.DeviceGetTarget(device)
+    graph = @cxxtest Poplar.Graph(target)
+
     # Define a local function to make sure macro hygiene is right
     double(x) = x * 2
-    timestwo_gp = IPUCompiler.@codelet function TimesTwo(inconst::IPUCompiler.PoplarVec{Float32, IPUCompiler.In}, outvec::IPUCompiler.PoplarVec{Float32, IPUCompiler.Out})
+    IPUCompiler.@codelet graph function TimesTwo(inconst::IPUCompiler.PoplarVec{Float32, IPUCompiler.In}, outvec::IPUCompiler.PoplarVec{Float32, IPUCompiler.Out})
         outvec .= double.(inconst)
     end
 
-    sort_gp = IPUCompiler.@codelet function Sort(invec::IPUCompiler.PoplarVec{Float32, IPUCompiler.In}, outvec::IPUCompiler.PoplarVec{Float32, IPUCompiler.Out})
+    IPUCompiler.@codelet graph function Sort(invec::IPUCompiler.PoplarVec{Float32, IPUCompiler.In}, outvec::IPUCompiler.PoplarVec{Float32, IPUCompiler.Out})
         outvec .= invec
         sort!(outvec)
     end
 
-    sin_gp = IPUCompiler.@codelet function Sin(invec::IPUCompiler.PoplarVec{Float32, IPUCompiler.In}, outvec::IPUCompiler.PoplarVec{Float32, IPUCompiler.Out})
+    IPUCompiler.@codelet graph function Sin(invec::IPUCompiler.PoplarVec{Float32, IPUCompiler.In}, outvec::IPUCompiler.PoplarVec{Float32, IPUCompiler.Out})
         for idx in eachindex(outvec)
             @inbounds outvec[idx] = sin(invec[idx])
         end
     end
 
-    print_gp = IPUCompiler.@codelet function Print(outvec::IPUCompiler.PoplarVec{Float32, IPUCompiler.Out})
+    IPUCompiler.@codelet graph function Print(outvec::IPUCompiler.PoplarVec{Float32, IPUCompiler.Out})
         @ipuprint "Hello, world!"
         @ipuprint "Titire tu" " patule" " recubans sub tegmine " "fagi"
         @ipuprint "The Answer to the Ultimate Question of Life, the Universe, and Everything is " 42
         x = Int32(7)
         @ipushow x
     end
-
-    target = @cxxtest Poplar.DeviceGetTarget(device)
-    graph = @cxxtest Poplar.Graph(target)
-
-    Poplar.GraphAddCodelets(graph, timestwo_gp)
-    Poplar.GraphAddCodelets(graph, sort_gp)
-    Poplar.GraphAddCodelets(graph, sin_gp)
-    Poplar.GraphAddCodelets(graph, print_gp)
 
     input = Float32[5, 2, 10, 102, -10, 2, 256, 15, 32, 100]
 
