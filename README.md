@@ -14,16 +14,16 @@ For example, the Poplar SDK v2.2 uses LLVM 13, which is available in Julia v1.8,
 
 ## Installation
 
-After cloning the repository, enter inside this directory and start Julia with
+To install the package, run the commands
 
-```
-julia --project
+```julia
+using Pkg
+Pkg.add(; url="https://github.com/giordano/julia-ipu")
 ```
 
 and then build the package with
 
 ```julia
-using Pkg
 Pkg.build()
 ```
 
