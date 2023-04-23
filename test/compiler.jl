@@ -3,6 +3,7 @@ module IPUCompilerTest
 using Test
 using IPUToolkit.IPUCompiler
 using IPUToolkit.Poplar
+using Enzyme
 
 include("common.jl")
 
@@ -153,6 +154,13 @@ function test_ipuprogram(device)
     outvec1 = PoplarVec{Float32, Out}(undef, N)
     outvec2 = PoplarVec{Float32, Out}(undef, N)
     outvec3 = PoplarVec{Float32, Out}(undef, N)
+    outvec4 = PoplarVec{Float32, Out}(undef, N)
+    outvec5 = PoplarVec{Float32, Out}(undef, N)
+    f(x) = cos(x)
+    f′(x) = first(first(autodiff_deferred(Reverse, f, Active(x))))
+    g(x) = tan(x)
+    g′(x) = first(first(autodiff_deferred(Reverse, g, Active(x))))
+
     @ipuprogram device begin
         function TimesTwo(inconst::PoplarVec{Float32, In}, outvec::PoplarVec{Float32, Out})
             outvec .= 2 .* inconst
@@ -166,17 +174,31 @@ function test_ipuprogram(device)
                 @inbounds outvec[idx] = exp(invec[idx])
             end
         end
+        function DiffCos(invec::PoplarVec{Float32, In}, outvec::PoplarVec{Float32, Out})
+            outvec .= f′.(invec)
+        end
+        function DiffTan(invec::PoplarVec{Float32, In}, outvec::PoplarVec{Float32, Out})
+            for idx in eachindex(outvec)
+                @inbounds outvec[idx] = g′(invec[idx])
+            end
+        end
         TimesTwo(input, outvec1)
         Sort(outvec1, outvec2)
         Exp(outvec2, outvec3)
+        DiffCos(outvec3, outvec4)
+        DiffTan(outvec4, outvec5)
         jl_outvec1 = outvec1
         jl_outvec2 = outvec2
         jl_outvec3 = outvec3
+        jl_outvec4 = outvec4
+        jl_outvec5 = outvec5
     end
     Poplar.DeviceDetach(device)
     @test jl_outvec1 ≈ 2 .* input
     @test jl_outvec2 ≈ sort(jl_outvec1; rev=true)
     @test jl_outvec3 ≈ exp.(jl_outvec2)
+    @test jl_outvec4 ≈ @. -sin(jl_outvec3)
+    @test jl_outvec5 ≈ @. sec(jl_outvec4) ^ 2
 end
 
 @testset "IPUCompiler" begin
