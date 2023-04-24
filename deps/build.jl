@@ -476,6 +476,12 @@ function iterate_children(ctx::BindgenContext, childvec::Vector{CLCursor})
         # error: invalid use of incomplete type ‘class pva::Report’
         contains(child_id, "poplar::Engine::getReport") && (valid = false; reason = "incomplete_type")
 
+        # error: invalid application of ‘sizeof’ to incomplete type ‘poplar::core::VertexIntrospector’
+        contains(child_id, "poplar::VertexIntrospector") && (valid = false; reason = "incomplete_type")
+
+        # error: no matching function for call to ‘poplar::GlobalExchangeConstraint::GlobalExchangeConstraint()’
+        contains(child_id, "poplar::Target::getGlobalExchangeConstraints()__CXXMethod") && (valid = false; reason = "getGlobalExchangeConstraints_blacklisted")
+
         handled = false
         if !(child_id ∈ ctx.handled_symbols)
             if valid
