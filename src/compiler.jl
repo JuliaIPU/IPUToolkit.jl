@@ -195,26 +195,29 @@ function _add_vertex!(initialised_tensors::Dict{Symbol, Symbol}, graph, prog, na
             arg_info = f_args[idx]
             vec = gensym(arg_info[1])
             if arg ∉ keys(initialised_tensors)
-                push!(out.args, quote
-                          if $(esc(arg)) isa PoplarVec
-                              $(esc(vec)) = $(esc(Poplar.GraphAddVariable))($(esc(graph)), $(esc(jl_type_to_poplar_type[arg_info[2]])), UInt64[$(esc(arg)).size], $(string(arg)))
-                          elseif $(esc(arg)) isa Array
-                              $(esc(vec)) = $(esc(Poplar.GraphAddConstant))($(esc(graph)), $(esc(jl_type_to_poplar_type[arg_info[2]])), UInt64[length($(esc(arg)))], $(esc(arg)))
-                          else
-                              error("`$(string(arg))` is a `$(typeof(esc(arg)))`, it must be either an `Array` nor a `PoplarVec`")
-                          end
-                          $(esc(Poplar.GraphSetTileMapping))($(esc(graph)), $(esc(vec)), 0) # <-- TODO: let change the tile mapping
-                      end)
+                append!(out.args,
+                        (quote
+                             if $(esc(arg)) isa PoplarVec
+                                 $(esc(vec)) = $(esc(Poplar.GraphAddVariable))($(esc(graph)), $(esc(jl_type_to_poplar_type[arg_info[2]])), UInt64[$(esc(arg)).size], $(string(arg)))
+                             elseif $(esc(arg)) isa Array
+                                 $(esc(vec)) = $(esc(Poplar.GraphAddConstant))($(esc(graph)), $(esc(jl_type_to_poplar_type[arg_info[2]])), UInt64[length($(esc(arg)))], $(esc(arg)))
+                             else
+                                 error("`$(string(arg))` is a `$(typeof(esc(arg)))`, it must be either an `Array` nor a `PoplarVec`")
+                             end
+                             $(esc(Poplar.GraphSetTileMapping))($(esc(graph)), $(esc(vec)), 0) # <-- TODO: let change the tile mapping
+                         end).args)
                 initialised_tensors[arg] = vec
             end
-            push!(out.args, quote
-                      $(esc(Poplar.GraphConnect))($(esc(graph)), $(esc(vertex))[$(string(arg_info[1]))], $(esc(initialised_tensors[arg])))
-                  end)
+            append!(out.args,
+                    (quote
+                         $(esc(Poplar.GraphConnect))($(esc(graph)), $(esc(vertex))[$(string(arg_info[1]))], $(esc(initialised_tensors[arg])))
+                     end).args)
         end
     end
-    push!(out.args, quote
-              $(esc(Poplar.ProgramSequenceAdd))($(esc(prog)), $(esc(Poplar.ProgramExecute))($(esc(compute_set_sym))))
-          end)
+    append!(out.args,
+            (quote
+                 $(esc(Poplar.ProgramSequenceAdd))($(esc(prog)), $(esc(Poplar.ProgramExecute))($(esc(compute_set_sym))))
+             end).args)
     return out
 end
 
@@ -259,30 +262,30 @@ macro ipuprogram(device, program::Expr)
     for expr in program.args
         expr isa LineNumberNode && continue
         if expr.head ∈ (:function, :(=)) && (expr.args[1] isa Expr && expr.args[1].head === :call)
-            push!(out.args, _codelet(graph, expr))
+            append!(out.args, _codelet(graph, expr).args)
             na = _get_name_args(expr)
             name_args[na[1]] = na[2]
         elseif expr.head === :call
             if expr.args[1] === :print_tensor
-                push!(out.args, _print_tensor(prog, initialised_tensors, expr))
+                append!(out.args, _print_tensor(prog, initialised_tensors, expr).args)
             else
-                push!(out.args, _add_vertex!(initialised_tensors, graph, prog, name_args, expr))
+                append!(out.args, _add_vertex!(initialised_tensors, graph, prog, name_args, expr).args)
             end
         elseif expr.head == :(=)
             o, p = _read_tensor(engine, graph, initialised_tensors, expr)
             push!(out.args, o)
-            push!(postamble.args, p)
+            append!(postamble.args, p.args)
         end
     end
     flags = gensym("flags")
-    push!(out.args, quote
-              $(esc(flags)) = Poplar.OptionFlags()
-              $(esc(Poplar.OptionFlagsSet))($(esc(flags)), "debug.instrument", "true")
-
-              $(esc(engine)) = $(esc(Poplar.Engine))($(esc(graph)), $(esc(prog)), $(esc(flags)))
-              $(esc(Poplar.EngineLoadAndRun))($(esc(engine)), $(esc(device)))
-          end)
-    push!(out.args, postamble)
+    append!(out.args,
+            (quote
+                 $(esc(flags)) = Poplar.OptionFlags()
+                 $(esc(Poplar.OptionFlagsSet))($(esc(flags)), "debug.instrument", "true")
+                 $(esc(engine)) = $(esc(Poplar.Engine))($(esc(graph)), $(esc(prog)), $(esc(flags)))
+                 $(esc(Poplar.EngineLoadAndRun))($(esc(engine)), $(esc(device)))
+             end).args)
+    append!(out.args, postamble.args)
     return out
 end
 
