@@ -4,7 +4,6 @@ module IPUCompiler
 include("output.jl")
 
 using GPUCompiler
-using Match
 using ..Poplar
 
 # list of overrides (only for Julia 1.6)
@@ -108,6 +107,14 @@ end
 # versions, and `-O3` for newer versions.
 const POPC_FLAGS = Poplar.SDK_VERSION ≥ v"2.2.0" ? `-g -O3` : `-g -O0`
 
+_print_s(::Type{In}) = "Input"
+_print_s(::Type{Out}) = "Output"
+_print_s(::Type{InOut}) = "InOut"
+_print_t(::Type{Int32}) = "int"
+_print_t(::Type{Float16}) = "half"
+_print_t(::Type{Float32}) = "float"
+_print_vec(io::IO, ::Type{PoplarVec{T, S}}, name::String) where {T,S} = println(io, "poplar::", _print_s(S), "<poplar::Vector<", _print_t(T), ">> ", name, ";")
+
 function build_codelet(graph, kernel, name, origKernel)
     target = NativeCompilerTarget()
     source = methodinstance(typeof(kernel), Tuple{})
@@ -131,19 +138,7 @@ function build_codelet(graph, kernel, name, origKernel)
     mktempdir() do dir
         open(joinpath(dir, "gen_codelet.cpp"), "w") do io
             for i in 1:length(args)
-                @match args[i] begin
-                    PoplarVec{Int32, In} => println(io, "poplar::Input<poplar::Vector<int>> $(argnames[i]);")
-                    PoplarVec{Float16, In} => println(io, "poplar::Input<poplar::Vector<half>> $(argnames[i]);")
-                    PoplarVec{Float32, In} => println(io, "poplar::Input<poplar::Vector<float>> $(argnames[i]);")
-
-                    PoplarVec{Int32, Out} => println(io, "poplar::Output<poplar::Vector<int>> $(argnames[i]);")
-                    PoplarVec{Float16, Out} => println(io, "poplar::Output<poplar::Vector<half>> $(argnames[i]);")
-                    PoplarVec{Float32, Out} => println(io, "poplar::Output<poplar::Vector<float>> $(argnames[i]);")
-
-                    PoplarVec{Int32, InOut} => println(io, "poplar::InOut<poplar::Vector<int>> $(argnames[i]);")
-                    PoplarVec{Float16, InOut} => println(io, "poplar::InOut<poplar::Vector<half>> $(argnames[i]);")
-                    PoplarVec{Float32, InOut} => println(io, "poplar::InOut<poplar::Vector<float>> $(argnames[i]);")
-                end
+                _print_vec(io, args[i], argnames[i])
             end
         end
 

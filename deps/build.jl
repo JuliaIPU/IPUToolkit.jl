@@ -1,7 +1,6 @@
 ##
 using Clang
 using Clang.LibClang
-using Match
 using JSON
 using libcxxwrap_julia_jll
 using Scratch
@@ -488,10 +487,12 @@ function iterate_children(ctx::BindgenContext, childvec::Vector{CLCursor})
                 code, reason = nothing, nothing
 
 
-                res = @match spelling(child_kind) begin
-                    "EnumDecl" => enum_decl_handler(ctx, child)
-                    "ClassDecl" => object_decl_handler(ctx, child)
-                    "StructDecl" => object_decl_handler(ctx, child)
+                res = if spelling(child_kind) == "EnumDecl"
+                    enum_decl_handler(ctx, child)
+                elseif spelling(child_kind) == "ClassDecl"
+                    object_decl_handler(ctx, child)
+                elseif spelling(child_kind) == "StructDecl"
+                    object_decl_handler(ctx, child)
                 end
 
                 if res !== nothing
@@ -504,12 +505,16 @@ function iterate_children(ctx::BindgenContext, childvec::Vector{CLCursor})
                 end
 
 
-                res = @match spelling(child_kind) begin
-                    "CXXMethod" => method_handler(ctx, child)
-                    "FunctionTemplate" => method_handler(ctx, child)
-                    "FunctionDecl" => func_handler(ctx, child)
-                    "CXXConstructor" => constructor_handler(ctx, child)
-                    "EnumConstantDecl" => enum_const_handler(ctx, child)
+                res = if spelling(child_kind) == "CXXMethod"
+                    method_handler(ctx, child)
+                elseif spelling(child_kind) == "FunctionTemplate"
+                    method_handler(ctx, child)
+                elseif spelling(child_kind) == "FunctionDecl"
+                    func_handler(ctx, child)
+                elseif spelling(child_kind) == "CXXConstructor"
+                    constructor_handler(ctx, child)
+                elseif spelling(child_kind) == "EnumConstantDecl"
+                    enum_const_handler(ctx, child)
                 end
 
                 if res !== nothing
