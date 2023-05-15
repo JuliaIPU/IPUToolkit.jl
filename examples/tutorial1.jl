@@ -23,7 +23,7 @@ Poplar.GraphSetTileMapping(graph, v4, 0)
 
 prog = Poplar.ProgramSequence()
 
-c1 = Poplar.GraphAddConstant(graph, Poplar.FLOAT(), UInt64[4], Float32[1.0, 1.5, 2.0, 2.5])
+c1 = Poplar.GraphAddConstant(graph, Float32[1.0, 1.5, 2.0, 2.5])
 Poplar.GraphSetTileMapping(graph, c1, 0)
 
 Poplar.ProgramSequenceAdd(prog, Poplar.ProgramCopy(c1, v1))

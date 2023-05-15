@@ -25,8 +25,8 @@ function test_poplar_program(device)
     h1 = Float32[1.0, 1.5, 2.0, 2.5]
     h2 = Float32[4.0, 3.0, 2.0, 1.0]
 
-    c1 = @cxxtest Poplar.GraphAddConstant(graph, Poplar.FLOAT(), UInt64[4], h1)
-    c2 = @cxxtest Poplar.GraphAddConstant(graph, Poplar.FLOAT(), UInt64[4], h2)
+    c1 = @cxxtest Poplar.GraphAddConstant(graph, h1)
+    c2 = @cxxtest Poplar.GraphAddConstant(graph, h2)
     Poplar.GraphSetTileMapping(graph, c1, 0)
     Poplar.GraphSetTileMapping(graph, c2, 0)
 

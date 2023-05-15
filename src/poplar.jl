@@ -42,6 +42,24 @@ let
     end
 end
 
+_get_type(::Type{Bool}) = BOOL()
+_get_type(::Type{Cchar}) = CHAR()
+_get_type(::Type{Cuchar}) = UNSIGNED_CHAR()
+# _get_type(::Type{Cchar}) = SIGNED_CHAR()
+_get_type(::Type{Cushort}) = UNSIGNED_SHORT()
+_get_type(::Type{Cshort}) = SHORT()
+_get_type(::Type{Cuint}) = UNSIGNED_INT()
+_get_type(::Type{Cint}) = INT()
+_get_type(::Type{Culong}) = UNSIGNED_LONG()
+_get_type(::Type{Clong}) = LONG()
+# _get_type(::Type{Culonglong}) = UNSIGNED_LONGLONG()
+# _get_type(::Type{Clonglong}) = LONGLONG()
+_get_type(::Type{Float16}) = HALF()
+_get_type(::Type{Cfloat}) = FLOAT()
+
+GraphAddConstant(graph::Graph, tensor::Array{T}) where {T} =
+    Poplar.GraphAddConstant(graph, _get_type(T), collect(UInt64.(size(tensor))), tensor)
+
 # Be sure to quit all julia sessions which hold devices!!!
 """
     get_ipu_devices(n::Int, hint::Union{AbstractVector{<:Integer},Integer}=0)
