@@ -35,13 +35,14 @@ It will take a while, without printing an update to screen, hold on.
 The package is called IPUToolkit because it provides different tools to interface the IPU from Julia:
 
 * you can use functionalities in the [Poplar SDK](https://www.graphcore.ai/products/poplar);
-* you can use Julia's code generation capabilities to automatically compile native code that can be run on the IPU.
+* you can use Julia's code generation capabilities to automatically compile native code that can be run on the IPU;
+* small [embedded Domain-Specific Language](https://en.wikipedia.org/wiki/Domain-specific_language) (eDSL) to automatically generate the code of a program.
 
-These two approaches are available in two different submodules of the `IPUToolkit` package, `IPUToolkit.Poplar` and `IPUToolkit.IPUCompiler`.
+These approaches are exploratory of the functionalities, and are often limited in scope.
 
 ### Interface to Poplar SDK
 
-A taster of use of the Poplar SDK functionalities:
+A taster of use of the Poplar SDK functionalities, available in the `IPUToolkit.Poplar` submodule:
 
 ```julia
 julia> using IPUToolkit.Poplar
@@ -101,3 +102,9 @@ The code inside a codelet has the same limitations as all the compilation models
 
 * the code has to be statically inferred and compiled, dynamic dispatch is not admitted;
 * you cannot use functionalities which require the Julia runtime, most notably the garbage collector.
+
+### Domain-Specific Language: `@ipuprogram`
+
+The `IPUCompiler.@ipuprogram` macro provides a very simple and limited DSL to automatically generate most of the boilerplate code needed when writing an IPU program.
+You can do *very* little with this DSL, which is mainly a showcase of Julia's meta-programming capabilities.
+A fully commented examples of use of the `@ipuprogram` macro is available in the [`examples/dsl.jl`](./examples/dsl.jl) file.
