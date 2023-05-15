@@ -38,7 +38,7 @@ function test_compiler_program(device)
 
     input = Float32[5, 2, 10, 102, -10, 2, 256, 15, 32, 100]
 
-    inconst = @cxxtest Poplar.GraphAddConstant(graph, Poplar.FLOAT(), UInt64[10], input)
+    inconst = @cxxtest Poplar.GraphAddConstant(graph, input)
     outvec1 = @cxxtest Poplar.GraphAddVariable(graph, Poplar.FLOAT(), UInt64[10], "outvec1");
     outvec2 = @cxxtest Poplar.GraphAddVariable(graph, Poplar.FLOAT(), UInt64[10], "outvec2");
     outvec3 = @cxxtest Poplar.GraphAddVariable(graph, Poplar.FLOAT(), UInt64[10], "outvec3");

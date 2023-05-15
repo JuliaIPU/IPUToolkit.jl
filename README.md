@@ -77,9 +77,17 @@ Function naming convention and signature is usually as follows:
 * the first argument of the function is the class instance.  For example, to use the Julia function `Poplar.DeviceManagerGetNumDevices`, you need to pass as first argument an instance of `DeviceManager`;
 * the following arguments are the same as in the method you want to use in the SDK.  For example, the method `getNumDevices` of the `DeviceManager` class doesn't take any argument, so the Julia function `Poplar.DeviceManagerGetNumDevices` will take an instance of `DeviceManager` as *only* argument.
 
+#### Convenient methods for some functions
+
 In addition to this, for some functions (e.g. `EngineWriteTensor`, `EngineConnectStream`, `EngineReadTensor`) we provide more user-friendly methods where the last argument can be an `Array`, without having to pass additional arguments for pointers or array size.
 Furthermore, the custom functions `Poplar.get_ipu_device` and `Poplar.get_ipu_devices` can be used to access one more IPU devices, as shown in the example above.
 Read their docstrings for further details.
+
+Another function for which we provide a convenient method is `Poplar.GraphAddConstant`:
+```julia
+Poplar.GraphAddConstant(graph, host_array)
+```
+adds the `host_array` (a plain standard Julia array living on the host) to `graph`, automatically inferring from `host_array` the type and the shape of the tensor in the graph.
 
 ### Writing codelets in Julia
 
