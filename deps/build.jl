@@ -8,22 +8,6 @@ using Pkg.TOML
 using UUIDs
 ##
 
-# Hack until <https://github.com/JuliaInterop/Clang.jl/pull/428> is merged.
-if Base.thisminor(VERSION) ≥ v"1.7"
-    @eval Clang begin
-        function get_function_args(cursor::CLCursor)
-            if cursor isa CLFunctionTemplate && getNumArguments(cursor) == -1
-                return search(cursor, x -> kind(x) == CXCursor_ParmDecl)
-        else
-                return [getArgument(cursor, i - 1) for i = 1:getNumArguments(cursor)]
-            end
-        end
-        getArgument(c::CLFunctionTemplate, i::Integer)::CLCursor =
-            clang_Cursor_getArgument(c, Unsigned(i))
-    end
-end
-
-
 const libpoplar_dir = joinpath(get_scratch!(UUID(TOML.parsefile(joinpath(dirname(@__DIR__), "Project.toml"))["uuid"]), "libpoplar"), "v$(Base.thispatch(VERSION))")
 const allowed_namespaces = ("poplar", "popops")
 
