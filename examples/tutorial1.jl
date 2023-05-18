@@ -2,7 +2,7 @@ using IPUToolkit.Poplar
 
 model = Poplar.IPUModel()
 device = Poplar.IPUModelCreateDevice(model)
-# device = Poplar.getIPU()
+# device = Poplar.get_ipu_device()
 
 target = Poplar.DeviceGetTarget(device)
 graph = Poplar.Graph(target)
@@ -52,7 +52,7 @@ Poplar.OptionFlagsSet(flags, "debug.instrument", "true")
 engine = Poplar.Engine(graph, prog, flags)
 Poplar.EngineLoad(engine, device)
 
-h3 = zeros(Float32, 4*4)
+h3 = zeros(Float32, 4, 4)
 
 Poplar.EngineWriteTensor(engine, "v3-write", h3)
 
@@ -64,11 +64,7 @@ Poplar.EngineRun(engine, 0)
 
 Poplar.EngineReadTensor(engine, "v3-read", h3)
 
-println("h3 data:")
-for i in 0:3
-    print(" ")
-    for j in 0:3
-        print(h3[i*4 + j+1], " ")
-    end
-    println("")
-end
+print("h3 data: ")
+display(h3')
+
+Poplar.DeviceDetach(device)
