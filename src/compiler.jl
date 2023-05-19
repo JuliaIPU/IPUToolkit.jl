@@ -1,7 +1,7 @@
 # based on GPUCompiler example https://github.com/JuliaGPU/GPUCompiler.jl/blob/master/examples/kernel.jl
 module IPUCompiler
 
-export @codelet, @ipuprogram, PoplarVec, In, Out, InOut
+export @codelet, @ipuprogram, PoplarTensor, PoplarVector, PoplarMatrix, In, Out, InOut
 
 include("output.jl")
 
@@ -82,8 +82,11 @@ function _codelet(graph, usr_kern::Expr)
     kernargs = [
         # TODO: I'd really like to avoid that `getfield`.
         esc(:(
-            $(arg.args[2])($(Expr(:call, :ccall, func_ptr,  :llvmcall, Ptr{getfield(@__MODULE__, arg.args[2].args[2])}, :((Int32,)), i += one(i))),
-                           $(Expr(:call, :ccall, func_size, :llvmcall, UInt32,                                          :((Int32,)), i,         )))
+            $(arg.args[2])( # PoplarTensor{T,N,S}
+                $(Expr(:call, :ccall, func_ptr,  :llvmcall, Ptr{getfield(@__MODULE__, arg.args[2].args[2])}, :((Int32,)), i += one(i))), # base::Ptr{T}
+                (Int($(Expr(:call, :ccall, func_size, :llvmcall, UInt32,                                     :((Int32,)), i,      ))),), # size::NTuple{N,Int}.  TODO: make it work with N>1.
+                $(Expr(:call, :ccall, func_size, :llvmcall, UInt32,                                          :((Int32,)), i,          )) # length::UInt32
+                            )
         ))
         for arg in args]
     kern_call = Expr(:call, :($(esc(name))), kernargs...)
@@ -113,7 +116,7 @@ _print_s(::Type{InOut}) = "InOut"
 _print_t(::Type{Int32}) = "int"
 _print_t(::Type{Float16}) = "half"
 _print_t(::Type{Float32}) = "float"
-_print_vec(io::IO, ::Type{PoplarVec{T, S}}, name::String) where {T,S} = println(io, "poplar::", _print_s(S), "<poplar::Vector<", _print_t(T), ">> ", name, ";")
+_print_vec(io::IO, ::Type{PoplarVector{T, S}}, name::String) where {T,S} = println(io, "poplar::", _print_s(S), "<poplar::Vector<", _print_t(T), ">> ", name, ";")
 
 function build_codelet(graph, kernel, name, origKernel)
     target = NativeCompilerTarget()
@@ -197,12 +200,12 @@ function _add_vertex!(initialised_tensors::Dict{Symbol, Symbol}, graph, prog, na
             if arg ∉ keys(initialised_tensors)
                 append!(out.args,
                         (quote
-                             if $(esc(arg)) isa PoplarVec
-                                 $(esc(vec)) = $(esc(Poplar.GraphAddVariable))($(esc(graph)), $(esc(jl_type_to_poplar_type[arg_info[2]])), UInt64[$(esc(arg)).size], $(string(arg)))
+                             if $(esc(arg)) isa PoplarTensor
+                                 $(esc(vec)) = $(esc(Poplar.GraphAddVariable))($(esc(graph)), $(esc(jl_type_to_poplar_type[arg_info[2]])), collect(UInt64.($(esc(arg)).size)), $(string(arg)))
                              elseif $(esc(arg)) isa Array
-                                 $(esc(vec)) = $(esc(Poplar.GraphAddConstant))($(esc(graph)), $(esc(jl_type_to_poplar_type[arg_info[2]])), UInt64[length($(esc(arg)))], $(esc(arg)))
+                                 $(esc(vec)) = $(esc(Poplar.GraphAddConstant))($(esc(graph)), $(esc(jl_type_to_poplar_type[arg_info[2]])), collect(UInt64.(size($(esc(arg))))), $(esc(arg)))
                              else
-                                 error("`$(string(arg))` is a `$(typeof(esc(arg)))`, it must be either an `Array` nor a `PoplarVec`")
+                                 error("`$(string(arg))` is a `$(typeof(esc(arg)))`, it must be either an `Array` or a `PoplarTensor`")
                              end
                              $(esc(Poplar.GraphSetTileMapping))($(esc(graph)), $(esc(vec)), 0) # <-- TODO: let change the tile mapping
                          end).args)

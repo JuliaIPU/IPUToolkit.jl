@@ -12,11 +12,11 @@ end
 target = Poplar.DeviceGetTarget(device)
 graph = Poplar.Graph(target)
 
-IPUCompiler.@codelet graph function TimesTwo(inconst::IPUCompiler.PoplarVec{Float32, IPUCompiler.In}, outvec::IPUCompiler.PoplarVec{Float32, IPUCompiler.Out})
+IPUCompiler.@codelet graph function TimesTwo(inconst::IPUCompiler.PoplarVector{Float32, IPUCompiler.In}, outvec::IPUCompiler.PoplarVector{Float32, IPUCompiler.Out})
     outvec .= inconst .* 2
 end
 
-IPUCompiler.@codelet graph function Sort(invec::IPUCompiler.PoplarVec{Float32, IPUCompiler.In}, outvec::IPUCompiler.PoplarVec{Float32, IPUCompiler.Out})
+IPUCompiler.@codelet graph function Sort(invec::IPUCompiler.PoplarVector{Float32, IPUCompiler.In}, outvec::IPUCompiler.PoplarVector{Float32, IPUCompiler.Out})
     outvec .= invec
     sort!(outvec)
 end

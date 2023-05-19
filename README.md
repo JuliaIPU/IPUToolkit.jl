@@ -39,6 +39,7 @@ The package is called IPUToolkit because it provides different tools to interfac
 * small [embedded Domain-Specific Language](https://en.wikipedia.org/wiki/Domain-specific_language) (eDSL) to automatically generate the code of a program.
 
 These approaches are exploratory of the functionalities, and are often limited in scope.
+For example, at the moment this package is limited to using 1-dimensional tensors (vectors).
 
 ### Interface to Poplar SDK
 
@@ -98,8 +99,8 @@ The `IPUCompiler.@codelet` macro takes two arguments:
 * the graph to which to add the codelet with the `Poplar.GraphAddCodelets` function
 * the function definition of the kernel you want to compile for the device.
 
-The arguments of a codelet function have to be `PoplarVec{T,S}`, a subtype of `AbstractVector{T}` which represents vectors living on the IPU.
-The parameters of `PoplarVec{T,S}` are
+The arguments of a codelet function have to be `PoplarVector{T,S}`, a subtype of `AbstractVector{T}` which represents vectors living on the IPU.
+The parameters of `PoplarVector{T,S}` are
 
 * `T`: the type of the elements of the vector;
 * `S`: the scope of the vector in the codelet, `In`, `Out`, or `InOut`.
