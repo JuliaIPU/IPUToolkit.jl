@@ -1,12 +1,12 @@
 using IPUToolkit.IPUCompiler, IPUToolkit.Poplar
 
 # Define the arrays that will be used during the program.  `input` is a host array that will
-# be automatically copied to an IPU array, the other `PoplarVec`s are placeholders for IPU
-# arrays that will be populated during the execution of the program.
+# be automatically copied to an IPU array, the other `PoplarVector`s are placeholders for
+# IPU arrays that will be populated during the execution of the program.
 input = Float32[5, 2, 10, 102, -10, 2, 256, 15, 32, 100]
-outvec1 = PoplarVec{Float32, Out}(undef, 10)
-outvec2 = PoplarVec{Float32, Out}(undef, 10)
-outvec3 = PoplarVec{Float32, Out}(undef, 10)
+outvec1 = PoplarVector{Float32, Out}(undef, 10)
+outvec2 = PoplarVector{Float32, Out}(undef, 10)
+outvec3 = PoplarVector{Float32, Out}(undef, 10)
 
 # Get the device.
 device = Poplar.get_ipu_device()
@@ -18,22 +18,22 @@ device = Poplar.get_ipu_device()
 # * print tensors on the IPU with the "special" function `print_tensor`
 # * copy IPU tensors to the host
 @ipuprogram device begin
-    # Define the functions/codelets.  All arguments must be `PoplarVec`s.
-    function TimesTwo(inconst::PoplarVec{Float32, In}, outvec::PoplarVec{Float32, Out})
+    # Define the functions/codelets.  All arguments must be `PoplarVector`s.
+    function TimesTwo(inconst::PoplarVector{Float32, In}, outvec::PoplarVector{Float32, Out})
         outvec .= 2 .* inconst
     end
-    function Sort(invec::PoplarVec{Float32, In}, outvec::PoplarVec{Float32, Out})
+    function Sort(invec::PoplarVector{Float32, In}, outvec::PoplarVector{Float32, Out})
         outvec .= invec
         sort!(outvec)
     end
-    function Sin(invec::PoplarVec{Float32, In}, outvec::PoplarVec{Float32, Out})
+    function Sin(invec::PoplarVector{Float32, In}, outvec::PoplarVector{Float32, Out})
         for idx in eachindex(outvec)
             @inbounds outvec[idx] = sin(invec[idx])
         end
     end
 
     # Run the functions.  Arguments must be the arrays defined above, either host arrays
-    # (which will be copied to the IPU automatically) or `PoplarVec`s.
+    # (which will be copied to the IPU automatically) or `PoplarVector`s.
     TimesTwo(input, outvec1)
     Sort(outvec1, outvec2)
     Sin(outvec2, outvec3)
