@@ -4,9 +4,9 @@ using IPUToolkit.IPUCompiler, IPUToolkit.Poplar
 # be automatically copied to an IPU array, the other `PoplarVector`s are placeholders for
 # IPU arrays that will be populated during the execution of the program.
 input = Float32[5, 2, 10, 102, -10, 2, 256, 15, 32, 100]
-outvec1 = PoplarVector{Float32, Out}(undef, 10)
-outvec2 = PoplarVector{Float32, Out}(undef, 10)
-outvec3 = PoplarVector{Float32, Out}(undef, 10)
+outvec1 = PoplarVector{Float32}(undef, 10)
+outvec2 = PoplarVector{Float32}(undef, 10)
+outvec3 = PoplarVector{Float32}(undef, 10)
 
 # Get the device.
 device = Poplar.get_ipu_device()
@@ -18,15 +18,15 @@ device = Poplar.get_ipu_device()
 # * print tensors on the IPU with the "special" function `print_tensor`
 # * copy IPU tensors to the host
 @ipuprogram device begin
-    # Define the functions/codelets.  All arguments must be `PoplarVector`s.
-    function TimesTwo(inconst::PoplarVector{Float32, In}, outvec::PoplarVector{Float32, Out})
+    # Define the functions/codelets.  All arguments must be `VertexVector`s.
+    function TimesTwo(inconst::VertexVector{Float32, In}, outvec::VertexVector{Float32, Out})
         outvec .= 2 .* inconst
     end
-    function Sort(invec::PoplarVector{Float32, In}, outvec::PoplarVector{Float32, Out})
+    function Sort(invec::VertexVector{Float32, In}, outvec::VertexVector{Float32, Out})
         outvec .= invec
         sort!(outvec)
     end
-    function Sin(invec::PoplarVector{Float32, In}, outvec::PoplarVector{Float32, Out})
+    function Sin(invec::VertexVector{Float32, In}, outvec::VertexVector{Float32, Out})
         for idx in eachindex(outvec)
             @inbounds outvec[idx] = sin(invec[idx])
         end

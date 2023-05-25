@@ -99,8 +99,8 @@ The `IPUCompiler.@codelet` macro takes two arguments:
 * the graph to which to add the codelet with the `Poplar.GraphAddCodelets` function
 * the function definition of the kernel you want to compile for the device.
 
-The arguments of a codelet function have to be `PoplarVector{T,S}`, a subtype of `AbstractVector{T}` which represents vectors living on the IPU.
-The parameters of `PoplarVector{T,S}` are
+The arguments of a codelet function have to be `VertexVector{T,S}`, a subtype of `AbstractVector{T}` which represents vectors living on the IPU.
+The parameters of `VertexVector{T,S}` are
 
 * `T`: the type of the elements of the vector;
 * `S`: the scope of the vector in the codelet, `In`, `Out`, or `InOut`.

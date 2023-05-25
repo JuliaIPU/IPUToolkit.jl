@@ -13,22 +13,22 @@ function test_compiler_program(device)
 
     # Define a local function to make sure macro hygiene is right
     double(x) = x * 2
-    @codelet graph function TimesTwo(inconst::PoplarVector{Float32, In}, outvec::PoplarVector{Float32, Out})
+    @codelet graph function TimesTwo(inconst::VertexVector{Float32, In}, outvec::VertexVector{Float32, Out})
         outvec .= double.(inconst)
     end
 
-    @codelet graph function Sort(invec::PoplarVector{Float32, In}, outvec::PoplarVector{Float32, Out})
+    @codelet graph function Sort(invec::VertexVector{Float32, In}, outvec::VertexVector{Float32, Out})
         outvec .= invec
         sort!(outvec)
     end
 
-    @codelet graph function Sin(invec::PoplarVector{Float32, In}, outvec::PoplarVector{Float32, Out})
+    @codelet graph function Sin(invec::VertexVector{Float32, In}, outvec::VertexVector{Float32, Out})
         for idx in eachindex(outvec)
             @inbounds outvec[idx] = sin(invec[idx])
         end
     end
 
-    @codelet graph function Print(outvec::PoplarVector{Float32, Out})
+    @codelet graph function Print(outvec::VertexVector{Float32, Out})
         @ipuprint "Hello, world!"
         @ipuprint "Titire tu" " patule" " recubans sub tegmine " "fagi"
         @ipuprint "The Answer to the Ultimate Question of Life, the Universe, and Everything is " 42
@@ -151,33 +151,33 @@ end
 function test_ipuprogram(device)
     N = 10
     input = randn(Float32, N)
-    outvec1 = PoplarVector{Float32, Out}(undef, N)
-    outvec2 = PoplarVector{Float32, Out}(undef, N)
-    outvec3 = PoplarVector{Float32, Out}(undef, N)
-    outvec4 = PoplarVector{Float32, Out}(undef, N)
-    outvec5 = PoplarVector{Float32, Out}(undef, N)
+    outvec1 = PoplarVector{Float32}(undef, N)
+    outvec2 = PoplarVector{Float32}(undef, N)
+    outvec3 = PoplarVector{Float32}(undef, N)
+    outvec4 = PoplarVector{Float32}(undef, N)
+    outvec5 = PoplarVector{Float32}(undef, N)
     f(x) = cos(x)
     f′(x) = first(first(autodiff_deferred(Reverse, f, Active(x))))
     g(x) = tan(x)
     g′(x) = first(first(autodiff_deferred(Reverse, g, Active(x))))
 
     @ipuprogram device begin
-        function TimesTwo(inconst::PoplarVector{Float32, In}, outvec::PoplarVector{Float32, Out})
+        function TimesTwo(inconst::VertexVector{Float32, In}, outvec::VertexVector{Float32, Out})
             outvec .= 2 .* inconst
         end
-        function Sort(invec::PoplarVector{Float32, In}, outvec::PoplarVector{Float32, Out})
+        function Sort(invec::VertexVector{Float32, In}, outvec::VertexVector{Float32, Out})
             outvec .= invec
             sort!(outvec; rev=true)
         end
-        function Exp(invec::PoplarVector{Float32, In}, outvec::PoplarVector{Float32, Out})
+        function Exp(invec::VertexVector{Float32, In}, outvec::VertexVector{Float32, Out})
             for idx in eachindex(outvec)
                 @inbounds outvec[idx] = exp(invec[idx])
             end
         end
-        function DiffCos(invec::PoplarVector{Float32, In}, outvec::PoplarVector{Float32, Out})
+        function DiffCos(invec::VertexVector{Float32, In}, outvec::VertexVector{Float32, Out})
             outvec .= f′.(invec)
         end
-        function DiffTan(invec::PoplarVector{Float32, In}, outvec::PoplarVector{Float32, Out})
+        function DiffTan(invec::VertexVector{Float32, In}, outvec::VertexVector{Float32, Out})
             for idx in eachindex(outvec)
                 @inbounds outvec[idx] = g′(invec[idx])
             end
@@ -226,11 +226,11 @@ end
         end
     end
 
-    @testset "PoplarVector" begin
-        vec = PoplarVector{Float32, Out}(undef, 10)
+    @testset "VertexVector" begin
+        vec = VertexVector{Float32, Out}(undef, 10)
         @test vec.base == C_NULL
-        @test vec.size == (10,)
-        @test contains(repr(vec), r"PoplarVector{Float32,.*Out}")
+        @test vec.length == 10
+        @test contains(repr(vec), r"VertexVector{Float32,.*Out}")
     end
 
     @testset "Printing to IPU" begin
