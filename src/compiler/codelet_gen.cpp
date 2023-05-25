@@ -1,11 +1,11 @@
 extern "C" {
 #include <stdint.h>
     extern void KERNEL_NAME();
-    struct PoplarVector {
+    struct VertexVector {
         uintptr_t beginPtr;
         uint32_t  size_;
     };
-    static PoplarVector* vertclass;
+    static VertexVector* vertclass;
 
     // Function to get the pointer to the i-th vector.
     uintptr_t GET_VEC_PTR_NAME(int32_t i) {
@@ -47,7 +47,7 @@ struct VectorBase {
 
   // Compute function
     bool compute() {
-        vertclass = (PoplarVector*) &FIRST_NAME;
+        vertclass = (VertexVector*) &FIRST_NAME;
 
         KERNEL_NAME();
         return true;
