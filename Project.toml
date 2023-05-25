@@ -6,6 +6,7 @@ version = "0.1.0"
 [deps]
 Clang = "40e3b903-d033-50b4-a0cc-940c62c95e31"
 CxxWrap = "1f15a43c-97ca-5a2a-ae31-89f07a497df4"
+Enzyme = "7da242da-08ed-463a-9acd-ee780be4f1d9"
 GPUCompiler = "61eb1bfa-7361-4325-ad38-22787b887f55"
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 LLVM = "929cbde3-209d-540e-8aea-75f648917ca0"

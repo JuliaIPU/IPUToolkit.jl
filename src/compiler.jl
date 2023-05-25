@@ -145,7 +145,7 @@ function build_codelet(graph, kernel, name, origKernel)
             end
         end
 
-        input_file = joinpath(dir, "$(name).ll")
+        input_file = joinpath("$(name).ll")
         write(input_file, llvm_ir)
 
         run(```
