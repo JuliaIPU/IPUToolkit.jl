@@ -1,8 +1,8 @@
 using IPUToolkit.Poplar
 
-model = Poplar.IPUModel()
-device = Poplar.IPUModelCreateDevice(model)
-# device = Poplar.getIPU()
+# model = Poplar.IPUModel()
+# device = Poplar.IPUModelCreateDevice(model)
+device = Poplar.get_ipu_device()
 
 target = Poplar.DeviceGetTarget(device)
 graph = Poplar.Graph(target)
@@ -43,3 +43,5 @@ Poplar.ProgramSequenceAdd(prog, Poplar.ProgramPrintTensor("v5", v5))
 
 engine = Poplar.Engine(graph, prog, flags)
 Poplar.EngineLoadAndRun(engine, device)
+
+Poplar.DeviceDetach(device)
