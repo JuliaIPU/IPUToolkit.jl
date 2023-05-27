@@ -1,8 +1,8 @@
 using IPUToolkit.Poplar
 
-model = Poplar.IPUModel()
-device = Poplar.IPUModelCreateDevice(model)
-# device = Poplar.get_ipu_device()
+# model = Poplar.IPUModel()
+# device = Poplar.IPUModelCreateDevice(model)
+device = Poplar.get_ipu_device()
 
 target = Poplar.DeviceGetTarget(device)
 graph = Poplar.Graph(target)
