@@ -4,6 +4,7 @@ using Test
 using IPUToolkit.IPUCompiler
 using IPUToolkit.Poplar
 using Enzyme
+using LinearAlgebra
 
 include("common.jl")
 
@@ -149,7 +150,7 @@ function test_compiler_program(device)
 end
 
 function test_ipuprogram(device)
-    N = 10
+    N = 20_000
     input = randn(Float32, N)
     outvec1 = PoplarVector{Float32}(undef, N)
     outvec2 = PoplarVector{Float32}(undef, N)
@@ -165,9 +166,11 @@ function test_ipuprogram(device)
         function TimesTwo(inconst::VertexVector{Float32, In}, outvec::VertexVector{Float32, Out})
             outvec .= 2 .* inconst
         end
-        function Sort(invec::VertexVector{Float32, In}, outvec::VertexVector{Float32, Out})
+        function Scale(invec::VertexVector{Float32, In}, outvec::VertexVector{Float32, Out})
             outvec .= invec
-            sort!(outvec; rev=true)
+            # `sum(abs2, v)` is layman norm because we can't statically compile
+            # `LinearAlgebra.norm!`.
+            outvec .*= sqrt(length(outvec) / sum(abs2, outvec))
         end
         function Exp(invec::VertexVector{Float32, In}, outvec::VertexVector{Float32, Out})
             for idx in eachindex(outvec)
@@ -183,7 +186,7 @@ function test_ipuprogram(device)
             end
         end
         TimesTwo(input, outvec1)
-        Sort(outvec1, outvec2)
+        Scale(outvec1, outvec2)
         Exp(outvec2, outvec3)
         DiffCos(outvec3, outvec4)
         DiffTan(outvec4, outvec5)
@@ -195,7 +198,7 @@ function test_ipuprogram(device)
     end
     Poplar.DeviceDetach(device)
     @test jl_outvec1 ≈ 2 .* input
-    @test jl_outvec2 ≈ sort(jl_outvec1; rev=true)
+    @test norm(jl_outvec2) ≈ sqrt(N)
     @test jl_outvec3 ≈ exp.(jl_outvec2)
     @test jl_outvec4 ≈ @. -sin(jl_outvec3)
     @test jl_outvec5 ≈ @. sec(jl_outvec4) ^ 2
