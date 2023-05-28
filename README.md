@@ -39,7 +39,6 @@ The package is called IPUToolkit because it provides different tools to interfac
 * small [embedded Domain-Specific Language](https://en.wikipedia.org/wiki/Domain-specific_language) (eDSL) to automatically generate the code of a program.
 
 These approaches are exploratory of the functionalities, and are often limited in scope.
-For example, at the moment this package is limited to using 1-dimensional tensors (vectors).
 
 ### Interface to Poplar SDK
 
@@ -80,7 +79,7 @@ Function naming convention and signature is usually as follows:
 
 #### Convenient methods for some functions
 
-In addition to this, for some functions (e.g. `EngineWriteTensor`, `EngineConnectStream`, `EngineReadTensor`) we provide more user-friendly methods where the last argument can be an `Array`, without having to pass additional arguments for pointers or array size.
+In addition to this, for some functions (e.g. `EngineWriteTensor`, `EngineConnectStream`, `EngineReadTensor`) we provide more user-friendly methods where the last argument can be a Julia's `Array`, without having to pass additional arguments for pointers or array size.
 Furthermore, the custom functions `Poplar.get_ipu_device` and `Poplar.get_ipu_devices` can be used to access one more IPU devices, as shown in the example above.
 Read their docstrings for further details.
 
@@ -88,18 +87,18 @@ Another function for which we provide a convenient method is `Poplar.GraphAddCon
 ```julia
 Poplar.GraphAddConstant(graph, host_array)
 ```
-adds the `host_array` (a plain standard Julia array living on the host) to `graph`, automatically inferring from `host_array` the type and the shape of the tensor in the graph.
+adds the `host_array` (a plain standard Julia `Array` living on the host) to `graph`, automatically inferring from `host_array` the type and the shape of the tensor in the graph.
 
 ### Writing codelets in Julia
 
-You can write codelets for the IPU in Julia with the `IPUCompiler.@codelet` macro, and use them inside a program, written using the interface to the Poplar SDK described above.
-This mechanism uses the [`GPUCompiler.jl`](https://github.com/JuliaGPU/GPUCompiler.jl) package, which is a generic framework for generating LLVM IR code for specialised targets, not limited to GPUs, despite the name.
+You can write [codelets](https://docs.graphcore.ai/projects/poplar-user-guide/en/3.2.0/vertices_overview.html) for the IPU in Julia with the `IPUCompiler.@codelet` macro, and use them inside a program, written using the interface to the Poplar SDK described above.
+This mechanism uses the [`GPUCompiler.jl`](https://github.com/JuliaGPU/GPUCompiler.jl) package, which is a generic framework for generating LLVM IR code for specialised targets, not limited to GPUs despite the historical name.
 The `IPUCompiler.@codelet` macro takes two arguments:
 
 * the graph to which to add the codelet with the `Poplar.GraphAddCodelets` function
 * the function definition of the kernel you want to compile for the device.
 
-The arguments of a codelet function have to be `VertexVector{T,S}`, a subtype of `AbstractVector{T}` which represents vectors living on the IPU.
+The arguments of a codelet function have to be `VertexVector{T,S}`, a subtype of `AbstractVector{T}` which represents a [vertex vector](https://docs.graphcore.ai/projects/poplar-user-guide/en/3.2.0/vertex_vectors.html), passed as argument to a codelet.
 The parameters of `VertexVector{T,S}` are
 
 * `T`: the type of the elements of the vector;
@@ -110,7 +109,8 @@ An example of codelets written in Julia is shown in the file [`examples/main.jl`
 The code inside a codelet has the same limitations as all the compilation models based on [`GPUCompiler.jl`](https://github.com/JuliaGPU/GPUCompiler.jl):
 
 * the code has to be statically inferred and compiled, dynamic dispatch is not admitted;
-* you cannot use functionalities which require the Julia runtime, most notably the garbage collector.
+* you cannot use functionalities which require the Julia runtime, most notably the garbage collector;
+* you cannot call into any other external binary library at runtime, for example you cannot call into a BLAS library.
 
 ### Domain-Specific Language: `@ipuprogram`
 
