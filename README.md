@@ -112,6 +112,12 @@ The code inside a codelet has the same limitations as all the compilation models
 * you cannot use functionalities which require the Julia runtime, most notably the garbage collector;
 * you cannot call into any other external binary library at runtime, for example you cannot call into a BLAS library.
 
+During compilation of codelets a spinner is displayed to show the progress, as this step can take a few seconds for each codelet to be generated.
+This can be disabled with
+```julia
+IPUCompiler.PROGRESS_SPINNER[] = false
+```
+
 ### Domain-Specific Language: `@ipuprogram`
 
 The `IPUCompiler.@ipuprogram` macro provides a very simple and limited DSL to automatically generate most of the boilerplate code needed when writing an IPU program.

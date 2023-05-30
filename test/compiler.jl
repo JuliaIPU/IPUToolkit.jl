@@ -14,6 +14,9 @@ if !check_bounds
     using StaticArrays
 end
 
+# Silence progress spinners.
+IPUCompiler.PROGRESS_SPINNER[] = false
+
 include("common.jl")
 
 function test_compiler_program(device)
