@@ -1,3 +1,11 @@
+using ProgressMeter
+
+"""
+    $(@__MODULE__).PROGRESS_SPINNER::$(typeof(PROGRESS_SPINNER))
+
+Option to control whether to display a spinner to show progress during compilation of IPU codelets.
+"""
+const PROGRESS_SPINNER = Ref(true)
 
 function _codelet(graph, usr_kern::Expr)
     if usr_kern.head ∉ (:function, :(=)) || usr_kern.args[1].head !== :call
@@ -27,7 +35,7 @@ function _codelet(graph, usr_kern::Expr)
             $(kern_call)
             return $(esc(nothing))
         end
-        build_codelet($(esc(graph)), $(codelet_fun), $(String(name)), $(esc(name)))
+        _build_codelet($(esc(graph)), $(codelet_fun), $(String(name)), $(esc(name)))
     end
 end
 
@@ -48,7 +56,7 @@ _print_t(::Type{Float16}) = "half"
 _print_t(::Type{Float32}) = "float"
 _print_vec(io::IO, ::Type{VertexVector{T, S}}, name::String) where {T,S} = println(io, "poplar::", _print_s(S), "<poplar::Vector<", _print_t(T), ">> ", name, ";")
 
-function build_codelet(graph, kernel, name, origKernel)
+function __build_codelet(graph, kernel, name, origKernel)
     target = NativeCompilerTarget()
     source = methodinstance(typeof(kernel), Tuple{})
     params = IPUCompilerParams(name)
@@ -97,4 +105,19 @@ function build_codelet(graph, kernel, name, origKernel)
 
     Poplar.GraphAddCodelets(graph, output_path)
     return nothing
+end
+
+function _build_codelet(graph, kernel, name, origKernel)
+    if PROGRESS_SPINNER[]
+        prog = ProgressUnknown("Compiling codelet $(name):"; spinner=true)
+        task = Threads.@spawn __build_codelet(graph, kernel, name, origKernel)
+        while !istaskdone(task)
+            ProgressMeter.next!(prog; spinner="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏")
+            sleep(0.1)
+        end
+        ProgressMeter.finish!(prog)
+        fetch(task)
+    else
+        __build_codelet(graph, kernel, name, origKernel)
+    end
 end
