@@ -7,8 +7,8 @@ using Core: LLVMPtr
 
 export @ipuprintf
 
-@doc @eval """
-    $(@__MODULE__).DISABLE_PRINT::Ref{Bool}
+"""
+    $(@__MODULE__).DISABLE_PRINT::$(typeof(DISABLE_PRINT))
 
 Global constant which controls whether printing through the various `@ipuprint*`
 macros should be disabled or not.  You may want to completely disable printing
@@ -52,7 +52,7 @@ to match, eg. printing a 64-bit Julia integer requires the `%ld` formatting stri
 
 Printing can be completely disabled by setting
 ```julia
-IPUCompiler.DISABLE_PRINT[] = true
+$(@__MODULE__).DISABLE_PRINT[] = true
 ```
 """
 macro ipuprintf(fmt::String, args...)
@@ -237,7 +237,7 @@ Limited string interpolation is also possible:
 
 Printing can be completely disabled by setting
 ```julia
-IPUCompiler.DISABLE_PRINT[] = true
+$(@__MODULE__).DISABLE_PRINT[] = true
 ```
 """
 macro ipuprint(parts...)
@@ -296,7 +296,7 @@ IPU analog of `Base.@show`. It comes with the same type restrictions as [`@ipupr
 
 Printing can be completely disabled by setting
 ```julia
-IPUCompiler.DISABLE_PRINT[] = true
+$(@__MODULE__).DISABLE_PRINT[] = true
 ```
 """
 macro ipushow(exs...)

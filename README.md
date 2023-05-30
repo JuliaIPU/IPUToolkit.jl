@@ -118,6 +118,13 @@ This can be disabled with
 IPUCompiler.PROGRESS_SPINNER[] = false
 ```
 
+Inside codelets you can print text and value of variables using the macros `@ipuprintf`, `@ipuprint`, `@ipuprintln`, and `@ipushow`, read their docstrings for more details.
+These macros are useful for debugging purposes but printing inside a codelet might incur performance penalty.
+To completely disable all printing and make these macros no-op you can set
+```julia
+IPUCompiler.DISABLE_PRINT[] = true
+```
+
 ### Domain-Specific Language: `@ipuprogram`
 
 The `IPUCompiler.@ipuprogram` macro provides a very simple and limited DSL to automatically generate most of the boilerplate code needed when writing an IPU program.
