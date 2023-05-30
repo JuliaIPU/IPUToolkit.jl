@@ -1,10 +1,18 @@
 module IPUCompilerTest
 
+# Whether bounds are always checked
+const check_bounds = Base.JLOptions().check_bounds == 1
+
 using Test
 using IPUToolkit.IPUCompiler
 using IPUToolkit.Poplar
-using Enzyme
-using LinearAlgebra
+if Poplar.SDK_VERSION ≥ v"2.2.0" || !check_bounds
+    using Enzyme
+    using LinearAlgebra
+end
+if !check_bounds
+    using StaticArrays
+end
 
 include("common.jl")
 
@@ -185,11 +193,13 @@ function test_ipuprogram(device)
                 @inbounds outvec[idx] = g′(invec[idx])
             end
         end
+
         TimesTwo(input, outvec1)
         Scale(outvec1, outvec2)
         Exp(outvec2, outvec3)
         DiffCos(outvec3, outvec4)
         DiffTan(outvec4, outvec5)
+
         jl_outvec1 = outvec1
         jl_outvec2 = outvec2
         jl_outvec3 = outvec3
@@ -204,28 +214,66 @@ function test_ipuprogram(device)
     @test jl_outvec5 ≈ @. sec(jl_outvec4) ^ 2
 end
 
+function test_matmul(device)
+    N = 16
+    mat1 = randn(Float32, N)
+    mat2 = randn(Float32, N)
+    out = PoplarVector{Float32}(undef, N)
+
+    @ipuprogram device begin
+        function MatMul(in1::VertexVector{Float32, In}, in2::VertexVector{Float32, In}, out::VertexVector{Float32, Out})
+            # Arguments can only be vectors, so we need to convert them to
+            # (static) matrices to do some linear algebra stuff.  The conversion
+            # to `SMatrix` has an internal check about the shape/size of the
+            # to-be-converted array which would result in dynamic dispatch, we
+            # need to skip the check with `@inbounds`, but we need to be extra
+            # sure we're passing consistent data.
+            m1 = @inbounds SMatrix{4,4,Float32,16}(in1)
+            m2 = @inbounds SMatrix{4,4,Float32,16}(in2)
+            mul = m1 * m2
+            out .= mul[:]
+        end
+
+        MatMul(mat1, mat2, out)
+
+        jl_out = out
+    end
+    Poplar.DeviceDetach(device)
+    @test reshape(mat1, 4, 4) * reshape(mat2, 4, 4) ≈ reshape(jl_out, 4, 4)
+end
+
 @testset "IPUCompiler" begin
-    @testset "Test program: $(f)" for f in (test_compiler_program, test_ipuprogram)
-        if Poplar.SDK_VERSION ≥ v"2.2.0" || Base.JLOptions().check_bounds != 1 # --check-bounds != yes
-            # Get a device
-            device = @cxxtest @test_logs((:info, r"^Trying to attach to device"),
-                                         (:info, r"^Successfully attached to device"),
-                                         (:info, r"^Attached to devices with IDs"),
-                                         match_mode=:any,
-                                         Poplar.get_ipu_device())
-            # Run a test program
-            f(device)
+    @testset "Test program: $(f)" for f in (test_compiler_program, test_ipuprogram, test_matmul)
+        function skip_test(f)
+            @warn """
+                  Skipping IPUCompiler test $(f) because bound checks are forced.  To run this testset use
+                      import Pkg; Pkg.test("IPUToolkit"; julia_args=`--check-bounds=auto`)
+                  """
+            @test_broken false
+        end
+        if Poplar.SDK_VERSION ≥ v"2.2.0" || !check_bounds
+            if f == test_matmul && check_bounds
+                # Converting a `Vector` to `SMatrix` results into dynamic dispatch in the
+                # error path, this can be skipped with `@inbounds`, but `@inbounds` is no-op
+                # if we force bounds checks so we have no hope to run this nice test when
+                # using `--check-bounds=yes`.
+                skip_test(f)
+            else
+                # Get a device
+                device = @cxxtest @test_logs((:info, r"^Trying to attach to device"),
+                                             (:info, r"^Successfully attached to device"),
+                                             (:info, r"^Attached to devices with IDs"),
+                                             match_mode=:any,
+                                             Poplar.get_ipu_device())
+                # Run a test program
+                f(device)
+            end
         else
             # With --check-bounds=yes GPUCompiler generates a function mentioning an undefined
             # symbol `gpu_malloc`.  Mark the test as broken until we sort this out.  However
             # this function is optimised away when compiling with `-O1` or higher, and for
             # Poplar.SDK_VERSION ≥ v"2.2.0" we use `-O3`.
-            @warn """
-                  Skipping IPUCompiler tests because bound checks are forced.  To run this testset use
-                      using Pkg
-                      Pkg.test("IPUToolkit"; julia_args=`--check-bounds=auto`)
-                  """
-            @test_broken false
+            skip_test(f)
         end
     end
 
