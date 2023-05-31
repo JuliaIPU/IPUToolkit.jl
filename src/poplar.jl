@@ -100,10 +100,14 @@ function get_ipu_devices(n::Int, hint::Union{AbstractVector{<:Integer},Integer}=
             push!(attached_devices, device)
         end
     end
-    if length(attached_devices) < n
-        @warn "Requested $(n) devices, but could attach only to $(length(attached_devices))"
+    actual_n = length(attached_devices)
+    if actual_n < n
+        @warn "Requested $(n) devices, but could attach only to $(actual_n)"
     end
-    @info "Attached to devices with IDs $(Int.(Poplar.DeviceGetId.(attached_devices)))"
+    if !(actual_n == n == 1)
+        # Do not print the summary of the attached devices if we requested one and got one.
+        @info "Attached to devices with IDs $(Int.(Poplar.DeviceGetId.(attached_devices)))"
+    end
     return attached_devices
 end
 

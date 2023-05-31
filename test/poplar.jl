@@ -106,7 +106,6 @@ end
         # Get a device
         device = @cxxtest @test_logs((:info, r"^Trying to attach to device"),
                                      (:info, r"^Successfully attached to device"),
-                                     (:info, r"^Attached to devices with IDs"),
                                      match_mode=:any,
                                      Poplar.get_ipu_device())
         # Run a test program
