@@ -217,14 +217,15 @@ function test_ipuprogram(device)
     @test jl_outvec5 ≈ @. sec(jl_outvec4) ^ 2
 end
 
-function test_matmul(device)
+function test_linalg(device)
     N = 16
     mat1 = randn(Float32, N)
     mat2 = randn(Float32, N)
-    out = PoplarVector{Float32}(undef, N)
+    mul = PoplarVector{Float32}(undef, N)
+    inverse = PoplarVector{Float32}(undef, N)
 
     @ipuprogram device begin
-        function MatMul(in1::VertexVector{Float32, In}, in2::VertexVector{Float32, In}, out::VertexVector{Float32, Out})
+        function LinAlg(in1::VertexVector{Float32, In}, in2::VertexVector{Float32, In}, mul::VertexVector{Float32, Out}, inverse::VertexVector{Float32, Out})
             # Arguments can only be vectors, so we need to convert them to
             # (static) matrices to do some linear algebra stuff.  The conversion
             # to `SMatrix` has an internal check about the shape/size of the
@@ -233,20 +234,24 @@ function test_matmul(device)
             # sure we're passing consistent data.
             m1 = @inbounds SMatrix{4,4,Float32,16}(in1)
             m2 = @inbounds SMatrix{4,4,Float32,16}(in2)
-            mul = m1 * m2
-            out .= mul[:]
+            m1_m2 = m1 * m2
+            mul .= (m1_m2)[:]
+            inverse .= inv(m1_m2)[:]
         end
 
-        MatMul(mat1, mat2, out)
+        LinAlg(mat1, mat2, mul, inverse)
 
-        jl_out = out
+        jl_mul = mul
+        jl_inv = inverse
     end
     Poplar.DeviceDetach(device)
-    @test reshape(mat1, 4, 4) * reshape(mat2, 4, 4) ≈ reshape(jl_out, 4, 4)
+    jl_mul = reshape(jl_mul, 4, 4)
+    @test reshape(mat1, 4, 4) * reshape(mat2, 4, 4) ≈ jl_mul
+    @test reshape(jl_inv, 4, 4) ≈ inv(jl_mul)
 end
 
 @testset "IPUCompiler" begin
-    @testset "Test program: $(f)" for f in (test_compiler_program, test_ipuprogram, test_matmul)
+    @testset "Test program: $(f)" for f in (test_compiler_program, test_ipuprogram, test_linalg)
         function skip_test(f)
             @warn """
                   Skipping IPUCompiler test $(f) because bound checks are forced.  To run this testset use
@@ -255,7 +260,7 @@ end
             @test_broken false
         end
         if Poplar.SDK_VERSION ≥ v"2.2.0" || !check_bounds
-            if f == test_matmul && check_bounds
+            if f == test_linalg && check_bounds
                 # Converting a `Vector` to `SMatrix` results into dynamic dispatch in the
                 # error path, this can be skipped with `@inbounds`, but `@inbounds` is no-op
                 # if we force bounds checks so we have no hope to run this nice test when
