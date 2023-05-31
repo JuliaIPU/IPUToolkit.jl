@@ -19,6 +19,8 @@ IPUCompiler.PROGRESS_SPINNER[] = false
 
 include("common.jl")
 
+∂(f, x) = first(first(autodiff_deferred(Reverse, f, Active(x))))
+
 function test_compiler_program(device)
     target = @cxxtest Poplar.DeviceGetTarget(device)
     graph = @cxxtest Poplar.Graph(target)
@@ -169,9 +171,9 @@ function test_ipuprogram(device)
     outvec4 = PoplarVector{Float32}(undef, N)
     outvec5 = PoplarVector{Float32}(undef, N)
     f(x) = cos(x)
-    f′(x) = first(first(autodiff_deferred(Reverse, f, Active(x))))
+    f′(x) = ∂(f, x)
     g(x) = tan(x)
-    g′(x) = first(first(autodiff_deferred(Reverse, g, Active(x))))
+    g′(x) = ∂(g, x)
 
     @ipuprogram device begin
         function TimesTwo(inconst::VertexVector{Float32, In}, outvec::VertexVector{Float32, Out})
@@ -217,6 +219,51 @@ function test_ipuprogram(device)
     @test jl_outvec5 ≈ @. sec(jl_outvec4) ^ 2
 end
 
+rosenbrock(x, y=4) = (1 - x) ^ 2 + 100 * (y - x ^ 2) ^ 2
+rosenbrock′(x) = ∂(rosenbrock, x)
+# See Algorithm 1 at page 2 of https://arxiv.org/abs/1412.6980
+function adam(∂f, x₀::T) where {T}
+    x = x₀
+    # Some constants
+    α = T(0.001) # learning rate
+    β₁ = T(0.9)
+    β₂ = T(0.999)
+    ϵ = T(1e-8)
+    # Momenta
+    m = zero(T)
+    v = zero(T)
+    # Stopping criteria
+    Δ = 10 * eps(T)
+    δ = one(T)
+    max_t = Int32(1_000_000)
+    t = one(max_t)
+    while abs(δ) > Δ && t ≤ max_t
+        g = ∂f(x)
+        m = β₁ * m + (one(T) - β₂) * g
+        v = β₂ * v + (one(T) - β₂) * g ^ 2
+        m̂ = m / (one(T) - β₁ ^ t)
+        v̂ = v / (one(T) - β₂ ^ t)
+        δ = α * m̂ / (√(v̂) + ϵ)
+        x -= δ
+        t += one(t)
+    end
+    return x
+end
+
+function test_adam(device)
+    input = collect(Float32.(-4:1:4))
+    output = PoplarVector{Float32}(undef, length(input))
+    @ipuprogram device begin
+        function AdamRosenbrock(in::VertexVector{Float32, In}, out::VertexVector{Float32, Out})
+            out .= adam.(rosenbrock′, in)
+        end
+        AdamRosenbrock(input, output)
+        jl_output = output
+    end
+    Poplar.DeviceDetach(device)
+    @test all(isapprox.(jl_output, [repeat([-2], 4); repeat([2], 5)]; atol=2.6e-3))
+end
+
 function test_linalg(device)
     N = 16
     mat1 = randn(Float32, N)
@@ -251,20 +298,23 @@ function test_linalg(device)
 end
 
 @testset "IPUCompiler" begin
-    @testset "Test program: $(f)" for f in (test_compiler_program, test_ipuprogram, test_linalg)
+    @testset "Test program: $(f)" for f in (test_compiler_program, test_ipuprogram, test_adam, test_linalg)
         function skip_test(f)
             @warn """
-                  Skipping IPUCompiler test $(f) because bound checks are forced.  To run this testset use
+                  Skipping IPUCompiler test $(f).  To run this testset use
                       import Pkg; Pkg.test("IPUToolkit"; julia_args=`--check-bounds=auto`)
                   """
             @test_broken false
         end
         if Poplar.SDK_VERSION ≥ v"2.2.0" || !check_bounds
-            if f == test_linalg && check_bounds
-                # Converting a `Vector` to `SMatrix` results into dynamic dispatch in the
-                # error path, this can be skipped with `@inbounds`, but `@inbounds` is no-op
-                # if we force bounds checks so we have no hope to run this nice test when
-                # using `--check-bounds=yes`.
+            if f in (test_adam, test_linalg) && check_bounds
+                # * `test_adam`: for some reasons we get a runtime OOM when
+                #   compiling with forced check bounds.
+                # * `test_linalg`: converting a `Vector` to `SMatrix` results
+                #   into dynamic dispatch in the error path, this can be skipped
+                #   with `@inbounds`, but `@inbounds` is no-op if we force
+                #   bounds checks so we have no hope to run this nice test when
+                #   using `--check-bounds=yes`.
                 skip_test(f)
             else
                 # Get a device
