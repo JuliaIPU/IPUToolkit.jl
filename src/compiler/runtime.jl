@@ -37,10 +37,13 @@ function report_exception_frame(idx, func, file, line)
     return nothing
 end
 
-# Math functions
+# Math functions.  These methods are implemented internally by promoting arguments to double
+# precisions, which is either horribly slow on the IPU (doubles are implemented in software)
+# or require missing LLVM intrinsics.
 @device_override Base.sin(x::Float32) = ccall("llvm.sin.f32", llvmcall, Float32, (Float32,), x)
 @device_override Base.cos(x::Float32) = ccall("llvm.cos.f32", llvmcall, Float32, (Float32,), x)
 @device_override Base.tan(x::Float32) = ccall("extern tanf",  llvmcall, Float32, (Float32,), x)
+@device_override Base.:^(x::Float32, p::Integer) = ccall("llvm.pow.f32",  llvmcall, Float32, (Float32, Float32), x, p)
 
 ## quirks, adapted from
 ## https://github.com/JuliaGPU/CUDA.jl/blob/5c51766d0a9e7819ea79f314e37ed6a8a5d24369/src/device/quirks.jl
