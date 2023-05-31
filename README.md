@@ -125,6 +125,11 @@ To completely disable all printing and make these macros no-op you can set
 IPUCompiler.DISABLE_PRINT[] = true
 ```
 
+Other options related to codelet generation are:
+
+* `IPUCompiler.KEEP_LLVM_FILES`: it controls whether to keep the files with the LLVM IR of the codelets;
+* `IPUCompiler.POPC_FLAGS`: flags to pass to the `popc` compiler.
+
 ### Domain-Specific Language: `@ipuprogram`
 
 The `IPUCompiler.@ipuprogram` macro provides a very simple and limited DSL to automatically generate most of the boilerplate code needed when writing an IPU program.
