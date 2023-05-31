@@ -46,7 +46,19 @@ end
 # We have experienced some miscompilations of LLVM IR when using optimisation levels `-O1`
 # or higher with old `popc`, especially v1.3-2.0.  So, we default to `-O0` with older
 # versions, and `-O3` for newer versions.
-const POPC_FLAGS = Poplar.SDK_VERSION ≥ v"2.2.0" ? `-g -O3` : `-g -O0`
+"""
+    $(@__MODULE__).POPC_FLAGS::$(typeof(POPC_FLAGS))
+
+Options to pass to the `popc` compiler to compile the code.
+"""
+const POPC_FLAGS = Ref(Poplar.SDK_VERSION ≥ v"2.2.0" ? `-g -O3` : `-g -O0`)
+
+"""
+    $(@__MODULE__).KEEP_LLVM_FILES::$(typeof(KEEP_LLVM_FILES))
+
+Option to control whether to keep in the current directory the files with the LLVM Intermediate Representation (IR) generated for the codelets.
+"""
+const KEEP_LLVM_FILES = Ref(false)
 
 _print_s(::Type{In}) = "Input"
 _print_s(::Type{Out}) = "Output"
@@ -83,12 +95,12 @@ function __build_codelet(graph, kernel, name, origKernel)
             end
         end
 
-        input_file = joinpath(dir, "$(name).ll")
+        input_file = joinpath(KEEP_LLVM_FILES[] ? "" : dir, "$(name).ll")
         write(input_file, llvm_ir)
 
         run(```
             popc
-            $(POPC_FLAGS)
+            $(POPC_FLAGS[])
             -X -Wno-override-module
             -X -Qunused-arguments
             -DGET_VEC_PTR_NAME=get_vec_ptr_$(name)
