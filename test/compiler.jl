@@ -255,7 +255,9 @@ function test_adam(device)
     output = PoplarVector{Float32}(undef, length(input))
     @ipuprogram device begin
         function AdamRosenbrock(in::VertexVector{Float32, In}, out::VertexVector{Float32, Out})
-            out .= adam.(rosenbrock′, in)
+            for idx in eachindex(out)
+                out[idx] = adam(rosenbrock′, in[idx])
+            end
         end
         AdamRosenbrock(input, output)
         jl_output = output
@@ -307,9 +309,7 @@ end
             @test_broken false
         end
         if Poplar.SDK_VERSION ≥ v"2.2.0" || !check_bounds
-            if f in (test_adam, test_linalg) && check_bounds
-                # * `test_adam`: for some reasons we get a runtime OOM when
-                #   compiling with forced check bounds.
+            if f in (test_linalg,) && check_bounds
                 # * `test_linalg`: converting a `Vector` to `SMatrix` results
                 #   into dynamic dispatch in the error path, this can be skipped
                 #   with `@inbounds`, but `@inbounds` is no-op if we force
