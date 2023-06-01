@@ -239,10 +239,10 @@ function adam(∂f, x₀::T) where {T}
     t = one(max_t)
     while abs(δ) > Δ && t ≤ max_t
         g = ∂f(x)
-        m = β₁ * m + (one(T) - β₂) * g
-        v = β₂ * v + (one(T) - β₂) * g ^ 2
-        m̂ = m / (one(T) - β₁ ^ t)
-        v̂ = v / (one(T) - β₂ ^ t)
+        m = β₁ * m + (1 - β₂) * g
+        v = β₂ * v + (1 - β₂) * g ^ 2
+        m̂ = m / (1 - β₁ ^ t)
+        v̂ = v / (1 - β₂ ^ t)
         δ = α * m̂ / (√(v̂) + ϵ)
         x -= δ
         t += one(t)
