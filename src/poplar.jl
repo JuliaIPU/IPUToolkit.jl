@@ -59,6 +59,8 @@ _get_type(::Type{Cfloat}) = FLOAT()
 
 GraphAddConstant(graph::Graph, tensor::Array{T}) where {T} =
     Poplar.GraphAddConstant(graph, _get_type(T), collect(UInt64.(size(tensor))), tensor)
+Base.getindex(t::TensorAllocated, r::AbstractUnitRange{<:Integer}) =
+    TensorSlice(t, first(r), last(r) + step(r))
 
 # Be sure to quit all julia sessions which hold devices!!!
 """

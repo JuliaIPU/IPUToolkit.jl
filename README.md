@@ -89,6 +89,8 @@ Poplar.GraphAddConstant(graph, host_array)
 ```
 adds the `host_array` (a plain standard Julia `Array` living on the host) to `graph`, automatically inferring from `host_array` the type and the shape of the tensor in the graph.
 
+You can slice a tensor with the usual Julia notation `tensor[index1:index2]`, this corresponds to a call to [`Tensor.slice(index1, index2+1)`](https://docs.graphcore.ai/projects/poplar-api/en/latest/poplar/graph/Tensor.html#_CPPv4NK6poplar6Tensor5sliceENSt6size_tENSt6size_tE).
+
 ### Writing codelets in Julia
 
 You can write [codelets](https://docs.graphcore.ai/projects/poplar-user-guide/en/3.2.0/vertices_overview.html) for the IPU in Julia with the `IPUCompiler.@codelet` macro, and use them inside a program, written using the interface to the Poplar SDK described above.
