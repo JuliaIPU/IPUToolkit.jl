@@ -1,6 +1,6 @@
 module IPURuntime
 
-import ..IPUCompiler: @device_override, @ipuprint, @ipuprintf, @ipuprintln, get_scount_l, get_tile_id
+import ..IPUCompiler: @device_override, @ipuprintf, @ipuprintln, get_scount_l, get_tile_id
 using GPUCompiler: reset_runtime
 import LinearAlgebra
 
