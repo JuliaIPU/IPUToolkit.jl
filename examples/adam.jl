@@ -3,10 +3,13 @@ using Enzyme
 
 IPUCompiler.KEEP_LLVM_FILES[] = true
 
-# TODO: wrap `Tensor.getTilesPerIPU()`
-const tiles_per_iput = 1472
+device = Poplar.get_ipu_device()
+target = Poplar.DeviceGetTarget(device)
+graph = Poplar.Graph(target)
 
-jl_input = collect(Float32.(range(-10; stop=10, length=200 * tiles_per_iput)))
+tiles_per_iput = Int(Poplar.TargetGetNumTiles(target))
+
+jl_input = collect(Float32.(range(-10; stop=10, length=10 * tiles_per_iput)))
 
 ∂(f, x) = first(first(autodiff_deferred(Reverse, f, Active(x))))
 rosenbrock(x, y=4) = (1 - x) ^ 2 + 100 * (y - x ^ 2) ^ 2
@@ -38,10 +41,6 @@ function adam(∂f, x₀::T) where {T}
     end
     return x
 end
-
-device = Poplar.get_ipu_device()
-target = Poplar.DeviceGetTarget(device)
-graph = Poplar.Graph(target)
 
 IPUCompiler.@codelet graph function RosenAdam(in::VertexVector{Float32, In}, out::VertexVector{Float32, Out})
     for idx in eachindex(out)
