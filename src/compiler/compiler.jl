@@ -75,6 +75,7 @@ GPUCompiler.isintrinsic(@nospecialize(job::CompilerJob{<:Any,IPUCompilerParams})
 include("codelet.jl")
 include("tensors.jl")
 include("program.jl")
+include("timing.jl")
 
 # Mapping of the LLVM version used by each version of the Poplar SDK.  To find it, use `popc
 # --version`.
