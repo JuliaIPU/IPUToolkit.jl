@@ -49,13 +49,13 @@ IPUCompiler.@codelet graph function RosenAdam(in::VertexVector{Float32, In}, out
 end
 
 input = Poplar.GraphAddConstant(graph, jl_input)
-output = Poplar.GraphAddVariable(graph, Poplar.FLOAT(), collect(UInt64.(size(jl_input))), "output");
+output = Poplar.GraphAddVariable(graph, Poplar.FLOAT(), collect(UInt64.(size(input))), "output");
 
 prog = Poplar.ProgramSequence()
 computeSetAdam = Poplar.GraphAddComputeSet(graph, "Adam")
 
 # Spread the vertex across all tiles
-for idx in 0:(length(jl_input) - 1)
+for idx in eachindex(input, output)
     tile = mod(idx, tiles_per_iput - 1)
     AdamVertex = Poplar.GraphAddVertex(graph, computeSetAdam, "RosenAdam")
     Poplar.GraphSetTileMapping(graph, input[idx], tile)
@@ -71,6 +71,6 @@ flags = Poplar.OptionFlags()
 Poplar.OptionFlagsSet(flags, "debug.instrument", "true")
 
 engine = Poplar.Engine(graph, prog, flags)
-Poplar.EngineLoadAndRun(engine, device)
+@time Poplar.EngineLoadAndRun(engine, device)
 
 Poplar.DeviceDetach(device)

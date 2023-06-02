@@ -61,6 +61,17 @@ GraphAddConstant(graph::Graph, tensor::Array{T}) where {T} =
     Poplar.GraphAddConstant(graph, _get_type(T), collect(UInt64.(size(tensor))), tensor)
 Base.getindex(t::TensorAllocated, r::AbstractUnitRange{<:Integer}) =
     TensorSlice(t, first(r), last(r) + step(r))
+Base.size(t::TensorAllocated) = Int.((Poplar.TensorShape(t)...,))
+Base.length(t::TensorAllocated) = prod(size(t))
+Base.eachindex(t::TensorAllocated) = 0:(length(t) - 1)
+function Base.eachindex(t1::TensorAllocated, t2::TensorAllocated)
+    t1_len = length(t1)
+    t2_len = length(t2)
+    if t1_len != t2_len
+        throw(DimensionMismatch("all input tensors to eachindex must have the same lengths, got $(t1) and $(t2)"))
+    end
+    return 0:(t1_len - 1)
+end
 
 # Be sure to quit all julia sessions which hold devices!!!
 """
