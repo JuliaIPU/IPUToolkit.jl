@@ -7,9 +7,9 @@ device = Poplar.get_ipu_device()
 target = Poplar.DeviceGetTarget(device)
 graph = Poplar.Graph(target)
 
-tiles_per_ipu = Int(Poplar.TargetGetNumTiles(target))
+num_tiles = Int(Poplar.TargetGetNumTiles(target))
 
-initial_points = collect(Float32.(range(-10; stop=10, length=10 * tiles_per_ipu)))
+initial_points = collect(Float32.(range(-4; stop=4, length=10 * num_tiles)))
 minima = similar(initial_points)
 
 ∂(f, x) = first(first(autodiff_deferred(Reverse, f, Active(x))))
@@ -55,14 +55,15 @@ output = Poplar.GraphAddVariable(graph, Poplar.FLOAT(), collect(UInt64.(size(inp
 prog = Poplar.ProgramSequence()
 computeSetAdam = Poplar.GraphAddComputeSet(graph, "Adam")
 
-# Spread the vertex across all tiles
-for idx in eachindex(input, output)
-    tile = mod(idx, tiles_per_ipu - 1)
+# Create `num_tiles` vertices and spread the arrays over all tiles.
+for tile in 0:(num_tiles - 1)
+    s = cld(length(input) - 1, num_tiles)
+    slice = (s * tile):(s * tile + s - 1)
     AdamVertex = Poplar.GraphAddVertex(graph, computeSetAdam, "RosenAdam")
-    Poplar.GraphSetTileMapping(graph, input[idx], tile)
-    Poplar.GraphSetTileMapping(graph, output[idx], tile)
-    Poplar.GraphConnect(graph, AdamVertex["in"], input[idx:idx])
-    Poplar.GraphConnect(graph, AdamVertex["out"], output[idx:idx])
+    Poplar.GraphSetTileMapping(graph, input[slice], tile)
+    Poplar.GraphSetTileMapping(graph, output[slice], tile)
+    Poplar.GraphConnect(graph, AdamVertex["in"], input[slice])
+    Poplar.GraphConnect(graph, AdamVertex["out"], output[slice])
     Poplar.GraphSetTileMapping(graph, AdamVertex, tile)
 end
 
