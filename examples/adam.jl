@@ -7,9 +7,10 @@ device = Poplar.get_ipu_device()
 target = Poplar.DeviceGetTarget(device)
 graph = Poplar.Graph(target)
 
-tiles_per_iput = Int(Poplar.TargetGetNumTiles(target))
+tiles_per_ipu = Int(Poplar.TargetGetNumTiles(target))
 
-jl_input = collect(Float32.(range(-10; stop=10, length=10 * tiles_per_iput)))
+initial_points = collect(Float32.(range(-10; stop=10, length=10 * tiles_per_ipu)))
+minima = similar(initial_points)
 
 ∂(f, x) = first(first(autodiff_deferred(Reverse, f, Active(x))))
 rosenbrock(x, y=4) = (1 - x) ^ 2 + 100 * (y - x ^ 2) ^ 2
@@ -48,7 +49,7 @@ IPUCompiler.@codelet graph function RosenAdam(in::VertexVector{Float32, In}, out
     end
 end
 
-input = Poplar.GraphAddConstant(graph, jl_input)
+input = Poplar.GraphAddConstant(graph, initial_points)
 output = Poplar.GraphAddVariable(graph, Poplar.FLOAT(), collect(UInt64.(size(input))), "output");
 
 prog = Poplar.ProgramSequence()
@@ -56,7 +57,7 @@ computeSetAdam = Poplar.GraphAddComputeSet(graph, "Adam")
 
 # Spread the vertex across all tiles
 for idx in eachindex(input, output)
-    tile = mod(idx, tiles_per_iput - 1)
+    tile = mod(idx, tiles_per_ipu - 1)
     AdamVertex = Poplar.GraphAddVertex(graph, computeSetAdam, "RosenAdam")
     Poplar.GraphSetTileMapping(graph, input[idx], tile)
     Poplar.GraphSetTileMapping(graph, output[idx], tile)
@@ -67,10 +68,13 @@ end
 
 Poplar.ProgramSequenceAdd(prog, Poplar.ProgramExecute(computeSetAdam))
 
+Poplar.GraphCreateHostRead(graph, "minima-read", output)
+
 flags = Poplar.OptionFlags()
 Poplar.OptionFlagsSet(flags, "debug.instrument", "true")
 
 engine = Poplar.Engine(graph, prog, flags)
-@time Poplar.EngineLoadAndRun(engine, device)
+Poplar.EngineLoadAndRun(engine, device)
+Poplar.EngineReadTensor(engine, "minima-read", minima)
 
 Poplar.DeviceDetach(device)
