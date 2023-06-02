@@ -12,13 +12,23 @@ end
 target = Poplar.DeviceGetTarget(device)
 graph = Poplar.Graph(target)
 
+tile_clock_frequency = Poplar.TargetGetTileClockFrequency(target)
+
 IPUCompiler.@codelet graph function TimesTwo(inconst::IPUCompiler.VertexVector{Float32, IPUCompiler.In}, outvec::IPUCompiler.VertexVector{Float32, IPUCompiler.Out})
     outvec .= inconst .* 2
 end
 
-IPUCompiler.@codelet graph function Sort(invec::IPUCompiler.VertexVector{Float32, IPUCompiler.In}, outvec::IPUCompiler.VertexVector{Float32, IPUCompiler.Out})
+@eval IPUCompiler.@codelet graph function Sort(invec::IPUCompiler.VertexVector{Float32, IPUCompiler.In}, outvec::IPUCompiler.VertexVector{Float32, IPUCompiler.Out})
     outvec .= invec
+    # We can use the intrinsic `get_scount_l` to get the cycle counter right
+    # before and after some operations, so that we can benchmark it.
+    cycles_start = get_scount_l()
     sort!(outvec)
+    cycles_end = get_scount_l()
+    # Divide the difference between the two cycle counts by the tile frequency
+    # clock to get the time.
+    sort_time = (cycles_end - cycles_start) / $(tile_clock_frequency)
+    @ipushow sort_time
 end
 
 inconst = Poplar.GraphAddConstant(graph, Poplar.FLOAT(), UInt64[10], Float32[5, 2, 10, 102, -10, 2, 256, 15, 32, 100])
