@@ -40,6 +40,11 @@ end
 # IPU builtins: https://docs.graphcore.ai/projects/poplar-api/en/latest/ipu_intrinsics/ipu_builtins.html
 get_scount_l() = ccall("extern @llvm.colossus.get.scount.l",  llvmcall, Cuint, ())
 get_tile_id() = ccall("extern @llvm.colossus.get.tile.id",  llvmcall, Cuint, ())
+# Random functions, based on IPU intrinsics
+Base.rand(T::Type{Float16}) = ccall("extern @llvm.colossus.urand.f16",  llvmcall, Float16, ()) + T(0.5)
+Base.rand(T::Type{Float32}) = ccall("extern @llvm.colossus.urand.f32",  llvmcall, Float32, ()) + T(0.5)
+Base.rand(T::Type{UInt32}) = ccall("extern @llvm.colossus.urand32",  llvmcall, UInt32, ()) + T(0.5)
+Base.rand(T::Type{UInt64}) = ccall("extern @llvm.colossus.urand64",  llvmcall, UInt64, ()) + T(0.5)
 
 # Math functions.  These methods are implemented internally by promoting arguments to double
 # precisions, which is either horribly slow on the IPU (doubles are implemented in software)

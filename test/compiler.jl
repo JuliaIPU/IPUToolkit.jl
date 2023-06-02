@@ -9,6 +9,7 @@ using IPUToolkit.Poplar
 if Poplar.SDK_VERSION ≥ v"2.2.0" || !check_bounds
     using Enzyme
     using LinearAlgebra
+    using Statistics
 end
 if !check_bounds
     using StaticArrays
@@ -163,13 +164,14 @@ function test_compiler_program(device)
 end
 
 function test_ipuprogram(device)
-    N = 20_000
+    N = 15_000
     input = randn(Float32, N)
     outvec1 = PoplarVector{Float32}(undef, N)
     outvec2 = PoplarVector{Float32}(undef, N)
     outvec3 = PoplarVector{Float32}(undef, N)
     outvec4 = PoplarVector{Float32}(undef, N)
     outvec5 = PoplarVector{Float32}(undef, N)
+    outvec6 = PoplarVector{Float32}(undef, N)
     f(x) = cos(x)
     f′(x) = ∂(f, x)
     g(x) = tan(x)
@@ -198,18 +200,25 @@ function test_ipuprogram(device)
                 @inbounds outvec[idx] = g′(invec[idx])
             end
         end
+        function Random(out::VertexVector{Float32, Out})
+            for idx in eachindex(out)
+                out[idx] = rand(Float32)
+            end
+        end
 
         TimesTwo(input, outvec1)
         Scale(outvec1, outvec2)
         Exp(outvec2, outvec3)
         DiffCos(outvec3, outvec4)
         DiffTan(outvec4, outvec5)
+        Random(outvec6)
 
         jl_outvec1 = outvec1
         jl_outvec2 = outvec2
         jl_outvec3 = outvec3
         jl_outvec4 = outvec4
         jl_outvec5 = outvec5
+        jl_outvec6 = outvec6
     end
     Poplar.DeviceDetach(device)
     @test jl_outvec1 ≈ 2 .* input
@@ -217,6 +226,10 @@ function test_ipuprogram(device)
     @test jl_outvec3 ≈ exp.(jl_outvec2)
     @test jl_outvec4 ≈ @. -sin(jl_outvec3)
     @test jl_outvec5 ≈ @. sec(jl_outvec4) ^ 2
+    # There's a non-zero probability that this test may fail, but assuming an
+    # average relative error of sqrt(N) / N, we multiply by `pi` to be somewhat
+    # safe (and `pi` is cool).
+    @test mean(jl_outvec6) ≈ 0.5 rtol=(pi * sqrt(N) / N)
 end
 
 rosenbrock(x, y=4) = (1 - x) ^ 2 + 100 * (y - x ^ 2) ^ 2
