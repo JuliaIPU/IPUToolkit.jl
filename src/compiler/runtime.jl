@@ -46,13 +46,21 @@ Base.rand(T::Type{Float32}) = ccall("extern @llvm.colossus.urand.f32",  llvmcall
 Base.rand(T::Type{UInt32}) = ccall("extern @llvm.colossus.urand32",  llvmcall, UInt32, ()) + T(0.5)
 Base.rand(T::Type{UInt64}) = ccall("extern @llvm.colossus.urand64",  llvmcall, UInt64, ()) + T(0.5)
 
-# Math functions.  These methods are implemented internally by promoting arguments to double
-# precisions, which is either horribly slow on the IPU (doubles are implemented in software)
-# or require missing LLVM intrinsics.
+## Math functions.
+# There are different reasons why we prefer LLVM intrinsics on the IPU: implementations in
+# Julia's Base either require promotion to double (very slow) or require non-existing
+# symbols (maybe because they aren't implemented for `double`s on the IPU).
 @device_override Base.sin(x::Float32) = ccall("llvm.sin.f32", llvmcall, Float32, (Float32,), x)
 @device_override Base.cos(x::Float32) = ccall("llvm.cos.f32", llvmcall, Float32, (Float32,), x)
 @device_override Base.tan(x::Float32) = ccall("extern tanf",  llvmcall, Float32, (Float32,), x)
-@device_override Base.:^(x::Float32, p::Integer) = ccall("llvm.pow.f32",  llvmcall, Float32, (Float32, Float32), x, p)
+@device_override Base.exp(x::Float32) = ccall("llvm.exp.f32", llvmcall, Float32, (Float32,), x)
+@device_override Base.exp2(x::Float32) = ccall("llvm.exp2.f32", llvmcall, Float32, (Float32,), x)
+@device_override Base.log(x::Float32) = ccall("llvm.log.f32", llvmcall, Float32, (Float32,), x)
+@device_override Base.log10(x::Float32) = ccall("llvm.log10.f32", llvmcall, Float32, (Float32,), x)
+@device_override Base.log2(x::Float32) = ccall("llvm.log2.f32", llvmcall, Float32, (Float32,), x)
+@device_override Base.:^(b::Float32, p::Int32) = ccall("llvm.powi.f32.i32", llvmcall, Float32, (Float32, Int32), b, p)
+@device_override Base.:^(b::Float32, p::Float32) = ccall("llvm.pow.f32", llvmcall, Float32, (Float32, Float32), b, p)
+@device_override Base.sqrt(x::Float32) = ccall("llvm.sqrt.f32", llvmcall, Float32, (Float32,), x)
 
 ## quirks, adapted from
 ## https://github.com/JuliaGPU/CUDA.jl/blob/5c51766d0a9e7819ea79f314e37ed6a8a5d24369/src/device/quirks.jl
