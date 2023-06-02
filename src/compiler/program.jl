@@ -16,12 +16,8 @@ function _add_vertex!(initialised_tensors::Dict{Symbol, Symbol}, graph, prog, na
     compute_set = string(name, "_compute_set")
     compute_set_sym = gensym(compute_set)
     vertex = gensym(Symbol(name, "_vertex"))
-    out = quote
-        $(esc(compute_set_sym)) = $(esc(Poplar.GraphAddComputeSet))($(esc(graph)), $(compute_set))
-        $(esc(vertex)) = $(esc(Poplar.GraphAddVertex))($(esc(graph)), $(esc(compute_set_sym)), $(string(name)))
-        $(esc(Poplar.GraphSetTileMapping))($(esc(graph)), $(esc(vertex)), 0) # <-- TOOD: let change the tile mapping
-        # $(esc(Poplar.GraphSetPerfEstimate))($(esc(graph)), $(esc(vertex)), 1)
-    end
+    out = quote end
+    add_vertex = :( $(esc(@__MODULE__().add_vertex))($(esc(graph)), $(esc(prog)), $(esc(name))) )
     if length(expr.args) > 1
         for (idx, arg) in enumerate(expr.args[2:end])
             arg_info = f_args[idx]
@@ -36,20 +32,13 @@ function _add_vertex!(initialised_tensors::Dict{Symbol, Symbol}, graph, prog, na
                              else
                                  error("`$(string(arg))` is a `$(typeof(esc(arg)))`, it must be either an `Array` or a `PoplarArray`")
                              end
-                             $(esc(Poplar.GraphSetTileMapping))($(esc(graph)), $(esc(vec)), 0) # <-- TODO: let change the tile mapping
                          end).args)
                 initialised_tensors[arg] = vec
             end
-            append!(out.args,
-                    (quote
-                         $(esc(Poplar.GraphConnect))($(esc(graph)), $(esc(vertex))[$(string(arg_info[1]))], $(esc(initialised_tensors[arg])))
-                     end).args)
+            push!(add_vertex.args, esc(initialised_tensors[arg]))
         end
     end
-    append!(out.args,
-            (quote
-                 $(esc(Poplar.ProgramSequenceAdd))($(esc(prog)), $(esc(Poplar.ProgramExecute))($(esc(compute_set_sym))))
-             end).args)
+    push!(out.args, add_vertex)
     return out
 end
 

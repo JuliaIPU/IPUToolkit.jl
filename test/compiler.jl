@@ -59,64 +59,17 @@ function test_compiler_program(device)
     outvec3 = @cxxtest Poplar.GraphAddVariable(graph, Poplar.FLOAT(), UInt64[10], "outvec3");
     outvec4 = @cxxtest Poplar.GraphAddVariable(graph, Poplar.FLOAT(), UInt64[10], "outvec4");
 
-    Poplar.GraphSetTileMapping(graph, inconst, 0)
-    Poplar.GraphSetTileMapping(graph, outvec1, 0)
-    Poplar.GraphSetTileMapping(graph, outvec2, 0)
-    Poplar.GraphSetTileMapping(graph, outvec3, 0)
-    Poplar.GraphSetTileMapping(graph, outvec4, 0)
-
     prog = @cxxtest Poplar.ProgramSequence()
 
-    computeSetMul = @cxxtest Poplar.GraphAddComputeSet(graph, "computeSetMul")
-    TimesTwoVtx = @cxxtest Poplar.GraphAddVertex(graph, computeSetMul, "TimesTwo")
-    Poplar.GraphConnect(graph, TimesTwoVtx["inconst"], inconst)
-    Poplar.GraphConnect(graph, TimesTwoVtx["outvec"], outvec1)
-    Poplar.GraphSetTileMapping(graph, TimesTwoVtx, 0)
-    if Poplar.SDK_VERSION < v"2.0"
-        Poplar.GraphSetCycleEstimate(graph, TimesTwoVtx, 1)
-    else
-        # Poplar.GraphSetPerfEstimate(graph, TimesTwoVtx, 1)
-    end
-
-    computeSetSort = @cxxtest Poplar.GraphAddComputeSet(graph, "computeSetSort")
-    SortVtx = @cxxtest Poplar.GraphAddVertex(graph, computeSetSort, "Sort")
-    Poplar.GraphConnect(graph, SortVtx["invec"], outvec1)
-    Poplar.GraphConnect(graph, SortVtx["outvec"], outvec2)
-    Poplar.GraphSetTileMapping(graph, SortVtx, 0)
-    if Poplar.SDK_VERSION < v"2.0"
-        Poplar.GraphSetCycleEstimate(graph, SortVtx, 1)
-    else
-        # Poplar.GraphSetPerfEstimate(graph, SortVtx, 1)
-    end
-
-    computeSetSin = @cxxtest Poplar.GraphAddComputeSet(graph, "computeSetSin")
-    SinVtx = @cxxtest Poplar.GraphAddVertex(graph, computeSetSin, "Sin")
-    Poplar.GraphConnect(graph, SinVtx["invec"], outvec2)
-    Poplar.GraphConnect(graph, SinVtx["outvec"], outvec3)
-    Poplar.GraphSetTileMapping(graph, SinVtx, 0)
-    if Poplar.SDK_VERSION < v"2.0"
-        Poplar.GraphSetCycleEstimate(graph, SinVtx, 1)
-    else
-        # Poplar.GraphSetPerfEstimate(graph, SinVtx, 1)
-    end
-
-    computeSetPrint = @cxxtest Poplar.GraphAddComputeSet(graph, "computeSetPrint")
-    PrintVtx = @cxxtest Poplar.GraphAddVertex(graph, computeSetPrint, "Print")
-    Poplar.GraphConnect(graph, PrintVtx["outvec"], outvec4)
-    Poplar.GraphSetTileMapping(graph, PrintVtx, 0)
-    if Poplar.SDK_VERSION < v"2.0"
-        Poplar.GraphSetCycleEstimate(graph, PrintVtx, 1)
-    else
-        # Poplar.GraphSetPerfEstimate(graph, PrintVtx, 1)
-    end
-
-    Poplar.ProgramSequenceAdd(prog, Poplar.ProgramExecute(computeSetMul))
-    Poplar.ProgramSequenceAdd(prog, Poplar.ProgramExecute(computeSetSort))
-    # The `@device_override` business works well only on Julia v1.7+
+    add_vertex(graph, prog, TimesTwo, inconst, outvec1)
+    add_vertex(graph, prog, Sort, outvec1, outvec2)
     if VERSION ≥ v"1.7"
-        Poplar.ProgramSequenceAdd(prog, Poplar.ProgramExecute(computeSetSin))
+        # The `@device_override` business works well only on Julia v1.7+
+        add_vertex(graph, prog, Sin, outvec2, outvec3)
     end
-    Poplar.ProgramSequenceAdd(prog, Poplar.ProgramExecute(computeSetPrint))
+    add_vertex(graph, prog, Print, outvec4)
+    @test_throws ArgumentError add_vertex(graph, prog, +, outvec4)
+    @test_throws ArgumentError add_vertex(graph, prog, Print, outvec3, outvec4)
 
     # Init some variables which will be used to read back from the IPU
     # the results of some basic operations.

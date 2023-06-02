@@ -1,8 +1,6 @@
 using IPUToolkit.IPUCompiler
 using IPUToolkit.Poplar
 
-##
-
 device = if Poplar.SDK_VERSION < v"2.0"
     Poplar.IPUModelCreateDevice(Poplar.IPUModel())
 else
@@ -41,30 +39,9 @@ Poplar.GraphSetTileMapping(graph, outvec2, 0)
 
 prog = Poplar.ProgramSequence()
 
-computeSetMul = Poplar.GraphAddComputeSet(graph, "computeSetMul")
-TimesTwoVtx = Poplar.GraphAddVertex(graph, computeSetMul, "TimesTwo")
-Poplar.GraphConnect(graph, TimesTwoVtx["inconst"], inconst)
-Poplar.GraphConnect(graph, TimesTwoVtx["outvec"], outvec1)
-Poplar.GraphSetTileMapping(graph, TimesTwoVtx, 0)
-if Poplar.SDK_VERSION < v"2.0"
-    Poplar.GraphSetCycleEstimate(graph, TimesTwoVtx, 1)
-else
-    # Poplar.GraphSetPerfEstimate(graph, TimesTwoVtx, 1)
-end
+add_vertex(graph, prog, TimesTwo, inconst, outvec1)
+add_vertex(graph, prog, Sort, outvec1, outvec2)
 
-computeSetSort = Poplar.GraphAddComputeSet(graph, "computeSetSort")
-SortVtx = Poplar.GraphAddVertex(graph, computeSetSort, "Sort")
-Poplar.GraphConnect(graph, SortVtx["invec"], outvec1)
-Poplar.GraphConnect(graph, SortVtx["outvec"], outvec2)
-Poplar.GraphSetTileMapping(graph, SortVtx, 0)
-if Poplar.SDK_VERSION < v"2.0"
-    Poplar.GraphSetCycleEstimate(graph, SortVtx, 1)
-else
-    # Poplar.GraphSetPerfEstimate(graph, SortVtx, 1)
-end
-
-Poplar.ProgramSequenceAdd(prog, Poplar.ProgramExecute(computeSetMul))
-Poplar.ProgramSequenceAdd(prog, Poplar.ProgramExecute(computeSetSort))
 Poplar.ProgramSequenceAdd(prog, Poplar.ProgramPrintTensor("Input", inconst))
 Poplar.ProgramSequenceAdd(prog, Poplar.ProgramPrintTensor("Output Times2", outvec1))
 Poplar.ProgramSequenceAdd(prog, Poplar.ProgramPrintTensor("Output Sorted", outvec2))

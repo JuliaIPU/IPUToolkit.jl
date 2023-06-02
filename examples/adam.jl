@@ -53,21 +53,8 @@ input = Poplar.GraphAddConstant(graph, initial_points)
 output = Poplar.GraphAddVariable(graph, Poplar.FLOAT(), collect(UInt64.(size(input))), "output");
 
 prog = Poplar.ProgramSequence()
-computeSetAdam = Poplar.GraphAddComputeSet(graph, "Adam")
 
-# Create `num_tiles` vertices and spread the arrays over all tiles.
-for tile in 0:(num_tiles - 1)
-    s = cld(length(input) - 1, num_tiles)
-    slice = (s * tile):(s * tile + s - 1)
-    AdamVertex = Poplar.GraphAddVertex(graph, computeSetAdam, "RosenAdam")
-    Poplar.GraphSetTileMapping(graph, input[slice], tile)
-    Poplar.GraphSetTileMapping(graph, output[slice], tile)
-    Poplar.GraphConnect(graph, AdamVertex["in"], input[slice])
-    Poplar.GraphConnect(graph, AdamVertex["out"], output[slice])
-    Poplar.GraphSetTileMapping(graph, AdamVertex, tile)
-end
-
-Poplar.ProgramSequenceAdd(prog, Poplar.ProgramExecute(computeSetAdam))
+add_vertex(graph, prog, 0:(num_tiles - 1), RosenAdam, input, output)
 
 Poplar.GraphCreateHostRead(graph, "minima-read", output)
 

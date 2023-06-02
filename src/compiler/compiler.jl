@@ -1,7 +1,7 @@
 # based on GPUCompiler example https://github.com/JuliaGPU/GPUCompiler.jl/blob/master/examples/kernel.jl
 module IPUCompiler
 
-export @codelet, @ipuprogram, VertexVector, In, Out, InOut, get_scount_l, get_tile_id
+export @codelet, @ipuprogram, VertexVector, In, Out, InOut, get_scount_l, get_tile_id, add_vertex
 
 include("output.jl")
 
@@ -76,6 +76,92 @@ include("codelet.jl")
 include("tensors.jl")
 include("program.jl")
 include("timing.jl")
+
+function add_vertex(graph::Poplar.GraphAllocated,
+                    compute_set::Poplar.ComputeSetAllocated,
+                    tiles::Union{Integer,AbstractVector{<:Integer}},
+                    codelet::Function,
+                    args::Poplar.TensorAllocated...)
+    meths = methods(codelet)
+    if length(meths) != 1
+        throw(ArgumentError("Function $(codelet) does not have exactly one method.  Use a different function which has a method only."))
+    end
+    # Get the names of the arguments of the codelet.
+    arg_names = string.(Base.method_argnames(meths[begin])[2:end])
+    if length(arg_names) != length(args)
+        throw(ArgumentError("Function $(codelet) takes $(length(arg_names)) arguments but you passed $(args) arguments for this vertex."))
+    end
+
+    num_tiles = length(tiles)
+    for (idx, tile) in enumerate(tiles)
+        # Create a vertex on each tile
+        vertex = Poplar.GraphAddVertex(graph, compute_set, string(codelet))
+
+        # Evenly spread the arrays over all tiles.
+        for (arg_n, arg) in enumerate(args)
+            arg_slice = if num_tiles > 1
+                if length(arg) < num_tiles
+                    error("The argument #$(arg_n) to $(codelet) has $(length(arg)) elements, which is less than the number of tiles ($(num_tiles))")
+                end
+                s = cld(length(arg) - 1, num_tiles)
+                slice = (s * (idx - 1)):(s * (idx - 1) + s - 1)
+                arg[slice]
+            else
+                arg
+            end
+            Poplar.GraphSetTileMapping(graph, arg_slice, tile)
+            Poplar.GraphConnect(graph, vertex[arg_names[arg_n]], arg_slice)
+        end
+
+        # Add the vertex on the tile
+        Poplar.GraphSetTileMapping(graph, vertex, tile)
+
+        # # TODO: after wrapping `Poplar.GraphSetPerfEstimate` in newer SDKs,
+        # # allow setting the perf estimate of the vertex.
+        # if Poplar.SDK_VERSION < v"2.0"
+        #     Poplar.GraphSetCycleEstimate(graph, vertex, 1)
+        # else
+        #     # Poplar.GraphSetPerfEstimate(graph, vertex, 1)
+        # end
+    end
+    return nothing
+end
+
+function add_vertex(graph::Poplar.GraphAllocated,
+                    program::Poplar.ProgramSequenceAllocated,
+                    tiles::Union{Integer,AbstractVector{<:Integer}},
+                    codelet::Function,
+                    args::Poplar.TensorAllocated...)
+    compute_set = Poplar.GraphAddComputeSet(graph, string(codelet))
+    add_vertex(graph, compute_set, tiles, codelet, args...)
+    Poplar.ProgramSequenceAdd(program, Poplar.ProgramExecute(compute_set))
+    return nothing
+end
+
+add_vertex(graph::Poplar.GraphAllocated, compute_set::Poplar.ComputeSetAllocated,
+           codelet::Function, args::Poplar.TensorAllocated...) =
+               add_vertex(graph, compute_set, 0, codelet, args...)
+add_vertex(graph::Poplar.GraphAllocated, program::Poplar.ProgramSequenceAllocated,
+           codelet::Function, args::Poplar.TensorAllocated...) =
+               add_vertex(graph, program, 0, codelet, args...)
+
+"""
+    add_vertex(graph::Poplar.GraphAllocated,
+               compute_set_or_program::Union{Poplar.ComputeSetAllocated, Poplar.ProgramSequenceAllocated},
+               [tiles::Union{Integer,AbstractVector{<:Integer}},]
+               codelet::Function,
+               args::Poplar.TensorAllocated...) -> Nothing
+
+Add the codelet function `codelet` created with [`@codelet`](@ref) to `graph`, using the tensors `args` as arguments.
+The function `codelet` must have exactly one method, no more, no less.
+The second argument can be either the program or the compute set to which to add the new vertex/vertices.
+If a program is passed, a new compute set will be automatically created.
+
+`add_vertex` also evenly maps all tensors and vertices across all `tiles`, which can be either a single tile ID or an `AbstractVector` of IDs and defaults to single tile 0 if this argument is omitted.
+Note that all argument tensors `args` must be longer than or equal to the number of `tiles`.
+If you want to have better control over tile mapping, do not use `add_vertex`.
+"""
+add_vertex
 
 # Mapping of the LLVM version used by each version of the Poplar SDK.  To find it, use `popc
 # --version`.
