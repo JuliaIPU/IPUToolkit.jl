@@ -1,6 +1,6 @@
 module IPURuntime
 
-using ..IPUCompiler: @device_override, @ipuprint, @ipuprintf, @ipuprintln
+import ..IPUCompiler: @device_override, @ipuprint, @ipuprintf, @ipuprintln, get_scount_l, get_tile_id
 using GPUCompiler: reset_runtime
 import LinearAlgebra
 
@@ -36,6 +36,10 @@ function report_exception_frame(idx, func, file, line)
     @ipuprintf(" [%i] %s at %s:%i\n", idx, func, file, line)
     return nothing
 end
+
+# IPU builtins: https://docs.graphcore.ai/projects/poplar-api/en/latest/ipu_intrinsics/ipu_builtins.html
+get_scount_l() = ccall("extern @llvm.colossus.get.scount.l",  llvmcall, Cuint, ())
+get_tile_id() = ccall("extern @llvm.colossus.get.tile.id",  llvmcall, Cuint, ())
 
 # Math functions.  These methods are implemented internally by promoting arguments to double
 # precisions, which is either horribly slow on the IPU (doubles are implemented in software)
