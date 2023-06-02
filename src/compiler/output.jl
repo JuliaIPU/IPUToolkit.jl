@@ -214,7 +214,7 @@ const ipuprint_specifiers = Dict(
     end
 
     quote
-        @ipuprintf($fmt, $(args...))
+        $(@__MODULE__).@ipuprintf($fmt, $(args...))
     end
 end
 
@@ -279,7 +279,7 @@ end
 @doc (@doc @ipuprint) ->
 macro ipuprintln(parts...)
     esc(quote
-            @ipuprint($(parts...), "\n")
+            $(@__MODULE__).@ipuprint($(parts...), "\n")
     end)
 end
 
