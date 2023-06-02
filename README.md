@@ -127,6 +127,11 @@ To completely disable all printing and make these macros no-op you can set
 IPUCompiler.DISABLE_PRINT[] = true
 ```
 
+To benchmark expressions inside codelets you can use the macros `@ipucycles`, `@ipushowcycles`, and `@ipuelapsed`, which report the number of cycles spent in the wrapped expression.
+They are similar to Julia's `@time`, `@showtime`, and `@elapsed` macros, but report the number of cycles, as the clockspeed of tiles cannot be easily obtained _inside_ a codelet.
+The corresponding time can be obtained by dividing the number of cycles by the clock frequency of the the tile, which you can get with `Poplar.TargetGetTileClockFrequency(target)` outside of the codelet.
+The printing macros `@ipucycles` and `@ipushowcycles` can be made completely no-op by setting `IPUCompiler.DISABLE_PRINT[] = true`.
+
 Other options related to codelet generation are:
 
 * `IPUCompiler.KEEP_LLVM_FILES`: it controls whether to keep the files with the LLVM IR of the codelets;
