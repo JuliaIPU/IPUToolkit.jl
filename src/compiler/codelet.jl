@@ -77,6 +77,12 @@ function __build_codelet(graph, kernel, name, origKernel)
     llvm_ir = JuliaContext() do ctx
         string(GPUCompiler.compile(:llvm, job; ctx)[1])
     end
+    # For some reasons the Colossus intrinsics names get dots converted into underscores, we
+    # convert them back to dots before writing the file to disk.
+    llvm_ir = replace(llvm_ir,
+                      "_llvm_colossus_get_scount_l" => "llvm.colossus.get.scount.l",
+                      "_llvm_colossus_get_tile_id" => "llvm.colossus.get.tile.id",
+                      )
 
     method = methods(origKernel)[end]
     args = method.sig.parameters[2:end]
@@ -98,9 +104,14 @@ function __build_codelet(graph, kernel, name, origKernel)
         input_file = joinpath(KEEP_LLVM_FILES[] ? "" : dir, "$(name).ll")
         write(input_file, llvm_ir)
 
+        # If we have calls to Colossus intrinsics we can't target the IPU model on CPU (the
+        # `cpu` target), so in that case we compile only for `ipu1,ipu2`.
+        target = contains(llvm_ir, "@llvm.colossus.") ? `-target ipu1,ipu2` : ``
+
         run(```
             popc
             $(POPC_FLAGS[])
+            $(target)
             -X -Wno-override-module
             -X -Qunused-arguments
             -DGET_VEC_PTR_NAME=get_vec_ptr_$(name)
