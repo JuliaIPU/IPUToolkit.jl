@@ -82,6 +82,10 @@ function __build_codelet(graph, kernel, name, origKernel)
     llvm_ir = replace(llvm_ir,
                       "_llvm_colossus_get_scount_l" => "llvm.colossus.get.scount.l",
                       "_llvm_colossus_get_tile_id" => "llvm.colossus.get.tile.id",
+                      "_llvm_colossus_urand_f16" => "llvm.colossus.urand.f16",
+                      "_llvm_colossus_urand_f32" => "llvm.colossus.urand.f32",
+                      "_llvm_colossus_urand32" => "llvm.colossus.urand32",
+                      "_llvm_colossus_urand64" => "llvm.colossus.urand64",
                       )
 
     method = methods(origKernel)[end]
