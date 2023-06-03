@@ -23,6 +23,7 @@ makedocs(
         "Writing codelets" => "compiler.md",
     ],
     strict = true,
+    format = Documenter.HTML(; edit_link="main"),
 )
 
 deploydocs(
