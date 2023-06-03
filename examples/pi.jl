@@ -1,5 +1,4 @@
 using IPUToolkit.IPUCompiler, IPUToolkit.Poplar
-using Enzyme
 
 ENV["POPLAR_RUNTIME_OPTIONS"] = """{"target.hostSyncTimeout":"60"}"""
 
@@ -10,15 +9,15 @@ target = Poplar.DeviceGetTarget(device)
 graph = Poplar.Graph(target)
 
 num_tiles = Int(Poplar.TargetGetNumTiles(target))
-n = 2_000_000
-num_steps = num_tiles * n
+n::UInt32 = typemax(UInt32) ÷ num_tiles
+num_steps::UInt32 = num_tiles * n
 slice::Float32 = 1 / num_steps
 
 tile_clock_frequency = Poplar.TargetGetTileClockFrequency(target)
 
-ids = collect(Int32.(0:(num_tiles - 1)))
-sums = Vector{Float32}(undef, num_tiles)
-cycles = Vector{UInt32}(undef, num_tiles)
+ids = collect(UInt32.(0:(num_tiles - 1)))
+sums = similar(ids, Float32)
+cycles = similar(ids)
 
 # Why are we using `@eval`?  Because inside a codelet we cannot access non-constant globals,
 # so we can either make them constant, or interpolate them via `@eval` and let people play
@@ -26,14 +25,14 @@ cycles = Vector{UInt32}(undef, num_tiles)
 # user-friendly :)  And a top-level `@eval` is not _too_ bad.
 @eval function pi_kernel(i)
     sum = 0f0
-    for j in (Int32(1) + i * $(n)):min($(num_steps), (i + 1) * $(n))
+    for j in (UInt32(1) + i * $(n)):min($(num_steps), (i + UInt32(1)) * $(n))
         x = (j - 5f-1) * $(slice)
         sum += Float32(Int32(4) / (Int32(1) + x ^ 2))
     end
     return sum
 end
 
-IPUCompiler.@codelet graph function Pi(in::VertexVector{Int32, In},
+IPUCompiler.@codelet graph function Pi(in::VertexVector{UInt32, In},
                                        out::VertexVector{Float32, Out},
                                        cycles::VertexVector{UInt32, Out})
     # Each tile deals with one-element vectors only.  In `out` we store the result of the
@@ -63,11 +62,12 @@ Poplar.EngineReadTensor(engine, "cycles-read", cycles)
 Poplar.DeviceDetach(device)
 
 pi = sum(sums) * slice
+time = round(maximum(cycles) / tile_clock_frequency; sigdigits=4)
 
 print("""
       Calculating PI using:
         $(num_steps) slices
         $(num_tiles) IPU tiles
       Obtained value of PI: $(pi)
-      Time taken: $(maximum(cycles) / tile_clock_frequency) seconds
+      Time taken: $(time) seconds ($(maximum(cycles)) cycles at $(round(tile_clock_frequency / 1e9; sigdigits=3)) GHz)
       """)
