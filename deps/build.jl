@@ -319,7 +319,7 @@ function method_handler(ctx::BindgenContext, method::CLCursor)::Tuple{Union{Noth
     if spelling(kind(method)) == "FunctionTemplate"
         if occursin("ArrayRef<T>", out)
             full = ""
-            types = ["ArrayRef<int>", "ArrayRef<long>", "ArrayRef<float>", "ArrayRef<double>"]
+            types = ["ArrayRef<unsigned int>", "ArrayRef<int>", "ArrayRef<long>", "ArrayRef<float>", "ArrayRef<double>"]
             for type in types
                 full *= replace(out, "ArrayRef<T>" => type)
             end
