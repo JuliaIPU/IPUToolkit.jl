@@ -52,11 +52,9 @@ julia> dm = Poplar.DeviceManager();
 julia> Int(Poplar.DeviceManagerGetNumDevices(dm))
 129
 
-julia> device = Poplar.get_ipu_device()
+julia> device = Poplar.get_ipu_device();
 [ Info: Trying to attach to device 0...
 [ Info: Successfully attached to device 0
-[ Info: Attached to devices with IDs [0]
-IPUToolkit.Poplar.DeviceAllocated(Ptr{Nothing} @0x00000000016bd680)
 
 julia> Int(Poplar.DeviceGetId(device))
 0
@@ -106,7 +104,7 @@ The parameters of `VertexVector{T,S}` are
 * `T`: the type of the elements of the vector;
 * `S`: the scope of the vector in the codelet, `In`, `Out`, or `InOut`.
 
-An example of codelets written in Julia is shown in the file [`examples/main.jl`](./examples/main.jl).
+Examples of codelets written in Julia are shown in the files [`examples/main.jl`](./examples/main.jl), [`examples/adam.jl`](./examples/adam.jl), and [`examples/pi.jl`](./examples/pi.jl).
 
 The code inside a codelet has the same limitations as all the compilation models based on [`GPUCompiler.jl`](https://github.com/JuliaGPU/GPUCompiler.jl):
 
@@ -132,8 +130,9 @@ IPUCompiler.DISABLE_PRINT[] = true
 
 To benchmark expressions inside codelets you can use the macros `@ipucycles`, `@ipushowcycles`, and `@ipuelapsed`, which report the number of cycles spent in the wrapped expression.
 They are similar to Julia's `@time`, `@showtime`, and `@elapsed` macros, but report the number of cycles, as the clockspeed of tiles cannot be easily obtained _inside_ a codelet.
-The corresponding time can be obtained by dividing the number of cycles by the clock frequency of the the tile, which you can get with `Poplar.TargetGetTileClockFrequency(target)` outside of the codelet.
+The corresponding time can be obtained by dividing the number of cycles by the clock frequency of the the tile, which you can get with `Poplar.TargetGetTileClockFrequency(target)` outside of the codelet, and should usually be 1.330 GHz or 1.850 GHz depending on the model of your IPU.
 The printing macros `@ipucycles` and `@ipushowcycles` can be made completely no-op by setting `IPUCompiler.DISABLE_PRINT[] = true`.
+***NOTE***: timing of expressions taking longer than `typemax(UInt32) / tile_clock_frequency` (about 2 or 3 seconds depending on your IPU model) is unreliable because the difference between the starting and the ending cycle counts would overflow.
 
 Other options related to codelet generation are:
 
