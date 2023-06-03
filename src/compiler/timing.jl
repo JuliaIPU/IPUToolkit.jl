@@ -90,6 +90,6 @@ macro ipuelapsed(ex)
         local cycles_start = get_scount_l()
         $(esc(ex))
         local cycles_end = get_scount_l()
-        return cycles_end - cycles_start
+        cycles_end - cycles_start
     end
 end
