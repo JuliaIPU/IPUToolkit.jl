@@ -51,7 +51,7 @@ IPUCompiler.@codelet graph function RosenAdam(in::VertexVector{Float32, In}, out
 end
 
 input = Poplar.GraphAddConstant(graph, initial_points)
-output = Poplar.GraphAddVariable(graph, Poplar.FLOAT(), collect(UInt64.(size(input))), "output");
+output = similar(graph, input, "output");
 
 prog = Poplar.ProgramSequence()
 

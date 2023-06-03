@@ -10,7 +10,7 @@ graph = Poplar.Graph(target)
 Poplar.PopopsAddCodelets(graph)
 
 v1 = Poplar.GraphAddVariable(graph, Poplar.FLOAT(), UInt64[2, 2], "v1")
-v2 = Poplar.GraphAddVariable(graph, Poplar.FLOAT(), UInt64[2, 2], "v2")
+v2 = similar(graph, v1, "v2")
 
 for i in 0:1
     for j in 0:1

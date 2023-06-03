@@ -29,13 +29,9 @@ end
     @ipushow sort_time
 end
 
-inconst = Poplar.GraphAddConstant(graph, Poplar.FLOAT(), UInt64[10], Float32[5, 2, 10, 102, -10, 2, 256, 15, 32, 100])
-outvec1 = Poplar.GraphAddVariable(graph, Poplar.FLOAT(), UInt64[10], "outvec1");
-outvec2 = Poplar.GraphAddVariable(graph, Poplar.FLOAT(), UInt64[10], "outvec2");
-
-Poplar.GraphSetTileMapping(graph, inconst, 0)
-Poplar.GraphSetTileMapping(graph, outvec1, 0)
-Poplar.GraphSetTileMapping(graph, outvec2, 0)
+inconst = Poplar.GraphAddConstant(graph, Float32[5, 2, 10, 102, -10, 2, 256, 15, 32, 100])
+outvec1 = similar(graph, inconst, "outvec1");
+outvec2 = similar(graph, inconst, "outvec2");
 
 prog = Poplar.ProgramSequence()
 

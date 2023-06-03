@@ -72,6 +72,26 @@ function Base.eachindex(t1::TensorAllocated, t2::TensorAllocated)
     end
     return 0:(t1_len - 1)
 end
+"""
+    similar(
+        graph::Poplar.Graph,
+        tensor::Poplar.TensorAllocated,
+        [type::DataType],
+        [debug::String]
+    ) -> Poplar.TensorAllocated
+
+Adds to `graph` a variable tensor with the same shape as `tensor`.
+If a `type` (this is a Julia type, like `Float32` or `Int32`) argument is not passed, the same element type as `tensor` will be automatically used.
+An optional `debug` context can also be passed, as a `String`.
+"""
+Base.similar(graph::Graph, t::TensorAllocated) =
+    Poplar.GraphAddVariable(graph, Poplar.TensorElementType(t), collect(Poplar.TensorShape(t)))
+Base.similar(graph::Graph, t::TensorAllocated, debug::String) =
+    Poplar.GraphAddVariable(graph, Poplar.TensorElementType(t), collect(Poplar.TensorShape(t)), debug)
+Base.similar(graph::Graph, t::TensorAllocated, type::DataType) =
+    Poplar.GraphAddVariable(graph, _get_type(type), collect(Poplar.TensorShape(t)))
+Base.similar(graph::Graph, t::TensorAllocated, type::DataType, debug::String) =
+    Poplar.GraphAddVariable(graph, _get_type(type), collect(Poplar.TensorShape(t)), debug)
 
 # Be sure to quit all julia sessions which hold devices!!!
 """

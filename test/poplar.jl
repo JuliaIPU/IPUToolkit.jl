@@ -11,7 +11,7 @@ function test_poplar_program(device)
     Poplar.PopopsAddCodelets(graph)
 
     v1 = @cxxtest Poplar.GraphAddVariable(graph, Poplar.FLOAT(), UInt64[2, 2], "v1")
-    v2 = @cxxtest Poplar.GraphAddVariable(graph, Poplar.FLOAT(), UInt64[2, 2], "v2")
+    v2 = @cxxtest similar(graph, v1, "v2")
 
     for i in 0:1
         for j in 0:1

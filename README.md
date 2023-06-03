@@ -89,6 +89,9 @@ adds the `host_array` (a plain standard Julia `Array` living on the host) to `gr
 
 You can slice a tensor with the usual Julia notation `tensor[index1:index2]`, this corresponds to a call to [`Tensor.slice(index1, index2+1)`](https://docs.graphcore.ai/projects/poplar-api/en/latest/poplar/graph/Tensor.html#_CPPv4NK6poplar6Tensor5sliceENSt6size_tENSt6size_tE).
 
+`similar(graph, tensor, [type], [debug])` can be used to add to `graph` a tensor with the same shape and optionally element type as `tensor`.
+Read the docstring for more details.
+
 ### Writing codelets in Julia
 
 You can write [codelets](https://docs.graphcore.ai/projects/poplar-user-guide/en/3.2.0/vertices_overview.html) for the IPU in Julia with the `IPUCompiler.@codelet` macro, and use them inside a program, written using the interface to the Poplar SDK described above.
