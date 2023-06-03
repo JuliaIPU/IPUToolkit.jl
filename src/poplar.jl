@@ -149,15 +149,14 @@ end
 
 Similar to [`get_ipu_devices`](@ref), but request exactly one IPU device.  If it can attach
 to a device, return that pointer only (not in a vector, like `get_ipu_devices`), otherwise
-return `nothing`.  You can release the device with `Poplar.DeviceDetach`.
+return `nothing`.  You can release the device with `Poplar.DeviceDetach(device)`.
 
 The optional argument `hint` suggests to which device IDs to try and
 attach.  It can have different types:
 
-* if of type `Integer`, try to attach to `n` devices, starting from the one
-  with index `hint`.  The default is `hint=0`;
-* if of type `AbstractVector`, try to attach to `n` devices from that list of
-  IDs.
+* if of type `Integer`, try to attach to one device, starting from the one with index `hint`.
+  The default is `hint=0`;
+* if of type `AbstractVector`, try to attach to a device from that list of IDs.
 """
 function get_ipu_device(hint::Union{AbstractVector{<:Integer},Integer}=0)
     device = get_ipu_devices(1, hint)
