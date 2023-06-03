@@ -157,7 +157,9 @@ const ipuprint_specifiers = Dict(
 
     # other
     Cchar       => "%c",
-    Ptr{Cvoid}  => "%p",
+    # `Ptr{Cvoid}` should be `%p` but that doesn't seem to be supported.  We
+    # print as an integer until we find a better way.
+    Ptr{Cvoid}  => "%d",
     Cstring     => "%s",
 )
 
