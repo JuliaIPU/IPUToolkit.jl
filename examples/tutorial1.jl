@@ -7,8 +7,9 @@ device = Poplar.get_ipu_device()
 target = Poplar.DeviceGetTarget(device)
 graph = Poplar.Graph(target)
 
-v1 = Poplar.GraphAddVariable(graph, Poplar.FLOAT(), UInt64[4], "v1")
-v2 = Poplar.GraphAddVariable(graph, Poplar.FLOAT(), UInt64[4], "v2")
+c1 = Poplar.GraphAddConstant(graph, Float32[1.0, 1.5, 2.0, 2.5])
+v1 = similar(graph, c1, "v1")
+v2 = similar(graph, c1, "v2")
 v3 = Poplar.GraphAddVariable(graph, Poplar.FLOAT(), UInt64[4, 4], "v3")
 v4 = Poplar.GraphAddVariable(graph, Poplar.INT(), UInt64[10], "v4")
 
@@ -23,7 +24,6 @@ Poplar.GraphSetTileMapping(graph, v4, 0)
 
 prog = Poplar.ProgramSequence()
 
-c1 = Poplar.GraphAddConstant(graph, Float32[1.0, 1.5, 2.0, 2.5])
 Poplar.GraphSetTileMapping(graph, c1, 0)
 
 Poplar.ProgramSequenceAdd(prog, Poplar.ProgramCopy(c1, v1))

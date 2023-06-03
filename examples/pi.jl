@@ -42,8 +42,8 @@ IPUCompiler.@codelet graph function Pi(in::VertexVector{Int32, In},
 end
 
 input = Poplar.GraphAddConstant(graph, ids)
-output = Poplar.GraphAddVariable(graph, Poplar.FLOAT(), collect(UInt64.(size(input))), "output");
-cs = Poplar.GraphAddVariable(graph, Poplar.UNSIGNED_INT(), collect(UInt64.(size(input))), "cycles");
+output = similar(graph, input, Float32, "sums");
+cs = similar(graph, input, UInt32, "cycles");
 
 prog = Poplar.ProgramSequence()
 
