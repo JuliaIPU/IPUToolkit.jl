@@ -2,6 +2,7 @@ using IPUToolkit.IPUCompiler, IPUToolkit.Poplar
 using Enzyme
 
 IPUCompiler.KEEP_LLVM_FILES[] = true
+ENV["POPLAR_RUNTIME_OPTIONS"] = """{"target.hostSyncTimeout":"60"}"""
 
 device = Poplar.get_ipu_device()
 target = Poplar.DeviceGetTarget(device)
