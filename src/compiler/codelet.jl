@@ -64,6 +64,7 @@ _print_s(::Type{In}) = "Input"
 _print_s(::Type{Out}) = "Output"
 _print_s(::Type{InOut}) = "InOut"
 _print_t(::Type{Int32}) = "int"
+_print_t(::Type{UInt32}) = "unsigned int"
 _print_t(::Type{Float16}) = "half"
 _print_t(::Type{Float32}) = "float"
 _print_vec(io::IO, ::Type{VertexVector{T, S}}, name::String) where {T,S} = println(io, "poplar::", _print_s(S), "<poplar::Vector<", _print_t(T), ">> ", name, ";")
