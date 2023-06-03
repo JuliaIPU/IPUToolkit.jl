@@ -1,4 +1,4 @@
-using Documenter, IPUToolkit.Poplar, IPUToolkit.IPUCompiler
+using Documenter, IPUToolkit, IPUToolkit.Poplar, IPUToolkit.IPUCompiler
 
 # Pretend to be GitHub Action to publish the documentation.  Note that in order to actually
 # publish you also need to have other secret environment variables , `GITHUB_ACTOR` and
@@ -15,8 +15,8 @@ ENV["GITHUB_REPOSITORY"] = "github.com/giordano/julia-ipu.git"
 ENV["GITHUB_REF"] = "refs/heads/main"
 
 makedocs(
-    modules = [IPUToolkit],
-    sitename = "IPUToolkit",
+    modules = [Poplar, IPUCompiler],
+    sitename = "IPUToolkit.jl",
     pages    = [
         "IPUToolkit" => "index.md",
         "Poplar SDK" => "poplar.md",
