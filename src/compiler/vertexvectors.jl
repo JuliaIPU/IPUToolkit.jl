@@ -22,7 +22,7 @@ You should not try to manually instantiate or access the fields of a `VertexVect
 
 ## Example
 
-```
+```julia
 VertexVector{Float32, In}    # input-only vector of `Float32` elements
 VertexVector{Int32, Out}     # output-only vector of `Int32` elements
 VertexVector{UInt32, InOut}  # input/output vector of `UInt32` elements
