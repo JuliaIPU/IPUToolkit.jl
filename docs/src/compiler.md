@@ -87,16 +87,16 @@ device = Poplar.get_ipu_device()
 target = Poplar.DeviceGetTarget(device)
 graph = Poplar.Graph(target)
 tile_clock_frequency = Poplar.TargetGetTileClockFrequency(target)
-@eval IPUCompiler.@codelet graph function test(invec::VertexVector{Float32, In}, outvec::VertexVector{Float32, Out})
+@eval @codelet graph function test(invec::VertexVector{Float32, In}, outvec::VertexVector{Float32, Out})
     # We can use the intrinsic `get_scount_l` to get the cycle counter right
     # before and after some operations, so that we can benchmark it.
     cycles_start = get_scount_l()
-	# Do some operations here...
+    # Do some operations here...
     cycles_end = get_scount_l()
     # Divide the difference between the two cycle counts by the tile frequency
     # clock to get the time.
     time = (cycles_end - cycles_start) / $(tile_clock_frequency)
-	# Show the time spent doing your operations
+    # Show the time spent doing your operations
     @ipushow time
 end
 ```
