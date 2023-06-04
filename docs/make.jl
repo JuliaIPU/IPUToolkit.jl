@@ -11,7 +11,7 @@ using Documenter, IPUToolkit, IPUToolkit.Poplar, IPUToolkit.IPUCompiler
 #   (https://documenter.juliadocs.org/stable/lib/public/#DocumenterTools.genkeys)
 #
 ENV["GITHUB_EVENT_NAME"] = "push"
-ENV["GITHUB_REPOSITORY"] = "github.com/giordano/julia-ipu.git"
+ENV["GITHUB_REPOSITORY"] = "github.com/giordano/IPUToolkit.jl.git"
 ENV["GITHUB_REF"] = "refs/heads/main"
 
 makedocs(
@@ -27,7 +27,7 @@ makedocs(
 )
 
 deploydocs(
-    repo = "github.com/giordano/julia-ipu.git",
+    repo = "github.com/giordano/IPUToolkit.jl.git",
     target = "build",
     deps = nothing,
     make = nothing,
