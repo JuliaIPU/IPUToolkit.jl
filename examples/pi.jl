@@ -32,7 +32,7 @@ cycles = similar(ids)
     return sum
 end
 
-IPUCompiler.@codelet graph function Pi(in::VertexVector{UInt32, In},
+@codelet graph function Pi(in::VertexVector{UInt32, In},
                                        out::VertexVector{Float32, Out},
                                        cycles::VertexVector{UInt32, Out})
     # Each tile deals with one-element vectors only.  In `out` we store the result of the

@@ -57,7 +57,21 @@ macro device_function(ex)
 end
 
 # Functions needed by the runtime
+"""
+    get_scount_l()
+
+Call the [`__builtin_ipu_get_scount_l()`](https://docs.graphcore.ai/projects/poplar-api/en/latest/ipu_intrinsics/ipu_builtins.html#_CPPv426__builtin_ipu_get_scount_lv) builtin:
+
+> Get the value of the control/status register (CSR) `SCOUNT_L`, which is the lower 32 bits of the tile cycle counter value.
+"""
 function get_scount_l end
+"""
+    get_scount_l()
+
+Call the [`__builtin_ipu_get_scount_l()`](https://docs.graphcore.ai/projects/poplar-api/en/latest/ipu_intrinsics/ipu_builtins.html#_CPPv425__builtin_ipu_get_tile_idv) builtin:
+
+> Get the tile ID of the current tile.
+"""
 function get_tile_id end
 
 include("runtime.jl")
