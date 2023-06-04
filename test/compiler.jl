@@ -22,6 +22,10 @@ include("common.jl")
 
 ∂(f, x) = first(first(autodiff_deferred(Reverse, f, Active(x))))
 
+# Define a non-const variable which will lead to a reference to a literal pointer in the IR
+# of a codelet below.
+non_const_var::Float32 = 0f0
+
 function test_compiler_program(device)
     target = @cxxtest Poplar.DeviceGetTarget(device)
     graph = @cxxtest Poplar.Graph(target)
@@ -50,6 +54,10 @@ function test_compiler_program(device)
         x = Int32(7)
         @ipushow x
     end
+
+    # This function would contain a reference to a literal pointer, likely an
+    # invalid memory address on the IPU.
+    @test_throws ErrorException @codelet graph literal_pointer(v::VertexVector{Float32,Out}) = v .= non_const_var
 
     input = Float32[5, 2, 10, 102, -10, 2, 256, 15, 32, 100]
 
