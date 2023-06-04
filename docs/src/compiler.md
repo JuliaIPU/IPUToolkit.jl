@@ -1,18 +1,8 @@
 # Writing codelets in Julia
 
 The `IPUToolkit.IPUCompiler` submodule allows you to write [codelets](https://docs.graphcore.ai/projects/poplar-user-guide/en/3.2.0/vertices_overview.html) for the IPU in Julia.
-Codelets are defined with the `IPUCompiler.@codelet` macro, and then you can use them inside a program, written using the interface to the Poplar SDK described before.
+Codelets are defined with the [`@codelet`](@ref) macro, and then you can use them inside a program, written using the interface to the Poplar SDK described before.
 This mechanism uses the [`GPUCompiler.jl`](https://github.com/JuliaGPU/GPUCompiler.jl) package, which is a generic framework for generating LLVM IR code for specialised targets, not limited to GPUs despite the historical name.
-The `IPUCompiler.@codelet` macro takes two arguments:
-
-* the graph to which to add the codelet with the `Poplar.GraphAddCodelets` function
-* the function definition of the kernel you want to compile for the device.
-
-The arguments of a codelet function have to be `VertexVector{T,S}`, a subtype of `AbstractVector{T}` which represents a [vertex vector](https://docs.graphcore.ai/projects/poplar-user-guide/en/3.2.0/vertex_vectors.html), passed as argument to a codelet.
-The parameters of `VertexVector{T,S}` are
-
-* `T`: the type of the elements of the vector;
-* `S`: the scope of the vector in the codelet, `In`, `Out`, or `InOut`.
 
 Examples of codelets written in Julia are shown in the files [`examples/main.jl`](https://github.com/giordano/IPUToolkit.jl/blob/main/examples/main.jl), [`examples/adam.jl`](https://github.com/giordano/IPUToolkit.jl/blob/main/examples/adam.jl), and [`examples/pi.jl`](https://github.com/giordano/IPUToolkit.jl/blob/main/examples/pi.jl).
 
@@ -22,18 +12,32 @@ The code inside a codelet has the same limitations as all the compilation models
 * you cannot use functionalities which require the Julia runtime, most notably the garbage collector;
 * you cannot call into any other external binary library at runtime, for example you cannot call into a BLAS library.
 
-After defining a codelet with `@codelet` you can add a vertex calling this codelet to the graph with the function `add_vertex`, which also allows controlling the tile mapping in a basic way.
-Read its docstring for more details.
-
-During compilation of codelets a spinner is displayed to show the progress, as this step can take a few seconds for each codelet to be generated.
-This can be disabled by setting [`IPUCompiler.PROGRESS_SPINNER`](@ref):
-```julia
-IPUCompiler.PROGRESS_SPINNER[] = false
-```
+After defining a codelet with `@codelet` you can add a vertex calling this codelet to the graph with the function [`add_vertex`](@ref), which also allows controlling the tile mapping in a basic way.
 
 ```@docs
+@codelet
+VertexVector
 add_vertex
+IPUCompiler.KEEP_LLVM_FILES
+IPUCompiler.POPC_FLAGS
 IPUCompiler.PROGRESS_SPINNER
+```
+
+## IPU builtins
+
+Inside codelets defined with [`@codelet`](@ref) all calls to random functions
+
+* `rand(Float32)`
+* `rand(UInt32)`
+* `rand(UInt64)`
+
+result to call to corresponding IPU builtins for [random number generation](https://docs.graphcore.ai/projects/poplar-api/en/latest/ipu_intrinsics/ipu_builtins.html#random-number-generation), but with the general semantic of the Julia function `rand` (numbers uniformely distributed in the $[0, 1)$ range).
+
+Additionally, you can use the [IPU builtins](https://docs.graphcore.ai/projects/poplar-api/en/latest/ipu_intrinsics/ipu_builtins.html) listed below.
+
+```@docs
+get_scount_l
+get_tile_id
 ```
 
 ## Printing
@@ -70,14 +74,34 @@ The printing macros `@ipucycles` and `@ipushowcycles` can be made completely no-
 @ipuelapsed
 ```
 
-## Other options
+## Passing non-constant variables from global scope
 
-Other options related to codelet generation are:
+If your kernel references a non-constant (`const`) global variable, the generated code will result in a reference to a memory address on the host, and this will fatally fail at runtime because programs running on the IPU don't have access to the host memory.
+Constant variables are not affected by this problem because their values are inlined when the function is compiled.
+If you can't or don't want to make a variable constant you can interpolate its value with a top-level `@eval` when defining the codelet.
+For example:
 
-```@docs
-IPUCompiler.KEEP_LLVM_FILES
-IPUCompiler.POPC_FLAGS
+```julia
+using IPUToolkit.IPUCompiler, IPUToolkit.Poplar
+device = Poplar.get_ipu_device()
+target = Poplar.DeviceGetTarget(device)
+graph = Poplar.Graph(target)
+tile_clock_frequency = Poplar.TargetGetTileClockFrequency(target)
+@eval IPUCompiler.@codelet graph function test(invec::VertexVector{Float32, In}, outvec::VertexVector{Float32, Out})
+    # We can use the intrinsic `get_scount_l` to get the cycle counter right
+    # before and after some operations, so that we can benchmark it.
+    cycles_start = get_scount_l()
+	# Do some operations here...
+    cycles_end = get_scount_l()
+    # Divide the difference between the two cycle counts by the tile frequency
+    # clock to get the time.
+    time = (cycles_end - cycles_start) / $(tile_clock_frequency)
+	# Show the time spent doing your operations
+    @ipushow time
+end
 ```
+
+The use of `@eval` allows you not to have to pass an extra argument to your kernel just to use the value of the variable inside the codelet.
 
 ## Domain-Specific Language: `@ipuprogram`
 

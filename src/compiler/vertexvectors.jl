@@ -1,14 +1,33 @@
-# Vectors to be used in codelets (vertices).  They are the counterpart of the vertex vector
-# types
-# (<https://docs.graphcore.ai/projects/poplar-user-guide/en/3.2.0/vertex_vectors.html>).
-# NOTE: these are distincts from `PoplarArrays` because they represent the variables you can
-# add to a graph.
+# NOTE: `VertexVector`s are distincts from `PoplarArrays` because they represent
+# the variables you can add to a graph.
 
 # Scope of the vectors in codelets.  These singletons are used only for dispatch.
 struct In end
 struct Out end
 struct InOut end
 
+"""
+    VertexVector{T, S} <: AbstractVector{T}
+
+This datatype formally represents vectors to be used in codelets (vertices) in IPU programs.
+They are the counterpart of the [vertex vector types](https://docs.graphcore.ai/projects/poplar-user-guide/en/3.2.0/vertex_vectors.html) in the Poplar SDK.
+
+The parameters of `VertexVector{T,S}` are
+
+* `T`: the type of the elements of the vector, e.g. `Int32`, `Float32`, etc.;
+* `S`: the scope of the vector in the codelet, `In`, `Out`, or `InOut`.
+
+`VertexVector` is only meant to be used by end-user to define the arguments of codelets with the [`@codelet`](@ref) macro.
+You should not try to manually instantiate or access the fields of a `VertexVector`.
+
+## Example
+
+```
+VertexVector{Float32, In}    # input-only vector of `Float32` elements
+VertexVector{Int32, Out}     # output-only vector of `Int32` elements
+VertexVector{UInt32, InOut}  # input/output vector of `UInt32` elements
+```
+"""
 struct VertexVector{T, S} <: AbstractVector{T}
     base::Ptr{T}
     length::UInt32

@@ -44,7 +44,7 @@ function adam(∂f, x₀::T) where {T}
     return x
 end
 
-IPUCompiler.@codelet graph function RosenAdam(in::VertexVector{Float32, In}, out::VertexVector{Float32, Out})
+@codelet graph function RosenAdam(in::VertexVector{Float32, In}, out::VertexVector{Float32, Out})
     for idx in eachindex(out)
         out[idx] = adam(rosenbrock′, in[idx])
     end
