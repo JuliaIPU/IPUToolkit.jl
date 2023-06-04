@@ -50,6 +50,9 @@ Note that this is not a fully C-compliant `printf` implementation.
 Also beware that it is an untyped, and unforgiving `printf` implementation. Type widths need
 to match, eg. printing a 64-bit Julia integer requires the `%ld` formatting string.
 
+More user-friendly versions of this macro are [`@ipuprint`](@ref), [`@ipuprintln`](@ref).
+See also [`@ipushow`](@ref), which is built on top of `@ipuprintf` functionalities.
+
 Printing can be completely disabled by setting
 ```julia
 $(@__MODULE__).DISABLE_PRINT[] = true
@@ -225,10 +228,10 @@ end
     @ipuprintln(xs...)
 
 Print a textual representation of values `xs` to standard output from the IPU. The
-functionality builds on `@ipuprintf`, and is intended as a more use friendly alternative of
+functionality builds on [`@ipuprintf`](@ref), and is intended as a more use friendly alternative of
 that API. However, that also means there's only limited support for argument types, handling
 16/32/64 signed and unsigned integers, 32 and 64-bit floating point numbers, `Cchar`s and
-pointers. For more complex output, use `@ipuprintf` directly.
+pointers. For more complex output, use [`@ipuprintf`](@ref) directly.
 
 Limited string interpolation is also possible:
 
@@ -290,7 +293,7 @@ export @ipushow
 """
     @ipushow(ex)
 
-IPU analog of `Base.@show`. It comes with the same type restrictions as [`@ipuprintf`](@ref).
+IPU analogue of `Base.@show`. It comes with the same type restrictions as [`@ipuprintf`](@ref).
 
 ```julia
 @ipushow x
