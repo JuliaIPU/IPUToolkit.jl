@@ -14,7 +14,7 @@ The parameters of `VertexVector{T,S}` are
 * `T`: the type of the elements of the vector;
 * `S`: the scope of the vector in the codelet, `In`, `Out`, or `InOut`.
 
-Examples of codelets written in Julia are shown in the files [`examples/main.jl`](https://github.com/giordano/julia-ipu/blob/main/examples/main.jl), [`examples/adam.jl`](https://github.com/giordano/julia-ipu/blob/main/examples/adam.jl), and [`examples/pi.jl`](https://github.com/giordano/julia-ipu/blob/main/examples/pi.jl).
+Examples of codelets written in Julia are shown in the files [`examples/main.jl`](https://github.com/giordano/IPUToolkit.jl/blob/main/examples/main.jl), [`examples/adam.jl`](https://github.com/giordano/IPUToolkit.jl/blob/main/examples/adam.jl), and [`examples/pi.jl`](https://github.com/giordano/IPUToolkit.jl/blob/main/examples/pi.jl).
 
 The code inside a codelet has the same limitations as all the compilation models based on [`GPUCompiler.jl`](https://github.com/JuliaGPU/GPUCompiler.jl):
 
@@ -83,4 +83,4 @@ IPUCompiler.POPC_FLAGS
 
 The `IPUCompiler.@ipuprogram` macro provides a very simple and limited DSL to automatically generate most of the boilerplate code needed when writing an IPU program.
 You can do *very* little with this DSL, which is mainly a showcase of Julia's meta-programming capabilities.
-A fully commented examples of use of the `@ipuprogram` macro is available in the [`examples/dsl.jl`](https://github.com/giordano/julia-ipu/blob/main/examples/dsl.jl) file.
+A fully commented examples of use of the `@ipuprogram` macro is available in the [`examples/dsl.jl`](https://github.com/giordano/IPUToolkit.jl/blob/main/examples/dsl.jl) file.
