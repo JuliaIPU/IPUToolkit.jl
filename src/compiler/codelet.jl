@@ -7,6 +7,30 @@ Option to control whether to display a spinner to show progress during compilati
 """
 const PROGRESS_SPINNER = Ref(true)
 
+_get_vertex_type(::Type{VertexVector{T,S}}) where {T,S} = T
+
+function build2(f::Function)
+    method = only(methods(f))
+    types = method.sig.parameters[2:end]
+    func_ptr = "extern get_vec_ptr_" * string(f)
+    func_size = "extern get_vec_size_" * string(f)
+    i = Int32(-1)
+    kern_args = [
+        :(
+            $(T)( # VertexVector{T,S}
+                  $(Expr(:call, :ccall, func_ptr,  :llvmcall, Ptr{_get_vertex_type(T)}, :((Int32,)), i += one(i))), # base::Ptr{T}
+                  $(Expr(:call, :ccall, func_size, :llvmcall, UInt32,                   :((Int32,)), i,          )) # length::UInt32
+                  )
+        )
+        for T in types]
+    kern_call = Expr(:call, f, kern_args...)
+    name = gensym(Symbol(f))
+    return @eval function $(name)()
+        $(kern_call)
+        return nothing
+    end
+end
+
 function _codelet(graph, usr_kern::Expr)
     if usr_kern.head ∉ (:function, :(=)) || usr_kern.args[1].head !== :call
         throw(ArgumentError("@codelet takes a named function definition in input"))
@@ -15,27 +39,10 @@ function _codelet(graph, usr_kern::Expr)
     name = usr_kern.args[1].args[1]
     args = usr_kern.args[1].args[2:end]
     codelet_fun = gensym(name)
-    func_ptr = "extern get_vec_ptr_" * String(name)
-    func_size = "extern get_vec_size_" * String(name)
-    i = Int32(-1)
-    kernargs = [
-        # TODO: I'd really like to avoid that `getfield`.
-        esc(:(
-            $(arg.args[2])( # VertexVector{T,S}
-                $(Expr(:call, :ccall, func_ptr,  :llvmcall, Ptr{getfield(@__MODULE__, arg.args[2].args[2])}, :((Int32,)), i += one(i))), # base::Ptr{T}
-                $(Expr(:call, :ccall, func_size, :llvmcall, UInt32,                                          :((Int32,)), i,          )) # length::UInt32
-                            )
-        ))
-        for arg in args]
-    kern_call = Expr(:call, :($(esc(name))), kernargs...)
 
     return quote
         $(esc(usr_kern))
-        function $(codelet_fun)()
-            $(kern_call)
-            return $(esc(nothing))
-        end
-        _build_codelet($(esc(graph)), $(codelet_fun), $(String(name)), $(esc(name)))
+        _build_codelet($(esc(graph)), $(esc(name)))
     end
 end
 
@@ -69,7 +76,10 @@ _print_t(::Type{Float16}) = "half"
 _print_t(::Type{Float32}) = "float"
 _print_vec(io::IO, ::Type{VertexVector{T, S}}, name::String) where {T,S} = println(io, "poplar::", _print_s(S), "<poplar::Vector<", _print_t(T), ">> ", name, ";")
 
-function __build_codelet(graph, kernel, name, origKernel)
+function __build_codelet(graph, origKernel)
+    kernel = build2(origKernel)
+    name = string(origKernel)
+
     target = NativeCompilerTarget()
     source = methodinstance(typeof(kernel), Tuple{})
     params = IPUCompilerParams(name)
@@ -135,10 +145,11 @@ function __build_codelet(graph, kernel, name, origKernel)
     return nothing
 end
 
-function _build_codelet(graph, kernel, name, origKernel)
+function _build_codelet(graph, origKernel)
     if PROGRESS_SPINNER[]
+        name = string(origKernel)
         prog = ProgressUnknown("Compiling codelet $(name):"; spinner=true)
-        task = Threads.@spawn __build_codelet(graph, kernel, name, origKernel)
+        task = Threads.@spawn __build_codelet(graph, origKernel)
         while !istaskdone(task)
             ProgressMeter.next!(prog; spinner="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏")
             sleep(0.1)
@@ -146,6 +157,6 @@ function _build_codelet(graph, kernel, name, origKernel)
         ProgressMeter.finish!(prog)
         fetch(task)
     else
-        __build_codelet(graph, kernel, name, origKernel)
+        __build_codelet(graph, origKernel)
     end
 end
