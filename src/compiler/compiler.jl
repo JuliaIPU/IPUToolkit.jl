@@ -152,7 +152,7 @@ add_vertex(graph::Poplar.GraphAllocated, program::Poplar.ProgramSequenceAllocate
                codelet::Function,
                args::Poplar.TensorAllocated...) -> Nothing
 
-Add the codelet function `codelet` created with @codelet to `graph`, using the tensors `args` as arguments.
+Add the codelet function `codelet` created with `@codelet` to `graph`, using the tensors `args` as arguments.
 The function `codelet` must have exactly one method, no more, no less.
 The second argument can be either the program or the compute set to which to add the new vertex/vertices.
 If a program is passed, a new compute set will be automatically created.
