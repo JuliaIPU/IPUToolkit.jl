@@ -137,8 +137,9 @@ function __build_codelet(graph::Poplar.GraphAllocated, kernel, name::String, ori
     llvm_ir = JuliaContext() do ctx
         string(GPUCompiler.compile(:llvm, job; ctx)[1])
     end
-    # For some reasons the Colossus intrinsics names get dots converted into underscores, we
-    # convert them back to dots before writing the file to disk.
+    # For some reasons the Colossus intrinsics names get dots converted into underscores:
+    # <https://github.com/JuliaGPU/GPUCompiler.jl/issues/464>.  Let's convert them back to
+    # dots before writing the file to disk.
     llvm_ir = replace(llvm_ir,
                       "_llvm_colossus_get_scount_l" => "llvm.colossus.get.scount.l",
                       "_llvm_colossus_get_tile_id" => "llvm.colossus.get.tile.id",
@@ -147,6 +148,10 @@ function __build_codelet(graph::Poplar.GraphAllocated, kernel, name::String, ori
                       "_llvm_colossus_urand32" => "llvm.colossus.urand32",
                       "_llvm_colossus_urand64" => "llvm.colossus.urand64",
                       )
+    # Do not allow references to literal pointers, which are likely to be invalid on the IPU
+    if contains(llvm_ir, r"inttoptr +\(i64 +\d+")
+        error("LLVM IR generated for codelet $(name) contains a reference to a literal pointer")
+    end
 
     method = methods(origKernel)[end]
     args = method.sig.parameters[2:end]
