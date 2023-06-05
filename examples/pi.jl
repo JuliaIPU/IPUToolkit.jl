@@ -23,18 +23,18 @@ cycles = similar(ids)
 # so we can either make them constant, or interpolate them via `@eval` and let people play
 # with the values without having to restart the session.  I think the latter is more
 # user-friendly :)  And a top-level `@eval` is not _too_ bad.
-@eval function pi_kernel(i)
+@eval function pi_kernel(i::T) where {T<:Integer}
     sum = 0f0
-    for j in (UInt32(1) + i * $(n)):min($(num_steps), (i + UInt32(1)) * $(n))
+    for j in (i * $(n)):((i + one(T)) * $(n) - one(T))
         x = (j - 5f-1) * $(slice)
-        sum += Float32(Int32(4) / (Int32(1) + x ^ 2))
+        sum += 4 / (1 + x ^ 2)
     end
     return sum
 end
 
 @codelet graph function Pi(in::VertexVector{UInt32, In},
-                                       out::VertexVector{Float32, Out},
-                                       cycles::VertexVector{UInt32, Out})
+                           out::VertexVector{Float32, Out},
+                           cycles::VertexVector{UInt32, Out})
     # Each tile deals with one-element vectors only.  In `out` we store the result of the
     # kernel, in `cycles` we store the cycles count on this tile.
     cycles[begin] = @ipuelapsed(out[begin] = pi_kernel(in[begin]))
