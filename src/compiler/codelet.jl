@@ -16,7 +16,11 @@ $(@__MODULE__).PROGRESS_SPINNER[] = false # disable spinner
 """
 const PROGRESS_SPINNER = Ref(true)
 
+# Build calls like
+#   VertexVector{T, S}(ccall("extern get_vec_ptr_CodeletName", llvmcall, Ptr{T}, (Int32,), i), ccall("extern get_vec_size_CodeletName", llvmcall, UInt32, (Int32,), i))
+# to be passed as argument to the codelet function
 function _build_call(arg::Expr, func_ptr::String, func_size::String, i::Int32)
+    # Some gymnastic to get the type of the argument
     type = if arg.args[2].args[1] isa Symbol # arg == :(x::VertexVector{Float32, In})
         arg.args[2].args[1]
     elseif arg.args[2].args[1] isa Expr # arg == :(x::IPUCompiler.VertexVector{Float32, In}) or :(x::IPUToolkit.IPUCompiler.VertexVector{Float32, In})
@@ -28,7 +32,6 @@ function _build_call(arg::Expr, func_ptr::String, func_size::String, i::Int32)
     # TODO: I'd really like to avoid those `getfield`s.
     if type === :VertexVector
         return :(
-            # TODO: I'd really like to avoid that `getfield`.
             $(arg.args[2])( # VertexVector{T,S}
                             $(Expr(:call, :ccall, func_ptr,  :llvmcall, Ptr{getfield(@__MODULE__, arg.args[2].args[2])}, :((Int32,)), i)), # base::Ptr{T}
                             $(Expr(:call, :ccall, func_size, :llvmcall, UInt32,                                          :((Int32,)), i))  # length::UInt32
@@ -51,7 +54,7 @@ function _codelet(graph, usr_kern::Expr)
     end
 
     name = usr_kern.args[1].args[1] # Name of function
-    args = usr_kern.args[1].args[2:end] # Arguments, with their type annotations
+    args = usr_kern.args[1].args[2:end] # Arguments, with their type annotations: v::VertexVector{T,S}
     codelet_fun = gensym(name)
     func_ptr = "extern get_vec_ptr_" * String(name)
     func_size = "extern get_vec_size_" * String(name)
@@ -77,7 +80,7 @@ The `@codelet` macro takes two argument:
 * the graph to which to add the codelet with the [`Poplar.GraphAddCodelets`](https://docs.graphcore.ai/projects/poplar-api/en/3.2.0/poplar/graph/Graph.html#_CPPv4N6poplar5Graph11addCodeletsE9StringRef15CodeletFileType9StringRef9StringRef) function;
 * the function definition of the codelet that you want to compile for the IPU device.
 
-All the arguments of the function must be [`VertexVector`](@ref)s, which represent the [`Vector`](https://docs.graphcore.ai/projects/poplar-user-guide/en/3.2.0/vertex_vectors.html) vertex type in the Poplar SDK.
+All the arguments of the function must be either [`VertexVector`](@ref)s, which represent the [`Vector`](https://docs.graphcore.ai/projects/poplar-user-guide/en/3.2.0/vertex_vectors.html) vertex type in the Poplar SDK, or [`VerteScalar`](@ref)s, which represent scalar arguments.
 
 `@codelet` defines the function passed as argument, generates its LLVM Intermediate Representation (IR) using `GPUCompiler.jl` and then compiles it down to native code using the Poplar compiler `popc`, which must be in [`PATH`](https://en.wikipedia.org/wiki/PATH_(variable)).
 By default the LLVM IR of the function is written to a temporary file, but you can choose to keep it in the current directory by customising [`IPUCompiler.KEEP_LLVM_FILES`](@ref).
