@@ -318,11 +318,21 @@ function method_handler(ctx::BindgenContext, method::CLCursor)::Tuple{Union{Noth
 
 
     if spelling(kind(method)) == "FunctionTemplate"
-        if occursin("ArrayRef<T>", out)
+        if contains(out, "ArrayRef<T>")
+            # Expand all references to ArrayRef<T> to containers of common types
             full = ""
             types = ["ArrayRef<unsigned int>", "ArrayRef<int>", "ArrayRef<long>", "ArrayRef<float>", "ArrayRef<double>"]
             for type in types
                 full *= replace(out, "ArrayRef<T>" => type)
+            end
+            return full, nothing
+        elseif contains(out, r"GraphConnect\b")
+            # Manually expand template in poplar::Graph::connect.  Ideally this
+            # would be more automatic.
+            full = ""
+            types = ["unsigned int", "int", "float", "double"]
+            for type in types
+                full *= replace(out, r"\bT\b" => type)
             end
             return full, nothing
         end
