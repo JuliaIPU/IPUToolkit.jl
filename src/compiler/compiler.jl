@@ -97,16 +97,22 @@ function add_vertex(graph::Poplar.GraphAllocated,
                     codelet::Function,
                     args::Union{Number,Poplar.TensorAllocated}...)
     meths = methods(codelet)
+    num_tiles = length(tiles)
+    # Get the names of the arguments of the codelet.
+    arg_names = string.(Base.method_argnames(meths[begin])[2:end])
+    # Arguments validation
     if length(meths) != 1
         throw(ArgumentError("Function $(codelet) does not have exactly one method.  Use a different function which has a method only."))
     end
-    # Get the names of the arguments of the codelet.
-    arg_names = string.(Base.method_argnames(meths[begin])[2:end])
     if length(arg_names) != length(args)
         throw(ArgumentError("Function $(codelet) takes $(length(arg_names)) arguments but you passed $(args) arguments for this vertex."))
     end
+    for (arg_n, arg) in enumerate(args)
+        if length(arg) < num_tiles
+            throw(ArgumentError("The argument #$(arg_n) to $(codelet) has $(length(arg)) elements, which is less than the number of tiles ($(num_tiles))"))
+        end
+    end
 
-    num_tiles = length(tiles)
     for (idx, tile) in enumerate(tiles)
         # Create a vertex on each tile
         vertex = Poplar.GraphAddVertex(graph, compute_set, string(codelet))
@@ -114,9 +120,6 @@ function add_vertex(graph::Poplar.GraphAllocated,
         # Evenly spread the arrays over all tiles.
         for (arg_n, arg) in enumerate(args)
             arg_slice = if num_tiles > 1 && arg isa Poplar.TensorAllocated
-                if length(arg) < num_tiles
-                    error("The argument #$(arg_n) to $(codelet) has $(length(arg)) elements, which is less than the number of tiles ($(num_tiles))")
-                end
                 s = cld(length(arg) - 1, num_tiles)
                 slice = (s * (idx - 1)):(s * (idx - 1) + s - 1)
                 arg[slice]

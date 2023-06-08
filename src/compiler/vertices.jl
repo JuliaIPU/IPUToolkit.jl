@@ -20,6 +20,8 @@ The parameters of `VertexVector{T,S}` are
 `VertexVector` is only meant to be used by end-user to define the arguments of codelets with the [`@codelet`](@ref) macro.
 You should not try to manually instantiate or access the fields of a `VertexVector`.
 
+For scalar arguments use [`VertexScalar`](@ref).
+
 ## Example
 
 ```julia
@@ -92,6 +94,8 @@ The parameters of `VertexScalar{T,S}` are
 You should not try to manually instantiate or access the fields of a `VertexScalar`.
 
 Inside a codelet you can access and set the number by unwrapping it with `[]`.
+
+For vector arguments use [`VertexVector`](@ref).
 
 ## Example
 

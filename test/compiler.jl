@@ -76,8 +76,10 @@ function test_compiler_program(device)
         add_vertex(graph, prog, Sin, outvec2, outvec3)
     end
     add_vertex(graph, prog, Print, outvec4)
-    @test_throws ArgumentError add_vertex(graph, prog, +, outvec4)
-    @test_throws ArgumentError add_vertex(graph, prog, Print, outvec3, outvec4)
+    # Pass as codelet a function with more than one method
+    @test_throws ArgumentError add_vertex(graph, prog, +, outvec3)
+    # Pass wrong number of arguments to the codelet
+    @test_throws ArgumentError add_vertex(graph, prog, Print, outvec2, outvec3)
 
     # Init some variables which will be used to read back from the IPU
     # the results of some basic operations.
