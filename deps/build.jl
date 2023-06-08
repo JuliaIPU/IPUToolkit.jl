@@ -296,8 +296,6 @@ function method_handler(ctx::BindgenContext, method::CLCursor)::Tuple{Union{Noth
     contains(m_name, "registerCycleEstimator") && return nothing, "calls_deleted_function"
     contains(m_name, "connectHostFunction") && return nothing, "calls_deleted_function"
 
-    # contains(arg_list(method), "TypeTraits") && return
-
     out = "{ using namespace $(get_namespace(method));\n"
 
     args = get_function_args(method)
@@ -309,7 +307,10 @@ function method_handler(ctx::BindgenContext, method::CLCursor)::Tuple{Union{Noth
     end
 
     for cutoff in num_required:num_args
-        out = out * "JL$base_var.method(\"$julia_name\", []($(get_class_name(method))& cl, $(arg_list(method, true, cutoff))) {return cl.$name_small($(arg_list(method, false, cutoff)));} );\n"
+        # Do not add methods which contains arguments with `TypeTraits::isSimpleType`
+        if !contains(arg_list(method, true, cutoff), "TypeTraits::isSimpleType")
+            out = out * "JL$base_var.method(\"$julia_name\", []($(get_class_name(method))& cl, $(arg_list(method, true, cutoff))) {return cl.$name_small($(arg_list(method, false, cutoff)));} );\n"
+        end
     end
 
 
