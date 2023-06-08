@@ -36,11 +36,11 @@ end
 VertexVector{T,S}(::UndefInitializer, length::Int) where {T,S} =
     VertexVector{T,S}(C_NULL, length)
 
-function Base.setindex!(vec::VertexVector{T,<:Union{Out,InOut}}, f, i::Int) where {T}
+function Base.setindex!(vec::VertexVector, f, i::Int)
     unsafe_store!(vec.base, f, i)
 end
 
-function Base.getindex(vec::VertexVector{T,<:Union{In,InOut}}, i::Int) where {T}
+function Base.getindex(vec::VertexVector, i::Int)
     return unsafe_load(vec.base, i)
 end
 
