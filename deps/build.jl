@@ -249,7 +249,7 @@ function constructor_handler(ctx::BindgenContext, method::CLCursor)::Tuple{Union
     tokenize(method)[end].text == "delete" && return nothing, "deleted_method"
 
 
-    out = "{ using namespace $(get_namespace(method)); \n"
+    out = "{ using namespace $(get_namespace(method));\n"
 
     args = get_function_args(method)
     num_args = length(args)
@@ -298,18 +298,18 @@ function method_handler(ctx::BindgenContext, method::CLCursor)::Tuple{Union{Noth
 
     # contains(arg_list(method), "TypeTraits") && return
 
-    out = "{ using namespace $(get_namespace(method)); \n"
+    out = "{ using namespace $(get_namespace(method));\n"
 
     args = get_function_args(method)
     num_args = length(args)
     num_required = num_args - optionals(args)
     if num_required == 0
-        out = out * "JL$base_var.method(\"$julia_name\", []($(get_class_name(method))& cl) {return cl.$name_small();} ); \n"
+        out = out * "JL$base_var.method(\"$julia_name\", []($(get_class_name(method))& cl) {return cl.$name_small();} );\n"
         num_required += 1
     end
 
     for cutoff in num_required:num_args
-        out = out * "JL$base_var.method(\"$julia_name\", []($(get_class_name(method))& cl, $(arg_list(method, true, cutoff))) {return cl.$name_small($(arg_list(method, false, cutoff)));} ); \n"
+        out = out * "JL$base_var.method(\"$julia_name\", []($(get_class_name(method))& cl, $(arg_list(method, true, cutoff))) {return cl.$name_small($(arg_list(method, false, cutoff)));} );\n"
     end
 
 
@@ -346,7 +346,7 @@ function func_handler(ctx::BindgenContext, func::CLCursor)::Tuple{Union{Nothing,
     contains(arg_list(func), "&&") && return nothing, "rvalue_unsupported"
     contains(func_name, "::operator") && return nothing, "operator_unsupported"
 
-    out = "{ using namespace $(get_namespace(func)); \n"
+    out = "{ using namespace $(get_namespace(func));\n"
     return out * "mod.method(\"$julia_name\", []($(arg_list(func))) {return $func_name($(arg_list(func, false)));} ); }", nothing
 end
 
