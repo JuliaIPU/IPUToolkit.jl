@@ -5,6 +5,7 @@ const check_bounds = Base.JLOptions().check_bounds == 1
 
 using Test
 using IPUToolkit.IPUCompiler
+using GPUCompiler: KernelError
 using IPUToolkit.Poplar
 if Poplar.SDK_VERSION ≥ v"2.2.0" || !check_bounds
     using Enzyme
@@ -47,13 +48,18 @@ function test_compiler_program(device)
         end
     end
 
-    @codelet graph function Print(outvec::VertexVector{Float32, Out})
+    @codelet graph function Print(pi::VertexScalar{Float32, In})
         @ipuprint "Hello, world!"
         @ipuprint "Titire tu" " patule" " recubans sub tegmine " "fagi"
         @ipuprint "The Answer to the Ultimate Question of Life, the Universe, and Everything is " 42
         x = Int32(7)
         @ipushow x
+        @ipushow pi[]
     end
+
+    # Test some invalid kernels
+    @test_throws KernelError @codelet graph f_access_out_scalar(x::VertexScalar{Float32, Out}) = @ipushow x[]
+    @test_throws KernelError @codelet graph f_set_in_scalar(x::VertexScalar{Float32, In}) = x[] = 3.14f0
 
     # This function would contain a reference to a literal pointer, likely an
     # invalid memory address on the IPU.
@@ -65,7 +71,6 @@ function test_compiler_program(device)
     outvec1 = @cxxtest similar(graph, inconst, "outvec1");
     outvec2 = @cxxtest similar(graph, inconst, "outvec2");
     outvec3 = @cxxtest similar(graph, inconst, "outvec3");
-    outvec4 = @cxxtest similar(graph, inconst, "outvec4");
 
     prog = @cxxtest Poplar.ProgramSequence()
 
@@ -75,7 +80,7 @@ function test_compiler_program(device)
         # The `@device_override` business works well only on Julia v1.7+
         add_vertex(graph, prog, Sin, outvec2, outvec3)
     end
-    add_vertex(graph, prog, Print, outvec4)
+    add_vertex(graph, prog, Print, 3.14f0)
     # Pass as codelet a function with more than one method
     @test_throws ArgumentError add_vertex(graph, prog, +, outvec3)
     # Pass wrong number of arguments to the codelet
@@ -111,6 +116,7 @@ function test_compiler_program(device)
     @test contains(lines[2], r"Titire tu patule recubans sub tegmine fagi$")
     @test contains(lines[3], r"The Answer to the Ultimate Question of Life, the Universe, and Everything is 42$")
     @test contains(lines[4], r"x = 7$")
+    @test contains(lines[5], r"pi\[] = 3.140*$")
     @test lines[end] == ""
 
     # Read back some tensors and check the expected values.
