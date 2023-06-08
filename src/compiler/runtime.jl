@@ -94,6 +94,8 @@ end
 # abstractarray.jl
 @device_override @noinline Base.throw_boundserror(A, I) =
     @print_and_throw "Out-of-bounds array access"
+@device_override @noinline Base.throw_eachindex_mismatch_indices(I, A, B...) =
+    @print_and_throw "Not all inputs to eachindex have the same axes"
 
 # trig.jl
 @device_override @noinline Base.Math.sincos_domain_error(x) =
