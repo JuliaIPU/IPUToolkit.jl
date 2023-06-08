@@ -377,12 +377,8 @@ function gen_json(ctx::BindgenContext, decl, id, handled=false, not_handled_reas
     end
 
     decl_kind = kind(decl)
-    spelling(decl_kind) ∈ ["EnumDecl", "ClassDecl", "StructDecl", "CXXMethod", "FunctionTemplate", "FunctionDecl", "CXXConstructor", "EnumConstantDecl"] || return ""
+    spelling(decl_kind) ∈ ["EnumDecl", "ClassDecl", "StructDecl", "CXXMethod", "FunctionTemplate", "FunctionDecl", "CXXConstructor", "EnumConstantDecl"] || return
     fname = spelling(decl)
-
-    !any(x -> contains(fname, split(x, "/include/")[1]), ctx.searched_headers) && return
-
-    fname = split(fname, "/include/")[2]
 
     tokenstr = ""
     for token in tokenize(decl)
@@ -394,11 +390,9 @@ function gen_json(ctx::BindgenContext, decl, id, handled=false, not_handled_reas
     #    tokenstr = tokenstr[1:150]
     #end
 
-
     d = Dict("Implemented" => handled, "Text" => tokenstr, "Namespace" => get_namespace(decl), "Token type" => spelling(decl_kind), "Name" => get_full_name(decl), "Filename" => fname, "FailureReason" => not_handled_reason)
 
     open("out.json", "a") do file
-
         write(file, JSON.json(d) * "\n")
     end
 end
