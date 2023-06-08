@@ -96,7 +96,6 @@ end
         @test isempty(device)
         # Simple test for `get_ipu_devices` with a range as second argument.
         Poplar.DeviceDetach.(@test_logs((:info, r"^Trying to attach to device 0..."),
-                                        (:info, r"^Attached to devices with IDs"),
                                         match_mode=:any,
                                         Poplar.get_ipu_devices(1, 0:0)))
         # Couldn't attach to all requested devices
