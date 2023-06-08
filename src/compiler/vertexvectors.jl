@@ -56,7 +56,7 @@ function Base.size(t::VertexVector, d::Int)
 end
 
 function Base.copyto!(dest::VertexVector, src::VertexVector)
-    for i in 1:src.length
+    for i in eachindex(dest, src)
         dest[i] = src[i]
     end
 end
