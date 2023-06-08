@@ -17,7 +17,7 @@ tile_clock_frequency = Poplar.TargetGetTileClockFrequency(target)
 end
 
 @eval @codelet graph function Sort(invec::VertexVector{Float32, In}, outvec::VertexVector{Float32, Out})
-    outvec .= invec
+    copyto!(outvec, invec)
     # We can use the intrinsic `get_scount_l` to get the cycle counter right
     # before and after some operations, so that we can benchmark it.
     cycles_start = get_scount_l()

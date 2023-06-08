@@ -37,7 +37,7 @@ function test_compiler_program(device)
     end
 
     @codelet graph function Sort(invec::VertexVector{Float32, In}, outvec::VertexVector{Float32, Out})
-        outvec .= invec
+        copyto!(outvec, invec)
         sort!(outvec)
     end
 
