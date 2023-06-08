@@ -1,7 +1,7 @@
 # based on GPUCompiler example https://github.com/JuliaGPU/GPUCompiler.jl/blob/master/examples/kernel.jl
 module IPUCompiler
 
-export @codelet, @ipuprogram, VertexVector, In, Out, InOut, get_scount_l, get_tile_id, add_vertex
+export @codelet, @ipuprogram, VertexVector, VertexScalar, In, Out, InOut, get_scount_l, get_tile_id, add_vertex
 
 include("output.jl")
 
@@ -75,7 +75,7 @@ Call the [`__builtin_ipu_get_scount_l()`](https://docs.graphcore.ai/projects/pop
 function get_tile_id end
 
 include("runtime.jl")
-include("vertexvectors.jl")
+include("vertices.jl")
 
 GPUCompiler.runtime_module(::CompilerJob{<:Any,IPUCompilerParams}) = IPURuntime
 # `GPUCompiler.isintrinsic` specifies functions which are to be considered intrinsics for
@@ -95,7 +95,7 @@ function add_vertex(graph::Poplar.GraphAllocated,
                     compute_set::Poplar.ComputeSetAllocated,
                     tiles::Union{Integer,AbstractVector{<:Integer}},
                     codelet::Function,
-                    args::Poplar.TensorAllocated...)
+                    args::Union{Number,Poplar.TensorAllocated}...)
     meths = methods(codelet)
     if length(meths) != 1
         throw(ArgumentError("Function $(codelet) does not have exactly one method.  Use a different function which has a method only."))
@@ -113,7 +113,7 @@ function add_vertex(graph::Poplar.GraphAllocated,
 
         # Evenly spread the arrays over all tiles.
         for (arg_n, arg) in enumerate(args)
-            arg_slice = if num_tiles > 1
+            arg_slice = if num_tiles > 1 && arg isa Poplar.TensorAllocated
                 if length(arg) < num_tiles
                     error("The argument #$(arg_n) to $(codelet) has $(length(arg)) elements, which is less than the number of tiles ($(num_tiles))")
                 end
@@ -123,7 +123,9 @@ function add_vertex(graph::Poplar.GraphAllocated,
             else
                 arg
             end
-            Poplar.GraphSetTileMapping(graph, arg_slice, tile)
+            if arg isa Poplar.TensorAllocated
+                Poplar.GraphSetTileMapping(graph, arg_slice, tile)
+            end
             Poplar.GraphConnect(graph, vertex[arg_names[arg_n]], arg_slice)
         end
 
@@ -145,7 +147,7 @@ function add_vertex(graph::Poplar.GraphAllocated,
                     program::Poplar.ProgramSequenceAllocated,
                     tiles::Union{Integer,AbstractVector{<:Integer}},
                     codelet::Function,
-                    args::Poplar.TensorAllocated...)
+                    args::Union{Number,Poplar.TensorAllocated}...)
     compute_set = Poplar.GraphAddComputeSet(graph, string(codelet))
     add_vertex(graph, compute_set, tiles, codelet, args...)
     Poplar.ProgramSequenceAdd(program, Poplar.ProgramExecute(compute_set))
@@ -153,10 +155,10 @@ function add_vertex(graph::Poplar.GraphAllocated,
 end
 
 add_vertex(graph::Poplar.GraphAllocated, compute_set::Poplar.ComputeSetAllocated,
-           codelet::Function, args::Poplar.TensorAllocated...) =
+           codelet::Function, args::Union{Number,Poplar.TensorAllocated}...) =
                add_vertex(graph, compute_set, 0, codelet, args...)
 add_vertex(graph::Poplar.GraphAllocated, program::Poplar.ProgramSequenceAllocated,
-           codelet::Function, args::Poplar.TensorAllocated...) =
+           codelet::Function, args::Union{Number,Poplar.TensorAllocated}...) =
                add_vertex(graph, program, 0, codelet, args...)
 
 """
@@ -164,7 +166,7 @@ add_vertex(graph::Poplar.GraphAllocated, program::Poplar.ProgramSequenceAllocate
                compute_set_or_program::Union{Poplar.ComputeSetAllocated, Poplar.ProgramSequenceAllocated},
                [tiles::Union{Integer,AbstractVector{<:Integer}},]
                codelet::Function,
-               args::Poplar.TensorAllocated...) -> Nothing
+               args::Union{Number,Poplar.TensorAllocated}...) -> Nothing
 
 Add the codelet function `codelet` created with `@codelet` to `graph`, using the tensors `args` as arguments.
 The function `codelet` must have exactly one method, no more, no less.

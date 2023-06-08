@@ -17,6 +17,7 @@ After defining a codelet with `@codelet` you can add a vertex calling this codel
 ```@docs
 @codelet
 VertexVector
+VertexScalar
 add_vertex
 IPUCompiler.KEEP_LLVM_FILES
 IPUCompiler.POPC_FLAGS

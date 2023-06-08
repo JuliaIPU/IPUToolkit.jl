@@ -16,26 +16,46 @@ $(@__MODULE__).PROGRESS_SPINNER[] = false # disable spinner
 """
 const PROGRESS_SPINNER = Ref(true)
 
+function _build_call(arg::Expr, func_ptr::String, func_size::String, i::Int32)
+    type = if arg.args[2].args[1] isa Symbol # arg == :(x::VertexVector{Float32, In})
+        arg.args[2].args[1]
+    elseif arg.args[2].args[1] isa Expr # arg == :(x::IPUCompiler.VertexVector{Float32, In}) or :(x::IPUToolkit.IPUCompiler.VertexVector{Float32, In})
+        arg.args[2].args[1].args[2].value
+    else
+        error("Cannot handle argument $(arg)")
+    end
+
+    # TODO: I'd really like to avoid those `getfield`s.
+    if type === :VertexVector
+        return :(
+            # TODO: I'd really like to avoid that `getfield`.
+            $(arg.args[2])( # VertexVector{T,S}
+                            $(Expr(:call, :ccall, func_ptr,  :llvmcall, Ptr{getfield(@__MODULE__, arg.args[2].args[2])}, :((Int32,)), i)), # base::Ptr{T}
+                            $(Expr(:call, :ccall, func_size, :llvmcall, UInt32,                                          :((Int32,)), i))  # length::UInt32
+                            )
+        )
+    elseif type === :VertexScalar
+        return :(
+            $(arg.args[2])( # VertexScalar{T,S}
+                            $(Expr(:call, :ccall, func_ptr,  :llvmcall, Ptr{getfield(@__MODULE__, arg.args[2].args[2])}, :((Int32,)), i)), # ptr::Ptr{T}
+                            )
+        )
+    else
+        error("Cannot handle argument of type $(type)")
+    end
+end
+
 function _codelet(graph, usr_kern::Expr)
     if usr_kern.head ∉ (:function, :(=)) || usr_kern.args[1].head !== :call
         throw(ArgumentError("@codelet takes a named function definition in input"))
     end
 
-    name = usr_kern.args[1].args[1]
-    args = usr_kern.args[1].args[2:end]
+    name = usr_kern.args[1].args[1] # Name of function
+    args = usr_kern.args[1].args[2:end] # Arguments, with their type annotations
     codelet_fun = gensym(name)
     func_ptr = "extern get_vec_ptr_" * String(name)
     func_size = "extern get_vec_size_" * String(name)
-    i = Int32(-1)
-    kernargs = [
-        # TODO: I'd really like to avoid that `getfield`.
-        esc(:(
-            $(arg.args[2])( # VertexVector{T,S}
-                $(Expr(:call, :ccall, func_ptr,  :llvmcall, Ptr{getfield(@__MODULE__, arg.args[2].args[2])}, :((Int32,)), i += one(i))), # base::Ptr{T}
-                $(Expr(:call, :ccall, func_size, :llvmcall, UInt32,                                          :((Int32,)), i,          )) # length::UInt32
-                            )
-        ))
-        for arg in args]
+    kernargs = [esc(_build_call(arg, func_ptr, func_size, Int32(i - 1))) for (i, arg) in enumerate(args)]
     kern_call = Expr(:call, :($(esc(name))), kernargs...)
 
     return quote
@@ -126,7 +146,8 @@ _print_t(::Type{Int32}) = "int"
 _print_t(::Type{UInt32}) = "unsigned int"
 _print_t(::Type{Float16}) = "half"
 _print_t(::Type{Float32}) = "float"
-_print_vec(io::IO, ::Type{VertexVector{T, S}}, name::String) where {T,S} = println(io, "poplar::", _print_s(S), "<poplar::Vector<", _print_t(T), ">> ", name, ";")
+_print_arg(io::IO, ::Type{VertexVector{T, S}}, name::String) where {T,S} = println(io, "poplar::", _print_s(S), "<poplar::Vector<", _print_t(T), ">> ", name, ";")
+_print_arg(io::IO, ::Type{VertexScalar{T, S}}, name::String) where {T,S} = println(io, "poplar::", _print_s(S), "<", _print_t(T), "> ", name, ";")
 
 function __build_codelet(graph::Poplar.GraphAllocated, kernel, name::String, origKernel::Function)
     target = NativeCompilerTarget()
@@ -166,7 +187,7 @@ function __build_codelet(graph::Poplar.GraphAllocated, kernel, name::String, ori
     mktempdir() do dir
         open(joinpath(dir, "gen_codelet.cpp"), "w") do io
             for i in 1:length(args)
-                _print_vec(io, args[i], argnames[i])
+                _print_arg(io, args[i], argnames[i])
             end
         end
 

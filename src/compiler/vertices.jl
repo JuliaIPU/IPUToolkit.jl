@@ -76,3 +76,49 @@ end
 # Simple methods, don't access the elements
 Base.show(io::IO, x::VertexVector) = Base.show_default(io, x)
 Base.show(io::IO, ::MIME"text/plain", x::VertexVector) = Base.show_default(io, x)
+
+"""
+    VertexScalar{T, S}
+
+This datatype formally represents scalars to be used in codelets (vertices) in IPU programs.
+Technically, these are implemented as single-element tensors.
+
+The parameters of `VertexScalar{T,S}` are
+
+* `T`: the type of the scalar, e.g. `Int32`, `Float32`, etc.;
+* `S`: the scope of the scalar in the codelet, `In`, `Out`, or `InOut`.
+
+`VertexScalar` is only meant to be used by end-user to define the arguments of codelets with the [`@codelet`](@ref) macro.
+You should not try to manually instantiate or access the fields of a `VertexScalar`.
+
+Inside a codelet you can access and set the number by unwrapping it with `[]`.
+
+## Example
+
+Examples of types
+
+```julia
+VertexScalar{Float32, In}    # input-only `Float32` number
+VertexScalar{Int32, Out}     # output-only `Int32` number
+VertexScalar{UInt32, InOut}  # input/output `UInt32` number
+```
+
+Inside a codelet, let `x` have type `VertexScalar`, you can access its value if it has scope `In` or `InOut` with
+
+```julia
+@ipushow x[]
+y = x[] / 3.14
+```
+
+If `x` has scope `Out` or `InOut` you can set its value with `x[] = ...`:
+
+```julia
+x[] = 3.14
+```
+"""
+struct VertexScalar{T, S}
+    ptr::Ptr{T}
+end
+# Scalar arguments are implemented as single-element tensors
+Base.getindex(s::VertexScalar{T,<:Union{In,InOut}}) where {T} = unsafe_load(s.ptr)
+Base.setindex!(s::VertexScalar{T,<:Union{Out,InOut}}, x::T) where {T} = unsafe_store!(s.ptr, x)
