@@ -1,3 +1,6 @@
 Manifest.toml
 /docs/build/
 /docs/gh-pages/
+*.ll
+/demo/*.pdf
+/demo/*.png
