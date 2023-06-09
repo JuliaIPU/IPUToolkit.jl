@@ -120,8 +120,8 @@ function add_vertex(graph::Poplar.GraphAllocated,
         # Evenly spread the arrays over all tiles.
         for (arg_n, arg) in enumerate(args)
             arg_slice = if num_tiles > 1 && arg isa Poplar.TensorAllocated
-                s = cld(length(arg) - 1, num_tiles)
-                slice = (s * (idx - 1)):(s * (idx - 1) + s - 1)
+                stride = cld(length(arg), num_tiles)
+                slice = (stride * (idx - 1)):min(length(arg) - 1, (stride * idx - 1))
                 arg[slice]
             else
                 arg
