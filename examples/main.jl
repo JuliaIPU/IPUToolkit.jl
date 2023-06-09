@@ -12,16 +12,21 @@ graph = Poplar.Graph(target)
 
 tile_clock_frequency = Poplar.TargetGetTileClockFrequency(target)
 
-@codelet graph function TimesTwo(inconst::VertexVector{Float32, In}, outvec::VertexVector{Float32, Out})
-    outvec .= inconst .* 2
+# Multiply input vector `in` by 2, and store result in vector `out`.
+@codelet graph function TimesTwo(in::VertexVector{Float32, In}, out::VertexVector{Float32, Out})
+    out .= in .* 2
 end
 
-@eval @codelet graph function Sort(invec::VertexVector{Float32, In}, outvec::VertexVector{Float32, Out})
-    copyto!(outvec, invec)
+# Copy elements of `in` into `out` and sort it in-place.  Get cycles counter before and
+# after sorting, show the time to sort the vector by divinding the cycles count by the tile
+# clock frequency, which has been interpolated inside the kernel with `@eval` (the
+# alternative would be to pass it as an extra scalar input argument).
+@eval @codelet graph function Sort(in::VertexVector{Float32, In}, out::VertexVector{Float32, Out})
+    copyto!(out, in)
     # We can use the intrinsic `get_scount_l` to get the cycle counter right
     # before and after some operations, so that we can benchmark it.
     cycles_start = get_scount_l()
-    sort!(outvec)
+    sort!(out)
     cycles_end = get_scount_l()
     # Divide the difference between the two cycle counts by the tile frequency
     # clock to get the time.
