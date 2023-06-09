@@ -80,7 +80,7 @@ The `@codelet` macro takes two argument:
 * the graph to which to add the codelet with the [`Poplar.GraphAddCodelets`](https://docs.graphcore.ai/projects/poplar-api/en/3.2.0/poplar/graph/Graph.html#_CPPv4N6poplar5Graph11addCodeletsE9StringRef15CodeletFileType9StringRef9StringRef) function;
 * the function definition of the codelet that you want to compile for the IPU device.
 
-All the arguments of the function must be either [`VertexVector`](@ref)s, which represent the [`Vector`](https://docs.graphcore.ai/projects/poplar-user-guide/en/3.2.0/vertex_vectors.html) vertex type in the Poplar SDK, or [`VerteScalar`](@ref)s, which represent scalar arguments.
+All the arguments of the function must be either [`VertexVector`](@ref)s, which represent the [`Vector`](https://docs.graphcore.ai/projects/poplar-user-guide/en/3.2.0/vertex_vectors.html) vertex type in the Poplar SDK, or [`VertexScalar`](@ref)s, which represent scalar arguments.
 
 `@codelet` defines the function passed as argument, generates its LLVM Intermediate Representation (IR) using `GPUCompiler.jl` and then compiles it down to native code using the Poplar compiler `popc`, which must be in [`PATH`](https://en.wikipedia.org/wiki/PATH_(variable)).
 By default the LLVM IR of the function is written to a temporary file, but you can choose to keep it in the current directory by customising [`IPUCompiler.KEEP_LLVM_FILES`](@ref).
