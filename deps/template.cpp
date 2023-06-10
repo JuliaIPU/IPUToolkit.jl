@@ -98,6 +98,21 @@ define_julia_module(jlcxx::Module &mod)
   //    C++ exception while wrapping module Poplar: No appropriate factory for type N6poplar8ArrayRefISt5tupleIJNS_4TypeEmEEEE
   // To demangle it, use `c++filt _ZN6poplar8ArrayRefISt5tupleIJNS_4TypeEmEEEE`.
   mod.add_type<ArrayRef<std::tuple<poplar::Type, unsigned long> >>("ArrayRefTupleTypeULong");
+#if __has_include(<gccs/ArrayRef.hpp>) // Poplar 2.6+
+  // In newer versions of Poplar SDK `ArrayRef` is a deprecated version of `gccs::ArrayRef`,
+  // we need to think about how to support this in a decent way avoiding duplication.
+  mod.add_type<gccs::ArrayRef<unsigned int>>("GccsArrayRefUnsignedInt");
+  mod.add_type<gccs::ArrayRef<int>>("GccsArrayRefInt");
+  mod.add_type<gccs::ArrayRef<long>>("GccsArrayRefLong");
+  mod.add_type<gccs::ArrayRef<float>>("GccsArrayRefFloat");
+  mod.add_type<gccs::ArrayRef<double>>("GccsArrayRefDouble");
+#endif
+#if __has_include(<poplar/Quarter.hpp>) // Poplar 2.6+
+  // We're skipping the `QuarterMetadata` class completely in `build.jl`, but somehow a
+  // constructor of this class slips in the wrapper, so we need to add the type here to
+  // avoid the error about missing appropriate factory when precompiling the package.
+  mod.add_type<poplar::QuarterMetadata>("QuarterMetadata");
+#endif
 
   // auto JLType = mod.add_type<poplar::Type>("Type");
   // Errors! ^ Can't be named "Type"
