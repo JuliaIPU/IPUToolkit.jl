@@ -495,6 +495,14 @@ function iterate_children(ctx::BindgenContext, childvec::Vector{CLCursor})
         # error: no match for call to ‘(poplar::Engine::copyToRemoteBuffer<unsigned int>::<lambda(unsigned int*)>) (gccs::ArrayRef<const unsigned int>::const_iterator)’
         contains(child_id, "poplar::Engine::copyToRemoteBuffer(ArrayRef<T>, std::string, uint64_t, unsigned int)__FunctionTemplate") && (valid = false; reason = "copyToRemoteBuffer_blacklisted")
 
+        # IPUAttributes appears only in one method of Device.getAttribute, but it isn't
+        # documented and it looks troublesome to support in a backward-compatible way, let's
+        # just skip it.
+        contains(child_id, "IPUAttributes") && (valid = false; reason = "IPUAttributes_blacklisted")
+
+        # Sadly we aren't going to support quarter precision floating-point numbers anytime soon, so let's just skip this.
+        contains(child_id, "QuarterMetadata") && (valid = false; reason = "QuarterMetadata_blacklisted")
+
         handled = false
         if !(child_id ∈ ctx.handled_symbols)
             if valid
