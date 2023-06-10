@@ -318,11 +318,17 @@ function method_handler(ctx::BindgenContext, method::CLCursor)::Tuple{Union{Noth
 
 
     if spelling(kind(method)) == "FunctionTemplate"
-        types = ("unsigned int", "int", "long", "float", "double")
         if contains(out, "ArrayRef<T>")
             # Expand all references to ArrayRef<T> to containers of common types
             full = ""
-            arrayref_types = string.("ArrayRef<", types, ">")
+            # Not all methods support the same types in `ArrayRef<T>`, so we need to do some
+            # specialisation.
+            _types = if julia_name in ("EngineReadTensor", "EngineWriteTensor", "EngineConnectStream", "EngineCopyFromRemoteBuffer")
+                ("unsigned int", "int", "long", "float")
+            else
+                ("unsigned int", "int", "long", "float", "double")
+            end
+            arrayref_types = string.("ArrayRef<", _types, ">")
             for type in arrayref_types
                 full *= replace(out, "ArrayRef<T>" => type)
             end
@@ -331,7 +337,7 @@ function method_handler(ctx::BindgenContext, method::CLCursor)::Tuple{Union{Noth
             # Manually expand template in poplar::Graph::connect.  Ideally this
             # would be more automatic.
             full = ""
-            for type in types
+            for type in ("unsigned int", "int", "long", "float", "double")
                 # Note: we have to prevent automatic argument conversion:
                 # <https://github.com/JuliaInterop/CxxWrap.jl/blob/aec9d9975aec28e9046ad81e7038bbc5319963ea/README.md#automatic-argument-conversion>.
                 full *= replace(out,
@@ -427,7 +433,6 @@ function iterate_children(ctx::BindgenContext, childvec::Vector{CLCursor})
 
         !any(x -> startswith(get_namespace(child), x), allowed_namespaces) && (valid = false; reason = "not_allowed_namespace")
 
-
         child_id = get_full_name(child) * "__" * spelling(child_kind)
         child_id = replace(child_id, "poplar::StringRef" => "std::string")
 
@@ -476,8 +481,19 @@ function iterate_children(ctx::BindgenContext, childvec::Vector{CLCursor})
         # error: invalid application of ‘sizeof’ to incomplete type ‘poplar::core::VertexIntrospector’
         contains(child_id, "poplar::VertexIntrospector") && (valid = false; reason = "incomplete_type")
 
+        # error: invalid use of incomplete type ‘class poplar::Preallocations’
+        contains(child_id, "poplar::Preallocations") && (valid = false; reason = "incomplete_type")
+
         # error: no matching function for call to ‘poplar::GlobalExchangeConstraint::GlobalExchangeConstraint()’
         contains(child_id, "poplar::Target::getGlobalExchangeConstraints()__CXXMethod") && (valid = false; reason = "getGlobalExchangeConstraints_blacklisted")
+
+        # This method is handled incorrectly by this script and it generates a line with
+        # invalid syntax.  It doesn't seem to be super important, so let's just skip it for
+        # the time being.
+        contains(child_id, "poplar::Module::forEachLoadableSegment") && (valid = false; reason = "forEachLoadableSegment_blacklisted")
+
+        # error: no match for call to ‘(poplar::Engine::copyToRemoteBuffer<unsigned int>::<lambda(unsigned int*)>) (gccs::ArrayRef<const unsigned int>::const_iterator)’
+        contains(child_id, "poplar::Engine::copyToRemoteBuffer(ArrayRef<T>, std::string, uint64_t, unsigned int)__FunctionTemplate") && (valid = false; reason = "copyToRemoteBuffer_blacklisted")
 
         handled = false
         if !(child_id ∈ ctx.handled_symbols)
