@@ -302,14 +302,14 @@ function method_handler(ctx::BindgenContext, method::CLCursor)::Tuple{Union{Noth
     num_args = length(args)
     num_required = num_args - optionals(args)
     if num_required == 0
-        out = out * "JL$base_var.method(\"$julia_name\", []($(get_class_name(method))& cl) {return cl.$name_small();} );\n"
+        out = out * """JL$(base_var).method("$(julia_name)", []($(get_class_name(method))& cl) {return cl.$(name_small)();});\n"""
         num_required += 1
     end
 
     for cutoff in num_required:num_args
         # Do not add methods which contains arguments with `TypeTraits::isSimpleType`
         if !contains(arg_list(method, true, cutoff), "TypeTraits::isSimpleType")
-            out = out * "JL$base_var.method(\"$julia_name\", []($(get_class_name(method))& cl, $(arg_list(method, true, cutoff))) {return cl.$name_small($(arg_list(method, false, cutoff)));} );\n"
+            out = out * """JL$(base_var).method("$(julia_name)", []($(get_class_name(method))& cl, $(arg_list(method, true, cutoff))) {return cl.$(name_small)($(arg_list(method, false, cutoff)));});\n"""
         end
     end
 
@@ -318,11 +318,12 @@ function method_handler(ctx::BindgenContext, method::CLCursor)::Tuple{Union{Noth
 
 
     if spelling(kind(method)) == "FunctionTemplate"
+        types = ("unsigned int", "int", "long", "float", "double")
         if contains(out, "ArrayRef<T>")
             # Expand all references to ArrayRef<T> to containers of common types
             full = ""
-            types = ["ArrayRef<unsigned int>", "ArrayRef<int>", "ArrayRef<long>", "ArrayRef<float>", "ArrayRef<double>"]
-            for type in types
+            arrayref_types = string.("ArrayRef<", types, ">")
+            for type in arrayref_types
                 full *= replace(out, "ArrayRef<T>" => type)
             end
             return full, nothing
@@ -330,9 +331,13 @@ function method_handler(ctx::BindgenContext, method::CLCursor)::Tuple{Union{Noth
             # Manually expand template in poplar::Graph::connect.  Ideally this
             # would be more automatic.
             full = ""
-            types = ["unsigned int", "int", "float", "double"]
             for type in types
-                full *= replace(out, r"\bT\b" => type)
+                # Note: we have to prevent automatic argument conversion:
+                # <https://github.com/JuliaInterop/CxxWrap.jl/blob/aec9d9975aec28e9046ad81e7038bbc5319963ea/README.md#automatic-argument-conversion>.
+                full *= replace(out,
+                                r"\bT\b" => "jlcxx::StrictlyTypedNumber<" * type * ">",
+                                "a, b" => "a, b.value",
+                                )
             end
             return full, nothing
         end
@@ -460,6 +465,10 @@ function iterate_children(ctx::BindgenContext, childvec::Vector{CLCursor})
 
         # Avoid duplicate definition during precompilation of the CxxWrap module
         contains(child_id, "poplar::layout::to_string(const poplar::layout::VectorList)__FunctionDecl") && (valid = false; reason = "duplicate_definition")
+
+        # Avoid duplicate definition during precompilation of the CxxWrap module.
+        # Ref: <https://github.com/giordano/IPUToolkit.jl/issues/12>.
+        contains(child_id, "poplar::toString") && (valid = false; reason = "duplicate_definition")
 
         # error: invalid use of incomplete type ‘class pva::Report’
         contains(child_id, "poplar::Engine::getReport") && (valid = false; reason = "incomplete_type")
