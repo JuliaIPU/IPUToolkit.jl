@@ -12,11 +12,21 @@ The main motivation for this project is to explore Julia's introspection and met
 
 ## Requirements
 
-This package requires Julia v1.6+ (currently tested up to Julia v1.9), GCC 10+ as compiler (it requires support for the C++20 standard), and the Poplar SDK v1.3, or v2.0-v2.5.
+This package requires
+
+* Julia v1.6+ (currently tested up to Julia v1.10),
+* the Poplar SDK v1.3 or v2.0-v2.6 including the `popc` compiler,
+* and GCC 10+ for compiling the wrapper around the Poplar SDK (it requires support for the C++20 standard).
+
 Other versions of the Poplar SDK are not currently supported.
 
-Note that both Julia and the Poplar SDK are coupled to a specific version of the LLVM compiler framework, and you will need to match a specific version of the Poplar SDK with a version of Julia using the same major version of LLVM.
-For example, the Poplar SDK v2.2 uses LLVM 13, which is available in Julia v1.8, while the Poplar SDK versions 2.3-2.5 use LLVM 14, which is available in Julia v1.9.
+!!! note "Compatibility between Julia and Poplar SDK"
+
+    Both Julia and the Poplar SDK are coupled to a specific version of the LLVM compiler framework, and you will need to match a specific version of the Poplar SDK with a version of Julia using the same major version of LLVM.
+    For example
+    * the Poplar SDK version 2.2 uses LLVM 13, which is available in Julia v1.8;
+    * the Poplar SDK versions 2.3-2.5 use LLVM 14, which is available in Julia v1.9;
+    * the Poplar SDK versions 2.6-3.0 use LLVM 15, which is available in Julia v1.10.
 
 ## Installation
 
@@ -27,16 +37,19 @@ using Pkg
 Pkg.add(; url="https://github.com/giordano/IPUToolkit.jl")
 ```
 
-and then build the package with
+You will need to build the wrapper around the Poplar SDK.
+This should happen automatically the first time you install the package, in any case you can run it with
 
 ```julia
 Pkg.build()
 ```
 
+This step requires a C++ compiler supporting C++20 standard.
+You have to set the compiler with the `CXX` environment variable, this can be either its absolute path or simply its name if it is in the [`PATH`](https://en.wikipedia.org/wiki/PATH_(variable)) environment variable.
+
 !!! note
 
-	This step will compile a wrapper around the Poplar SDK that can be used by Julia.
-	It will take a while, without printing an update to screen.
+	Compiling the wrapper around the Poplar SDK will take a while, without printing an update to screen.
 	Hold on.
 
 ## Usage
