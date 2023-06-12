@@ -1,3 +1,11 @@
+# Activate docs environment, dev the package we want to build docs for, instantiate.
+using Pkg
+Pkg.activate(@__DIR__)
+Pkg.develop(PackageSpec(; path=dirname(@__DIR__)))
+Pkg.instantiate()
+Pkg.precompile()
+
+# Start building docs from here
 using Documenter, IPUToolkit, IPUToolkit.Poplar, IPUToolkit.IPUCompiler
 
 # Pretend to be GitHub Action to publish the documentation.  Note that in order to actually
