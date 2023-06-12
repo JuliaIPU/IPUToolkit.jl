@@ -198,8 +198,11 @@ const POPLAR_SDK_LLVM_MAPPING = Dict(
 )
 
 function __init__()
-    sdk_llvm_version = POPLAR_SDK_LLVM_MAPPING[Base.thisminor(Poplar.SDK_VERSION)]
-    if sdk_llvm_version != Base.thismajor(Base.libllvm_version)
+    @static if get(POPLAR_SDK_LLVM_MAPPING, Base.thisminor(Poplar.SDK_VERSION), v"0") != Base.thismajor(Base.libllvm_version)
+        sdk_llvm_version = get(POPLAR_SDK_LLVM_MAPPING, Base.thisminor(Poplar.SDK_VERSION), "UNKNOWN")
+        @static if sdk_llvm_version == "UNKNOWN" && !isnothing(Sys.which("popc"))
+            sdk_llvm_version = match(r"clang version ([\d.]+)", readchomp(`popc --version`))[1]
+        end
         @warn """
               You are using Poplar SDK v$(Poplar.SDK_VERSION) which is coupled to LLVM v$(sdk_llvm_version), but your Julia uses LLVM v$(Base.libllvm_version).
               IPUCompiler code generation may not work correctly.
