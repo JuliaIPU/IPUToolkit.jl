@@ -1,4 +1,5 @@
 using ProgressMeter
+using LLVM
 
 export @codelet
 
@@ -142,6 +143,39 @@ $(@__MODULE__).KEEP_LLVM_FILES[] = true  # Generated LLVM IR files are kept in t
 """
 const KEEP_LLVM_FILES = Ref(false)
 
+"""
+    $(@__MODULE__).TARGET_COLOSSUS::$(typeof(KEEP_LLVM_FILES))
+
+Option to control whether to target the Colossus backend when generating the LLVM Intermediate Representation (IR) of the codelets.
+If set to `false`, the default, codelets will generate code for the host machine, which may be inefficient, while still being valid.
+
+!!! note
+
+    You can target the Colossus backend only if your Julia links to a version of libllvm compiled from [Graphcore's fork of LLVM](https://github.com/graphcore/llvm-project-fork).
+
+!!! warning
+
+    This option is experimental, code generation using Graphcore's LLVM has not been tested extensively and unexpected errors may happen.
+
+## Example
+
+```julia
+$(@__MODULE__).TARGET_COLOSSUS[] = false # Generate LLVM IR for the host, the default
+$(@__MODULE__).TARGET_COLOSSUS[] = true  # Generate LLVM IR for the Colossus backend
+```
+"""
+const TARGET_COLOSSUS = Ref(false)
+
+function _get_target()
+    if TARGET_COLOSSUS[]
+        if :Colossus in LLVM.backends()
+            return Colossus()
+        end
+        error("Cannot target the Colossus backend, this is not supported by the version of LLVM that Julia links to.")
+    end
+    return NativeCompilerTarget()
+end
+
 _print_s(::Type{In}) = "Input"
 _print_s(::Type{Out}) = "Output"
 _print_s(::Type{InOut}) = "InOut"
@@ -153,7 +187,7 @@ _print_arg(io::IO, ::Type{VertexVector{T, S}}, name::String) where {T,S} = print
 _print_arg(io::IO, ::Type{VertexScalar{T, S}}, name::String) where {T,S} = println(io, "poplar::", _print_s(S), "<", _print_t(T), "> ", name, ";")
 
 function __build_codelet(graph::Poplar.GraphAllocated, kernel, name::String, origKernel::Function)
-    target = NativeCompilerTarget()
+    target = _get_target()
     source = methodinstance(typeof(kernel), Tuple{})
     params = IPUCompilerParams(name)
     config = CompilerConfig(target, params)

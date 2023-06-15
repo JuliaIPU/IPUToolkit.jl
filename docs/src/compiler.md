@@ -19,6 +19,7 @@ After defining a codelet with `@codelet` you can add a vertex calling this codel
 VertexVector
 VertexScalar
 add_vertex
+IPUCompiler.TARGET_COLOSSUS
 IPUCompiler.KEEP_LLVM_FILES
 IPUCompiler.POPC_FLAGS
 IPUCompiler.PROGRESS_SPINNER
