@@ -11,6 +11,12 @@ using ..Poplar
 # list of overrides (only for Julia 1.6)
 const overrides = Expr[]
 
+# Colossus backend
+struct Colossus <: AbstractCompilerTarget
+end
+GPUCompiler.llvm_triple(::Colossus) = "colossus-graphcore-unknown-elf"
+GPUCompiler.runtime_slug(j::CompilerJob{Colossus}) = j.config.params.kernel_name
+
 struct IPUCompilerParams <: AbstractCompilerParams
     kernel_name::String
 end
