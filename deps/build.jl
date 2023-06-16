@@ -487,10 +487,11 @@ function iterate_children(ctx::BindgenContext, childvec::Vector{CLCursor})
         # error: no matching function for call to ‘poplar::GlobalExchangeConstraint::GlobalExchangeConstraint()’
         contains(child_id, "poplar::Target::getGlobalExchangeConstraints()__CXXMethod") && (valid = false; reason = "getGlobalExchangeConstraints_blacklisted")
 
-        # This method is handled incorrectly by this script and it generates a line with
-        # invalid syntax.  It doesn't seem to be super important, so let's just skip it for
-        # the time being.
+        # These methods are handled incorrectly by this script and generate lines with
+        # invalid syntax.  They don't seem to be super important, so let's just skip them
+        # for the time being.
         contains(child_id, "poplar::Module::forEachLoadableSegment") && (valid = false; reason = "forEachLoadableSegment_blacklisted")
+        contains(child_id, "poplar::Module::forEachSegment") && (valid = false; reason = "forEachSegment_blacklisted")
 
         # error: no match for call to ‘(poplar::Engine::copyToRemoteBuffer<unsigned int>::<lambda(unsigned int*)>) (gccs::ArrayRef<const unsigned int>::const_iterator)’
         contains(child_id, "poplar::Engine::copyToRemoteBuffer(ArrayRef<T>, std::string, uint64_t, unsigned int)__FunctionTemplate") && (valid = false; reason = "copyToRemoteBuffer_blacklisted")

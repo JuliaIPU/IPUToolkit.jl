@@ -15,7 +15,7 @@ The main motivation for this project is to explore Julia's introspection and met
 This package requires
 
 * Julia v1.6+ (currently tested up to Julia v1.10),
-* the Poplar SDK v1.3 or v2.0-v2.6 including the `popc` compiler,
+* the Poplar SDK v1.3 or v2.0-v3.0 including the `popc` compiler,
 * and GCC 10+ for compiling the wrapper around the Poplar SDK (it requires support for the C++20 standard).
 
 Other versions of the Poplar SDK are not currently supported.
