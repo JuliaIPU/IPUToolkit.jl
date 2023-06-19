@@ -38,13 +38,13 @@ function report_exception_frame(idx, func, file, line)
 end
 
 # IPU builtins: https://docs.graphcore.ai/projects/poplar-api/en/latest/ipu_intrinsics/ipu_builtins.html
-get_scount_l() = ccall("extern @llvm.colossus.get.scount.l",  llvmcall, Cuint, ())
-get_tile_id() = ccall("extern @llvm.colossus.get.tile.id",  llvmcall, Cuint, ())
+get_scount_l() = ccall("llvm.colossus.get.scount.l",  llvmcall, Cuint, ())
+get_tile_id() = ccall("llvm.colossus.get.tile.id",  llvmcall, Cuint, ())
 # Random functions, based on IPU intrinsics
-Base.rand(T::Type{Float16}) = ccall("extern @llvm.colossus.urand.f16",  llvmcall, Float16, ()) + T(0.5)
-Base.rand(T::Type{Float32}) = ccall("extern @llvm.colossus.urand.f32",  llvmcall, Float32, ()) + T(0.5)
-Base.rand(T::Type{UInt32}) = ccall("extern @llvm.colossus.urand32",  llvmcall, UInt32, ()) + T(0.5)
-Base.rand(T::Type{UInt64}) = ccall("extern @llvm.colossus.urand64",  llvmcall, UInt64, ()) + T(0.5)
+Base.rand(T::Type{Float16}) = ccall("llvm.colossus.urand.f16",  llvmcall, Float16, ()) + T(0.5)
+Base.rand(T::Type{Float32}) = ccall("llvm.colossus.urand.f32",  llvmcall, Float32, ()) + T(0.5)
+Base.rand(T::Type{UInt32}) = ccall("llvm.colossus.urand32",  llvmcall, UInt32, ()) + T(0.5)
+Base.rand(T::Type{UInt64}) = ccall("llvm.colossus.urand64",  llvmcall, UInt64, ()) + T(0.5)
 
 ## Math functions.
 # There are different reasons why we prefer LLVM intrinsics on the IPU: implementations in

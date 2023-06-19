@@ -3,6 +3,7 @@ using IPUToolkit.IPUCompiler, IPUToolkit.Poplar
 ENV["POPLAR_RUNTIME_OPTIONS"] = """{"target.hostSyncTimeout":"60"}"""
 
 IPUCompiler.KEEP_LLVM_FILES[] = true
+IPUCompiler.TARGET_COLOSSUS[] = true
 
 device = Poplar.get_ipu_device()
 target = Poplar.DeviceGetTarget(device)
