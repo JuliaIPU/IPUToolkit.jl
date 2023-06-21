@@ -23,23 +23,11 @@ u1 = Vector{Float32}(undef, n)
 u2 = Vector{Float32}(undef, n)
 u3 = Vector{Float32}(undef, n)
 
-function solve!(t::AbstractVector{Float32}, u1::AbstractVector{Float32}, u2::AbstractVector{Float32}, u3::AbstractVector{Float32}, integ)
-    for idx in eachindex(t, u1, u2, u3)
-        DiffEqGPU.step!(integ, integ.t + integ.dt, integ.u)
-        t[idx] = integ.t
-        u1[idx] = integ.u[1]
-        u2[idx] = integ.u[2]
-        u3[idx] = integ.u[3]
-    end
-    return nothing
-end
-
 ### Start IPU program
 
 ENV["POPLAR_RUNTIME_OPTIONS"] = """{"target.hostSyncTimeout":"60"}"""
 
 IPUCompiler.PROGRESS_SPINNER[] = false
-IPUCompiler.DEBUG_COMPILATION_ERRORS[] = true # false
 
 device = Poplar.get_ipu_device()
 target = Poplar.DeviceGetTarget(device)
@@ -53,7 +41,13 @@ graph = Poplar.Graph(target)
     u0 = @SVector [1f0; 0f0; 0f0]
     svp = @inbounds SVector{3, Float32}(p)
     integ = DiffEqGPU.init(GPUTsit5(), lorenz, false, u0, 0f0, 0.005f0, svp, nothing, CallbackSet(nothing), true, false)
-    solve!(t, u1, u2, u3, integ)
+    for idx in eachindex(t, u1, u2, u3)
+        DiffEqGPU.step!(integ, integ.t + integ.dt, integ.u)
+        t[idx] = integ.t
+        u1[idx] = integ.u[1]
+        u2[idx] = integ.u[2]
+        u3[idx] = integ.u[3]
+    end
     return nothing
 end
 
