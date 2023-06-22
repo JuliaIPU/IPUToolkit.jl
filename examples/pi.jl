@@ -40,16 +40,16 @@ end
     cycles[begin] = @ipuelapsed(out[begin] = pi_kernel(in[begin]))
 end
 
-input = Poplar.GraphAddConstant(graph, ids)
-output = similar(graph, input, Float32, "sums");
-cs = similar(graph, input, UInt32, "cycles");
+ids_ipu = Poplar.GraphAddConstant(graph, ids)
+sums_ipu = similar(graph, sums, "sums");
+cycles_ipu = similar(graph, cycles, "cycles");
 
 prog = Poplar.ProgramSequence()
 
-add_vertex(graph, prog, 0:(num_tiles - 1), Pi, input, output, cs)
+add_vertex(graph, prog, 0:(num_tiles - 1), Pi, ids_ipu, sums_ipu, cycles_ipu)
 
-Poplar.GraphCreateHostRead(graph, "sums-read", output)
-Poplar.GraphCreateHostRead(graph, "cycles-read", cs)
+Poplar.GraphCreateHostRead(graph, "sums-read", sums_ipu)
+Poplar.GraphCreateHostRead(graph, "cycles-read", cycles_ipu)
 
 flags = Poplar.OptionFlags()
 Poplar.OptionFlagsSet(flags, "debug.instrument", "true")
