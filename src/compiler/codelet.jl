@@ -7,6 +7,7 @@ export @codelet
     $(@__MODULE__).PROGRESS_SPINNER::$(typeof(PROGRESS_SPINNER))
 
 Option to control whether to display a spinner to show progress during compilation of IPU codelets.
+This is forcibly disabled if [`DEBUG_COMPILATION_ERRORS`](@ref) is `true`.
 
 ## Example
 
@@ -144,7 +145,7 @@ $(@__MODULE__).KEEP_LLVM_FILES[] = true  # Generated LLVM IR files are kept in t
 const KEEP_LLVM_FILES = Ref(false)
 
 """
-    $(@__MODULE__).TARGET_COLOSSUS::$(typeof(KEEP_LLVM_FILES))
+    $(@__MODULE__).TARGET_COLOSSUS::$(typeof(TARGET_COLOSSUS))
 
 Option to control whether to target the Colossus backend when generating the LLVM Intermediate Representation (IR) of the codelets.
 If set to `false`, the default, codelets will generate code for the host machine, which may be inefficient, while still being valid.
@@ -155,7 +156,7 @@ If set to `false`, the default, codelets will generate code for the host machine
 
 !!! warning
 
-    This option is experimental, code generation using Graphcore's LLVM has not been tested extensively and unexpected errors may happen.
+    This option is experimental, Julia code generation using Graphcore's LLVM has not been tested extensively and is known to cause miscompilations, unexpected errors may happen.
 
 ## Example
 
@@ -165,6 +166,26 @@ $(@__MODULE__).TARGET_COLOSSUS[] = true  # Generate LLVM IR for the Colossus bac
 ```
 """
 const TARGET_COLOSSUS = Ref(false)
+
+"""
+    $(@__MODULE__).DEBUG_COMPILATION_ERRORS::$(typeof(DEBUG_COMPILATION_ERRORS))
+
+Option to control whether a failure to compile LLVM IR in [`@codelet`](@ref) should drop you into an interactive debug session with [`Cthulhu.jl`](https://github.com/JuliaDebug/Cthulhu.jl).
+This forcibly disables the progress spinner enabled by [`PROGRESS_SPINNER`](@ref), as it would not play nicely with the interactive debug session.
+
+!!! note
+
+    [`Cthulhu.jl`](https://github.com/JuliaDebug/Cthulhu.jl) must be installed in the environment you are currently using and you have to run `using Cthulhu` before the `@codelet` definition.
+    `IPUToolkit.jl` does not automatically `Cthulhu.jl` automatically to limit the number of dependencies.
+
+## Example
+
+```julia
+$(@__MODULE__).DEBUG_COMPILATION_ERRORS[] = false # Do not automatically open interactive debug shell when a compilation error arises, the default
+$(@__MODULE__).DEBUG_COMPILATION_ERRORS[] = true  # Automatically open interactive debug shell when a compilation error arises
+```
+"""
+const DEBUG_COMPILATION_ERRORS = Ref(false)
 
 function _get_target()
     if TARGET_COLOSSUS[]
@@ -193,7 +214,15 @@ function __build_codelet(graph::Poplar.GraphAllocated, kernel, name::String, ori
     config = CompilerConfig(target, params)
     job = CompilerJob(source, config)
     llvm_ir = JuliaContext() do ctx
-        string(GPUCompiler.compile(:llvm, job; ctx)[1])
+        try
+            string(GPUCompiler.compile(:llvm, job; ctx)[1])
+        catch err
+            if err isa InvalidIRError && DEBUG_COMPILATION_ERRORS[]
+                code_typed(err; interactive = true)
+            else
+                rethrow()
+            end
+        end
     end
     # For some reasons the Colossus intrinsics names get dots converted into underscores:
     # <https://github.com/JuliaGPU/GPUCompiler.jl/issues/464>.  Let's convert them back to
@@ -263,7 +292,8 @@ function __build_codelet(graph::Poplar.GraphAllocated, kernel, name::String, ori
 end
 
 function _build_codelet(graph::Poplar.GraphAllocated, kernel, name::String, origKernel::Function)
-    if PROGRESS_SPINNER[]
+    # Progress spinner is disabled if interactive debugging is enabled.
+    if PROGRESS_SPINNER[] && !DEBUG_COMPILATION_ERRORS[]
         prog = ProgressUnknown("Compiling codelet $(name):"; spinner=true)
         task = Threads.@spawn __build_codelet(graph, kernel, name, origKernel)
         while !istaskdone(task)
