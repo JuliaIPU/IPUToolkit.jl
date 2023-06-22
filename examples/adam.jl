@@ -50,14 +50,14 @@ end
     end
 end
 
-input = Poplar.GraphAddConstant(graph, initial_points)
-output = similar(graph, input, "output");
+initial_points_ipu = Poplar.GraphAddConstant(graph, initial_points)
+minima_ipu = similar(graph, minima, "minima");
 
 prog = Poplar.ProgramSequence()
 
-add_vertex(graph, prog, 0:(num_tiles - 1), RosenAdam, input, output)
+add_vertex(graph, prog, 0:(num_tiles - 1), RosenAdam, initial_points_ipu, minima_ipu)
 
-Poplar.GraphCreateHostRead(graph, "minima-read", output)
+Poplar.GraphCreateHostRead(graph, "minima-read", minima_ipu)
 
 flags = Poplar.OptionFlags()
 Poplar.OptionFlagsSet(flags, "debug.instrument", "true")

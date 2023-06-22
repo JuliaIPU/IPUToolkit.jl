@@ -56,6 +56,10 @@ _get_type(::Type{Clong}) = LONG()
 # _get_type(::Type{Clonglong}) = LONGLONG()
 _get_type(::Type{Float16}) = HALF()
 _get_type(::Type{Cfloat}) = FLOAT()
+_get_type(t::TensorAllocated) = Poplar.TensorElementType(t)
+_get_type(t::Array) = _get_type(eltype(t))
+
+_size(t::Union{TensorAllocated,Array}) = collect(UInt64.(size(t)))
 
 GraphAddConstant(graph::Graph, tensor::Array{T}) where {T} =
     Poplar.GraphAddConstant(graph, _get_type(T), collect(UInt64.(size(tensor))), tensor)
@@ -75,23 +79,23 @@ end
 """
     similar(
         graph::Poplar.Graph,
-        tensor::Poplar.TensorAllocated,
+        tensor::Union{Poplar.TensorAllocated,Array},
         [type::DataType],
         [debug::String]
     ) -> Poplar.TensorAllocated
 
-Adds to `graph` a variable tensor with the same shape as `tensor`.
+Adds to `graph` a variable tensor with the same shape as `tensor`, which can be either an IPU tensor or a plain Julia `Array`.
 If a `type` (this is a Julia type, like `Float32` or `Int32`) argument is not passed, the same element type as `tensor` will be automatically used.
 An optional `debug` context can also be passed, as a `String`.
 """
-Base.similar(graph::Graph, t::TensorAllocated) =
-    Poplar.GraphAddVariable(graph, Poplar.TensorElementType(t), collect(Poplar.TensorShape(t)))
-Base.similar(graph::Graph, t::TensorAllocated, debug::String) =
-    Poplar.GraphAddVariable(graph, Poplar.TensorElementType(t), collect(Poplar.TensorShape(t)), debug)
-Base.similar(graph::Graph, t::TensorAllocated, type::DataType) =
-    Poplar.GraphAddVariable(graph, _get_type(type), collect(Poplar.TensorShape(t)))
-Base.similar(graph::Graph, t::TensorAllocated, type::DataType, debug::String) =
-    Poplar.GraphAddVariable(graph, _get_type(type), collect(Poplar.TensorShape(t)), debug)
+Base.similar(graph::Graph, t::Union{TensorAllocated,Array}) =
+    Poplar.GraphAddVariable(graph, _get_type(t), _size(t))
+Base.similar(graph::Graph, t::Union{TensorAllocated,Array}, debug::String) =
+    Poplar.GraphAddVariable(graph, _get_type(t), _size(t), debug)
+Base.similar(graph::Graph, t::Union{TensorAllocated,Array}, type::DataType) =
+    Poplar.GraphAddVariable(graph, _get_type(type), _size(t))
+Base.similar(graph::Graph, t::Union{TensorAllocated,Array}, type::DataType, debug::String) =
+    Poplar.GraphAddVariable(graph, _get_type(type), _size(t), debug)
 
 # Be sure to quit all julia sessions which hold devices!!!
 """
