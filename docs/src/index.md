@@ -46,6 +46,7 @@ Pkg.build()
 
 This step requires a C++ compiler supporting C++17 standard.
 You have to set the compiler with the `CXX` environment variable, this can be either its absolute path or simply its name if it is in the [`PATH`](https://en.wikipedia.org/wiki/PATH_(variable)) environment variable.
+The compiler must be able to find Poplar header files automatically, depending on your installation of the Poplar SDK you may have to add its `include/` directory to the [`CPATH`](https://gcc.gnu.org/onlinedocs/cpp/Environment-Variables.html) environment variable.
 
 !!! note
 
