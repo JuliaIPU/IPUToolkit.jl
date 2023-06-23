@@ -111,7 +111,7 @@ function add_vertex(graph::Poplar.GraphAllocated,
         throw(ArgumentError("Function $(codelet) does not have exactly one method.  Use a different function which has a method only."))
     end
     if length(arg_names) != length(args)
-        throw(ArgumentError("Function $(codelet) takes $(length(arg_names)) arguments but you passed $(args) arguments for this vertex."))
+        throw(ArgumentError("Function $(codelet) takes $(length(arg_names)) arguments but you passed $(length(args)) arguments for this vertex."))
     end
     for (arg_n, arg) in enumerate(args)
         if length(arg) < num_tiles
