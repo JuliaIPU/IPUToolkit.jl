@@ -90,7 +90,7 @@ end
     end
 
     # Same test, but with a real IPU
-    @testset "Hardware IPU" begin
+    USE_HARDWARE_IPU && @testset "Hardware IPU" begin
         # Make sure `get_ipu_devices` works when you request 0 devices.
         device = @test_logs (:info, r"^Attached to devices with IDs [\w\d]+\[\]") Poplar.get_ipu_devices(0)
         @test isempty(device)

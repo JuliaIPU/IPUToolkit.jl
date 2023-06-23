@@ -112,11 +112,15 @@ function test_compiler_program(device)
     close(pipe)
     wait(task)
     lines = split(String(take!(output)), '\n')
-    @test contains(lines[1], r"Hello, world!$")
-    @test contains(lines[2], r"Titire tu patule recubans sub tegmine fagi$")
-    @test contains(lines[3], r"The Answer to the Ultimate Question of Life, the Universe, and Everything is 42$")
-    @test contains(lines[4], r"x = 7$")
-    @test contains(lines[5], r"pi\[] = 3.140*$")
+    if USE_HARDWARE_IPU
+        # Not clear why when using an IPU model
+        # `redirect_stderr`/`redirect_stdout` can't capture the printing.
+        @test contains(lines[1], r"Hello, world!$")
+        @test contains(lines[2], r"Titire tu patule recubans sub tegmine fagi$")
+        @test contains(lines[3], r"The Answer to the Ultimate Question of Life, the Universe, and Everything is 42$")
+        @test contains(lines[4], r"x = 7$")
+        @test contains(lines[5], r"pi\[] = 3.140*$")
+    end
     @test lines[end] == ""
 
     # Read back some tensors and check the expected values.
@@ -282,7 +286,13 @@ function test_linalg(device)
 end
 
 @testset "IPUCompiler" begin
-    @testset "Test program: $(f)" for f in (test_compiler_program, test_ipuprogram, test_adam, test_linalg)
+    programs = (test_compiler_program, test_adam, test_linalg)
+    if USE_HARDWARE_IPU
+        # `test_ipuprogram` uses in the Random vertex an IPU builtin which
+        # requires compiling for hardware IPU, not compatible with an IPU model.
+        programs = (programs..., test_ipuprogram)
+    end
+    @testset "Test program: $(f)" for f in programs
         function skip_test(f)
             @warn """
                   Skipping IPUCompiler test $(f).  To run this testset use
@@ -299,11 +309,17 @@ end
                 #   using `--check-bounds=yes`.
                 skip_test(f)
             else
-                # Get a device
-                device = @cxxtest @test_logs((:info, r"^Trying to attach to device"),
-                                             (:info, r"^Successfully attached to device"),
-                                             match_mode=:any,
-                                             Poplar.get_ipu_device())
+                device = @cxxtest if USE_HARDWARE_IPU
+                    # Get a device
+                    @test_logs((:info, r"^Trying to attach to device"),
+                               (:info, r"^Successfully attached to device"),
+                               match_mode=:any,
+                               Poplar.get_ipu_device())
+                else
+                    model = @cxxtest Poplar.IPUModel()
+                    Poplar.IPUModelCreateDevice(model)
+                end
+
                 # Run a test program
                 f(device)
             end
