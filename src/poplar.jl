@@ -5,6 +5,15 @@ using Scratch
 const libpoplar_dir = joinpath(@get_scratch!("libpoplar"), "v$(Base.thispatch(VERSION))")
 const libpoplar = joinpath(libpoplar_dir, "libpoplar_julia.so")
 
+# Note: this is really only needed for Poplar SDK ≥ v2.0.0, but at this point we don't know
+# the version number yet.  It doesn't really hurt defining this struct unconditionally.
+struct VertexPerfEstimate
+    cycles::UInt64
+    flops::UInt64
+    VertexPerfEstimate(cycles::Integer=0, flops::Integer=0) =
+        new(UInt64(cycles), UInt64(flops))
+end
+
 @wrapmodule(libpoplar)
 
 const SDK_VERSION = VersionNumber(match(r"[\d.]+", String(Poplar.getVersionString())).match)
