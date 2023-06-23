@@ -4,7 +4,7 @@ The `IPUToolkit.IPUCompiler` submodule allows you to write [codelets](https://do
 Codelets are defined with the [`@codelet`](@ref) macro, and then you can use them inside a program, written using the interface to the Poplar SDK described before.
 This mechanism uses the [`GPUCompiler.jl`](https://github.com/JuliaGPU/GPUCompiler.jl) package, which is a generic framework for generating LLVM IR code for specialised targets, not limited to GPUs despite the historical name.
 
-Examples of codelets written in Julia are shown in the files [`examples/main.jl`](https://github.com/giordano/IPUToolkit.jl/blob/main/examples/main.jl), [`examples/adam.jl`](https://github.com/giordano/IPUToolkit.jl/blob/main/examples/adam.jl), and [`examples/pi.jl`](https://github.com/giordano/IPUToolkit.jl/blob/main/examples/pi.jl).
+Examples of codelets written in Julia are shown in the files [`examples/main.jl`](https://github.com/giordano/IPUToolkit.jl/blob/main/examples/main.jl), [`examples/pi.jl`](https://github.com/giordano/IPUToolkit.jl/blob/main/examples/pi.jl), [`examples/adam.jl`](https://github.com/giordano/IPUToolkit.jl/blob/main/examples/adam.jl), [`examples/diffeq.jl`](https://github.com/giordano/IPUToolkit.jl/blob/main/examples/diffeq.jl).
 
 The code inside a codelet has the same limitations as all the compilation models based on [`GPUCompiler.jl`](https://github.com/JuliaGPU/GPUCompiler.jl):
 
