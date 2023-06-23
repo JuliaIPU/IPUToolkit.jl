@@ -1,4 +1,4 @@
-name: Documentation
+name: Tests and docs
 
 on:
   push:
@@ -7,8 +7,11 @@ on:
   pull_request:
   release:
 
+# Note: ideally we'd have one job for running the tests and another for building
+# documentation, but running CI of this package is a bit expensive, the easiest
+# thing to do is to run everything together in a single job.
 jobs:
-  Documentation:
+  CI:
     runs-on: ubuntu-latest
     container: graphcore/poplar:2.5.1-ubuntu-20.04-20220629
     steps:
@@ -21,6 +24,7 @@ jobs:
         with:
           cache-registries: "true"
       - name: "Install g++ and git"
+        # g++ is needed to build the wrapper, git to publish the docs.
         run: |
           apt-get update -y
           apt-get install -y g++ git
@@ -33,3 +37,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
+      - uses: julia-actions/julia-runtest@latest
