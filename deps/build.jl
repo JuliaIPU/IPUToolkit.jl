@@ -121,6 +121,12 @@ function object_decl_handler(ctx::BindgenContext, classdecl::CLCursor)::Tuple{Un
     length(children(classdecl)) == 0 && return nothing, "skip_empty_classdecl"
     wrapper_var_name = get_inline_varname(classdecl)
 
+    # `VertexPerfEstimate` is a simple struct, we need to map it to a manually
+    # defined struct on the Julia side.
+    if wrapper_var_name == "VertexPerfEstimate"
+        return """mod.map_type<poplar::VertexPerfEstimate>("VertexPerfEstimate");""", nothing
+    end
+
     # handle simple inheritance
     if length(children(classdecl)) > 1 && kind(children(classdecl)[1]) == Clang.CXCursor_CXXBaseSpecifier
 
@@ -455,7 +461,7 @@ function iterate_children(ctx::BindgenContext, childvec::Vector{CLCursor})
 
         # These cause error
         #    error: static assertion failed: Mirrored types (marked with IsMirroredType) can't be added using add_type, map them directly to a struct instead and use map_type or explicitly disable mirroring for this type, e.g. define template<> struct IsMirroredType<Foo> : std::false_type { };
-        contains(child_id, "PerfEstimate") && (valid = false; reason = "mirrored_type")
+        contains(child_id, "poplar::VertexPerfEstimate::VertexPerfEstimate") && (valid = false; reason = "mirrored_type")
         contains(child_id, "poplar::ErrorLocationHash__StructDecl") && (valid = false; reason = "mirrored_type")
 
         # This conversion `ArrayRef<std::string>` to `ArrayRef<poplar::StringRef>` isn't handled correctly

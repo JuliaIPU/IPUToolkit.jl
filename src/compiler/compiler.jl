@@ -141,13 +141,12 @@ function add_vertex(graph::Poplar.GraphAllocated,
         # Add the vertex on the tile
         Poplar.GraphSetTileMapping(graph, vertex, tile)
 
-        # # TODO: after wrapping `Poplar.GraphSetPerfEstimate` in newer SDKs,
-        # # allow setting the perf estimate of the vertex.
-        # if Poplar.SDK_VERSION < v"2.0"
-        #     Poplar.GraphSetCycleEstimate(graph, vertex, 1)
-        # else
-        #     # Poplar.GraphSetPerfEstimate(graph, vertex, 1)
-        # end
+        # TODO: allow setting the perf estimate of the vertex.
+        if Poplar.SDK_VERSION < v"2.0"
+            Poplar.GraphSetCycleEstimate(graph, vertex, 1)
+        else
+            Poplar.GraphSetPerfEstimate(graph, vertex, 1)
+        end
     end
     return nothing
 end
