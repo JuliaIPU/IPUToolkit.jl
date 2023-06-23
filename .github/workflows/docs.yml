@@ -1,0 +1,35 @@
+name: Documentation
+
+on:
+  push:
+    branches: "main"
+    tags: ["*"]
+  pull_request:
+  release:
+
+jobs:
+  Documentation:
+    runs-on: ubuntu-latest
+    container: graphcore/poplar:2.5.1-ubuntu-20.04-20220629
+    steps:
+      - uses: actions/checkout@v3
+      - uses: julia-actions/setup-julia@latest
+        with:
+          # With Poplar SDK 2.5.1 we need to match Julia v1.9
+          version: 1.9
+      - uses: julia-actions/cache@v1
+        with:
+          cache-registries: "true"
+      - name: "Install g++ and git"
+        run: |
+          apt-get update -y
+          apt-get install -y g++ git
+        env:
+          DEBIAN_FRONTEND: noninteractive
+      - uses: julia-actions/julia-buildpkg@latest
+        env:
+          CXX: g++
+      - uses: julia-actions/julia-docdeploy@releases/v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
