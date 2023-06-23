@@ -16,7 +16,7 @@ This package requires
 
 * Julia v1.6+ (currently tested up to Julia v1.10),
 * the Poplar SDK v1.3 or v2.0-v3.0 including the `popc` compiler,
-* and GCC 10+ for compiling the wrapper around the Poplar SDK (it requires support for the C++20 standard).
+* a C++ compiler supporting C++17 standard for compiling the wrapper around the Poplar SDK (e.g. g++ 9 or following releases).
 
 Other versions of the Poplar SDK are not currently supported.
 
@@ -44,7 +44,7 @@ This should happen automatically the first time you install the package, in any 
 Pkg.build()
 ```
 
-This step requires a C++ compiler supporting C++20 standard.
+This step requires a C++ compiler supporting C++17 standard.
 You have to set the compiler with the `CXX` environment variable, this can be either its absolute path or simply its name if it is in the [`PATH`](https://en.wikipedia.org/wiki/PATH_(variable)) environment variable.
 
 !!! note
