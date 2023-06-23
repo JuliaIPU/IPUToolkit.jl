@@ -105,6 +105,16 @@ end
 
 The use of `@eval` allows you not to have to pass an extra argument to your kernel just to use the value of the variable inside the codelet.
 
+## Debugging compilation errors in codelets
+
+As mentioned above, codelets have to be statically compiled with `GPUCompiler.jl`, with all the limitations of this framework, which can only use a subset of the Julia language.
+Therefore, it happens frequently that you run into compilation errors while developing a codelet function, and you have then to resolve the issues, which usually involves removing [dynamic dispatch](https://en.wikipedia.org/wiki/Dynamic_dispatch) calls (which would require the JIT compiler at runtime), resolving [type-instabilities](https://docs.julialang.org/en/v1/manual/performance-tips/#Write-%22type-stable%22-functions), [avoiding memory allocations](https://docs.julialang.org/en/v1/manual/performance-tips/#Measure-performance-with-[@time](@ref)-and-pay-attention-to-memory-allocation), etc...
+If you have [`Cthulhu.jl`](https://github.com/JuliaDebug/Cthulhu.jl) installed, you can set [`IPUCompiler.DEBUG_COMPILATION_ERRORS`](@ref) to `true` to automatically open an interactive shell when compiling a codelet results into invalid LLVM IR, to more easily debug the codelet code.
+
+```@docs
+IPUCompiler.DEBUG_COMPILATION_ERRORS
+```
+
 ## Domain-Specific Language: `@ipuprogram`
 
 The `IPUCompiler.@ipuprogram` macro provides a very simple and limited DSL to automatically generate most of the boilerplate code needed when writing an IPU program.
