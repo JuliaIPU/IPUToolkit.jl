@@ -104,23 +104,23 @@ function test_compiler_program(device)
     # Load and run the program, but capture the stderr, so that we can test that
     # it contains what we expect.
     pipe = Pipe()
-    redirect_stderr(pipe) do
+    redirect = USE_HARDWARE_IPU ? redirect_stderr : redirect_stdout
+    redirect(pipe) do
         Poplar.EngineLoadAndRun(engine, device)
+        # Flush streams to make sure everything is printed out, especially
+        # important when using the IPU model.
+        Libc.flush_cstdio()
     end
     output = IOBuffer()
     task = @async write(output, pipe)
     close(pipe)
     wait(task)
     lines = split(String(take!(output)), '\n')
-    if USE_HARDWARE_IPU
-        # Not clear why when using an IPU model
-        # `redirect_stderr`/`redirect_stdout` can't capture the printing.
-        @test contains(lines[1], r"Hello, world!$")
-        @test contains(lines[2], r"Titire tu patule recubans sub tegmine fagi$")
-        @test contains(lines[3], r"The Answer to the Ultimate Question of Life, the Universe, and Everything is 42$")
-        @test contains(lines[4], r"x = 7$")
-        @test contains(lines[5], r"pi\[] = 3.140*$")
-    end
+    @test contains(lines[1], r"Hello, world!$")
+    @test contains(lines[2], r"Titire tu patule recubans sub tegmine fagi$")
+    @test contains(lines[3], r"The Answer to the Ultimate Question of Life, the Universe, and Everything is 42$")
+    @test contains(lines[4], r"x = 7$")
+    @test contains(lines[5], r"pi\[] = 3.140*$")
     @test lines[end] == ""
 
     # Read back some tensors and check the expected values.
