@@ -1,10 +1,11 @@
 # IPUToolkit.jl
 
 [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://giordano.github.io/IPUToolkit.jl/)
+[![Tests and docs](https://github.com/giordano/IPUToolkit.jl/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/giordano/IPUToolkit.jl/actions/workflows/ci.yml)
 
 This package allows you to interface the [Intelligence Processing Unit (IPU) by Graphcore](https://www.graphcore.ai/products/ipu) using the [Julia programming language](https://julialang.org/).
 
-***Disclaimer**: at the moment this is package is in a proof-of-concept stage, not suited for production usage.*
+***Disclaimer**: at the moment this is package is in a proof-of-concept stage, not suitable for production usage.*
 
 ## Usage and documentation
 
