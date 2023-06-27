@@ -43,6 +43,7 @@ Another function for which we provide a convenient method is `Poplar.GraphAddCon
 Poplar.GraphAddConstant(graph, host_array)
 ```
 adds the `host_array` (a plain standard Julia `Array` living on the host) to `graph`, automatically inferring from `host_array` the type and the shape of the tensor in the graph.
+This works also with `host_array::Array{Float16}`.
 
 You can slice a tensor with the usual Julia notation `tensor[index1:index2]`, this corresponds to a call to [`Tensor.slice(index1, index2+1)`](https://docs.graphcore.ai/projects/poplar-api/en/latest/poplar/graph/Tensor.html#_CPPv4NK6poplar6Tensor5sliceENSt6size_tENSt6size_tE).
 

@@ -61,6 +61,18 @@ Base.rand(T::Type{UInt64}) = ccall("extern @llvm.colossus.urand64",  llvmcall, U
 @device_override Base.:^(b::Float32, p::Int32) = ccall("llvm.powi.f32.i32", llvmcall, Float32, (Float32, Int32), b, p)
 @device_override Base.:^(b::Float32, p::Float32) = ccall("llvm.pow.f32", llvmcall, Float32, (Float32, Float32), b, p)
 @device_override Base.sqrt(x::Float32) = ccall("llvm.sqrt.f32", llvmcall, Float32, (Float32,), x)
+# Same, for Float16
+@device_override Base.sin(x::Float16) = ccall("llvm.sin.f16", llvmcall, Float16, (Float16,), x)
+@device_override Base.cos(x::Float16) = ccall("llvm.cos.f16", llvmcall, Float16, (Float16,), x)
+# @device_override Base.tan(x::Float16) = ...
+@device_override Base.exp(x::Float16) = ccall("llvm.exp.f16", llvmcall, Float16, (Float16,), x)
+@device_override Base.exp2(x::Float16) = ccall("llvm.exp2.f16", llvmcall, Float16, (Float16,), x)
+@device_override Base.log(x::Float16) = ccall("llvm.log.f16", llvmcall, Float16, (Float16,), x)
+@device_override Base.log10(x::Float16) = ccall("llvm.log10.f16", llvmcall, Float16, (Float16,), x)
+@device_override Base.log2(x::Float16) = ccall("llvm.log2.f16", llvmcall, Float16, (Float16,), x)
+@device_override Base.:^(b::Float16, p::Int16) = ccall("llvm.powi.f16.i16", llvmcall, Float16, (Float16, Int16), b, p)
+@device_override Base.:^(b::Float16, p::Float16) = ccall("llvm.pow.f16", llvmcall, Float16, (Float16, Float16), b, p)
+@device_override Base.sqrt(x::Float16) = ccall("llvm.sqrt.f16", llvmcall, Float16, (Float16,), x)
 
 ## quirks, adapted from
 ## https://github.com/JuliaGPU/CUDA.jl/blob/5c51766d0a9e7819ea79f314e37ed6a8a5d24369/src/device/quirks.jl

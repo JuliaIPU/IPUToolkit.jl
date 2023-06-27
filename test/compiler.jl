@@ -195,24 +195,41 @@ end
 
 function test_ipubuiltins(device)
     N = 15_000
-    outvec1 = PoplarVector{Float32}(undef, N)
+    outvec1 = PoplarVector{Float16}(undef, N)
+    outvec2 = PoplarVector{Float16}(undef, N)
+    outvec3 = PoplarVector{Float16}(undef, N)
 
     @ipuprogram device begin
-        function Random(out::VertexVector{Float32, Out})
+        function Random(out::VertexVector{Float16, Out})
             for idx in eachindex(out)
-                out[idx] = rand(Float32)
+                out[idx] = rand(Float16)
             end
+        end
+        function TimesTwoSin(in::VertexVector{Float16,In}, out::VertexVector{Float16, Out})
+            for idx in eachindex(in, out)
+                out[idx] = sin(2 * in[idx])
+            end
+        end
+        function Sort16(in::VertexVector{Float16,In}, out::VertexVector{Float16, Out})
+            copyto!(out, in)
+            sort!(out; rev=true)
         end
 
         Random(outvec1)
+        TimesTwoSin(outvec1, outvec2)
+        Sort16(outvec2, outvec3)
 
         jl_outvec1 = outvec1
+        jl_outvec2 = outvec2
+        jl_outvec3 = outvec3
     end
     Poplar.DeviceDetach(device)
     # There's a non-zero probability that this test may fail, but assuming an
     # average relative error of sqrt(N) / N, we multiply by `pi` to be somewhat
     # safe (and `pi` is cool).
     @test mean(jl_outvec1) ≈ 0.5 rtol=(pi * sqrt(N) / N)
+    @test jl_outvec2 ≈ sin.(2 .* jl_outvec1)
+    @test jl_outvec3 ≈ sort(jl_outvec2; rev=true)
 end
 
 rosenbrock(x, y=4) = (1 - x) ^ 2 + 100 * (y - x ^ 2) ^ 2

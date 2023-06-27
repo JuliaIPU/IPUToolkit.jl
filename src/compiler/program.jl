@@ -5,12 +5,6 @@ function _get_name_args(expr::Expr)
 end
 
 function _add_vertex!(initialised_tensors::Dict{Symbol, Symbol}, graph, prog, name_args::Dict, expr::Expr)
-    # NOTE: this dictionary can't be `const` because the Poplar types like
-    # `FLOAT()` have to be evaluated at runtime.
-    jl_type_to_poplar_type = Dict(
-        :Float32 => Poplar.FLOAT(),
-    )
-
     name = expr.args[1]
     f_args = name_args[name]
     compute_set = string(name, "_compute_set")
@@ -26,9 +20,9 @@ function _add_vertex!(initialised_tensors::Dict{Symbol, Symbol}, graph, prog, na
                 append!(out.args,
                         (quote
                              if $(esc(arg)) isa PoplarArray
-                                 $(esc(vec)) = $(esc(Poplar.GraphAddVariable))($(esc(graph)), $(esc(jl_type_to_poplar_type[arg_info[2]])), collect(UInt64.(size($(esc(arg))))), $(string(arg)))
+                                 $(esc(vec)) = $(esc(Poplar.GraphAddVariable))($(esc(graph)), $(esc(Poplar._get_type(arg_info[2]))), collect(UInt64.(size($(esc(arg))))), $(string(arg)))
                              elseif $(esc(arg)) isa Array
-                                 $(esc(vec)) = $(esc(Poplar.GraphAddConstant))($(esc(graph)), $(esc(jl_type_to_poplar_type[arg_info[2]])), collect(UInt64.(size($(esc(arg))))), $(esc(arg)))
+                                 $(esc(vec)) = $(esc(Poplar.GraphAddConstant))($(esc(graph)), $(esc(Poplar._get_type(arg_info[2]))), collect(UInt64.(size($(esc(arg))))), $(esc(arg)))
                              else
                                  error("`$(string(arg))` is a `$(typeof(esc(arg)))`, it must be either an `Array` or a `PoplarArray`")
                              end
