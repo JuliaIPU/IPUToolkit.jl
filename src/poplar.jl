@@ -65,6 +65,7 @@ _get_type(::Type{Clong}) = LONG()
 # _get_type(::Type{Clonglong}) = LONGLONG()
 _get_type(::Type{Float16}) = HALF()
 _get_type(::Type{Cfloat}) = FLOAT()
+_get_type(t::Symbol) = _get_type(getfield(@__MODULE__, t))
 _get_type(t::TensorAllocated) = Poplar.TensorElementType(t)
 _get_type(t::Array) = _get_type(eltype(t))
 
@@ -72,6 +73,10 @@ _size(t::Union{TensorAllocated,Array}) = collect(UInt64.(size(t)))
 
 GraphAddConstant(graph::Graph, tensor::Array{T}) where {T} =
     Poplar.GraphAddConstant(graph, _get_type(T), collect(UInt64.(size(tensor))), tensor)
+# For `Float16` we need to use the function `graph.addConstantHalf` which takes
+# a vector of `uint16_t` in input.
+GraphAddConstant(graph::Poplar.Graph, tensor::Array{Float16}) =
+    GraphAddConstantHalf(graph, Poplar._get_type(Float16), collect(UInt64.(size(tensor))), collect(reinterpret(UInt16, tensor)))
 Base.getindex(t::TensorAllocated, r::AbstractUnitRange{<:Integer}) =
     TensorSlice(t, first(r), last(r) + step(r))
 Base.size(t::TensorAllocated) = Int.((Poplar.TensorShape(t)...,))
