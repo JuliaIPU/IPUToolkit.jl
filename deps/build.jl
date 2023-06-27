@@ -572,10 +572,15 @@ function iterate_children(ctx::BindgenContext, childvec::Vector{CLCursor})
 end
 
 function gen_bindings(headers::Vector{String}, blacklist::Vector{String})
-
     rm("out.json"; force=true)
-
     touch("out.json")
+
+    # Automatically print out the includes of the header files we want to parse
+    io = IOBuffer()
+    for header in headers
+        println(io, "#include <$(header)>")
+    end
+
     includes = get_system_includes()
     ctx = DefaultBindgenContext()
     ctx.searched_headers = resolve_headers(headers, includes)
@@ -601,21 +606,31 @@ function gen_bindings(headers::Vector{String}, blacklist::Vector{String})
         iterate_children(ctx, clang_children)
     end
 
-    return ctx.outputDecls * ctx.outputMembers, ctx.outputSupertypes
+    return String(take!(io)), ctx.outputDecls * ctx.outputMembers, ctx.outputSupertypes
 end
 
 function build_bindings(; path::String=joinpath(libpoplar_dir, "libpoplar_julia.so"), generate_bindings::Bool=true, compile::Bool=true)
     if generate_bindings
-        gen_inline, gen_inherit = gen_bindings(["poplar/VectorLayout.hpp", "poplar/DeviceManager.hpp", "poplar/Engine.hpp",
-                                                "poplar/Graph.hpp", "poplar/IPUModel.hpp", "popops/ElementWise.hpp", "popops/codelets.hpp"],
-                                               String[])
+        gen_headers, gen_inline, gen_inherit = gen_bindings(
+            [
+                "poplar/VectorLayout.hpp",
+                "poplar/DeviceManager.hpp",
+                "poplar/Engine.hpp",
+                "poplar/Graph.hpp",
+                "poplar/CSRFunctions.hpp",
+                "poplar/IPUModel.hpp",
+                "popops/ElementWise.hpp",
+                "popops/codelets.hpp",
+            ],
+            String[])
         #gen_inline = replace(gen_inline, "\n" => "\nprintf(\"Line is %d\\n\", __LINE__);\n")
 
         # Workaround for CxxWrap not liking any types name "Type"
         gen_inline = replace(gen_inline, "\"Type\"" => "\"Type_\"")
 
-        write("gen_inline.cpp", gen_inline)
-        write("gen_inherit.cpp", gen_inherit)
+        write(joinpath(@__DIR__, "gen_headers.hpp"), gen_headers)
+        write(joinpath(@__DIR__, "gen_inline.cpp"), gen_inline)
+        write(joinpath(@__DIR__, "gen_inherit.cpp"), gen_inherit)
     end
 
     if compile

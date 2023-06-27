@@ -5,17 +5,11 @@
 #include <cstdio>
 #include <vector>
 
-#include <poplar/DeviceManager.hpp>
-#include <poplar/Device.hpp>
-#include <poplar/Engine.hpp>
 #include <poplar/Graph.hpp>
 #include <poplar/ArrayRef.hpp>
 #include <poplar/StringRef.hpp>
-#include <poplar/IPUModel.hpp>
 
-
-#include <popops/ElementWise.hpp>
-#include <popops/codelets.hpp>
+#include "gen_headers.hpp"
 
 using namespace poplar;
 
