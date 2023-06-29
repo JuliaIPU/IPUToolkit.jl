@@ -13,7 +13,7 @@ makedocs(
 )
 
 deploydocs(
-    repo = "github.com/giordano/IPUToolkit.jl.git",
+    repo = "github.com/JuliaIPU/IPUToolkit.jl.git",
     target = "build",
     deps = nothing,
     make = nothing,

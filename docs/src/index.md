@@ -1,6 +1,6 @@
 # IPUToolkit.jl
 
-[`IPUToolkit.jl`](https://github.com/giordano/IPUToolkit.jl) allows you to interface the [Intelligence Processing Unit (IPU) by Graphcore](https://www.graphcore.ai/products/ipu) using the [Julia programming language](https://julialang.org/).
+[`IPUToolkit.jl`](https://github.com/JuliaIPU/IPUToolkit.jl) allows you to interface the [Intelligence Processing Unit (IPU) by Graphcore](https://www.graphcore.ai/products/ipu) using the [Julia programming language](https://julialang.org/).
 
 The main motivation for this project is to explore Julia's introspection and metaprogramming capabilities to write high-level code for the IPU using an alternative method to the tools developed by Graphcore, and leverage code-generation through LLVM to generate efficient code for the device: also the IPU compiler is based on this framework, so the LLVM IR constitutes a common language between Julia and the IPU compiler.
 
@@ -34,7 +34,7 @@ To install the package, run the commands
 
 ```julia
 using Pkg
-Pkg.add(; url="https://github.com/giordano/IPUToolkit.jl")
+Pkg.add(; url="https://github.com/JuliaIPU/IPUToolkit.jl")
 ```
 
 You will need to build the wrapper around the Poplar SDK.

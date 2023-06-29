@@ -478,7 +478,7 @@ function iterate_children(ctx::BindgenContext, childvec::Vector{CLCursor})
         contains(child_id, "poplar::layout::to_string(const poplar::layout::VectorList)__FunctionDecl") && (valid = false; reason = "duplicate_definition")
 
         # Avoid duplicate definition during precompilation of the CxxWrap module.
-        # Ref: <https://github.com/giordano/IPUToolkit.jl/issues/12>.
+        # Ref: <https://github.com/JuliaIPU/IPUToolkit.jl/issues/12>.
         contains(child_id, "poplar::toString") && (valid = false; reason = "duplicate_definition")
 
         # error: invalid use of incomplete type ‘class pva::Report’
