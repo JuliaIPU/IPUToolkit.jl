@@ -133,7 +133,7 @@ function test_compiler_program(device)
         @test output_sin == sin.(output_sort)
     end
 
-    Poplar.DeviceDetach(device)
+    Poplar.detach_devices()
 end
 
 function test_ipuprogram(device)
@@ -185,7 +185,7 @@ function test_ipuprogram(device)
         jl_outvec4 = outvec4
         jl_outvec5 = outvec5
     end
-    Poplar.DeviceDetach(device)
+    Poplar.detach_devices()
     @test jl_outvec1 ≈ 2 .* input
     @test norm(jl_outvec2) ≈ sqrt(N)
     @test jl_outvec3 ≈ exp.(jl_outvec2)
@@ -223,7 +223,7 @@ function test_ipubuiltins(device)
         jl_outvec2 = outvec2
         jl_outvec3 = outvec3
     end
-    Poplar.DeviceDetach(device)
+    Poplar.detach_devices()
     # There's a non-zero probability that this test may fail, but assuming an
     # average relative error of sqrt(N) / N, we multiply by `pi` to be somewhat
     # safe (and `pi` is cool).
@@ -275,7 +275,7 @@ function test_adam(device)
         AdamRosenbrock(input, output)
         jl_output = output
     end
-    Poplar.DeviceDetach(device)
+    Poplar.detach_devices()
     @test all(isapprox.(jl_output, [repeat([-2], 4); repeat([2], 5)]; atol=2.6e-3))
 end
 
@@ -306,7 +306,7 @@ function test_linalg(device)
         jl_mul = mul
         jl_inv = inverse
     end
-    Poplar.DeviceDetach(device)
+    Poplar.detach_devices()
     jl_mul = reshape(jl_mul, 4, 4)
     @test reshape(mat1, 4, 4) * reshape(mat2, 4, 4) ≈ jl_mul
     @test reshape(jl_inv, 4, 4) ≈ inv(jl_mul)
