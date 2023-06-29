@@ -59,7 +59,7 @@ Poplar.EngineLoadAndRun(engine, device)
 Poplar.EngineReadTensor(engine, "sums-read", sums)
 Poplar.EngineReadTensor(engine, "cycles-read", cycles)
 
-Poplar.DeviceDetach(device)
+Poplar.detach_devices()
 
 pi = sum(sums) * slice
 time = round(maximum(cycles) / tile_clock_frequency; sigdigits=4)

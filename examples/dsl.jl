@@ -55,4 +55,4 @@ device = Poplar.get_ipu_device()
 end
 
 # Detach the device when we're done.
-Poplar.DeviceDetach(device)
+Poplar.detach_devices()

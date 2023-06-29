@@ -111,9 +111,12 @@ Base.similar(graph::Graph, t::Union{TensorAllocated,Array}, type::DataType) =
 Base.similar(graph::Graph, t::Union{TensorAllocated,Array}, type::DataType, debug::String) =
     Poplar.GraphAddVariable(graph, _get_type(type), _size(t), debug)
 
+const ATTACHED_DEVICES = Poplar.DeviceAllocated[]
+const ATTACHED_DEVICES_LOCK = ReentrantLock()
+
 # Be sure to quit all julia sessions which hold devices!!!
 """
-    get_ipu_devices(n::Int, hint::Union{AbstractVector{<:Integer},Integer}=0)
+    Poplar.get_ipu_devices(n::Int, hint::Union{AbstractVector{<:Integer},Integer}=0)
 
 Try to attach to `n` IPU devices, returns a vector of the pointers to the devices
 successfully attached to.  You can release them with `Poplar.DeviceDetach` (note that this
@@ -129,45 +132,50 @@ attach.  It can have different types:
   IDs.
 
 See [`get_ipu_device`](@ref) for requesting exactly one IPU device.
+To release all devices previously attached with `Poplar.get_ipu_devices` or [`Poplar.get_ipu_device`](@ref) use [`Poplar.detach_devices`](@ref).
 """
 function get_ipu_devices(n::Int, hint::Union{AbstractVector{<:Integer},Integer}=0)
-    device_manager = Poplar.DeviceManager()
-    try_ids = if hint isa AbstractVector
-        hint
-    else
-        max_dev_id = Int(Poplar.DeviceManagerGetNumDevices(device_manager))
-        hint:(max_dev_id - 1)
-    end
-    attached_devices = Poplar.DeviceAllocated[]
-    for id in try_ids
-        if length(attached_devices) >= n
-            break
+    lock(ATTACHED_DEVICES_LOCK) do
+        device_manager = Poplar.DeviceManager()
+        try_ids = if hint isa AbstractVector
+            hint
+        else
+            max_dev_id = Int(Poplar.DeviceManagerGetNumDevices(device_manager))
+            hint:(max_dev_id - 1)
         end
-        device = Poplar.DeviceManagerGetDevice(device_manager, id)
-        @info "Trying to attach to device $(id)..."
-        res = Poplar.DeviceAttach(device)
-        if res
-            @info "Successfully attached to device $(id)"
-            push!(attached_devices, device)
+        attached_devices = Poplar.DeviceAllocated[]
+        for id in try_ids
+            if length(attached_devices) >= n
+                break
+            end
+            device = Poplar.DeviceManagerGetDevice(device_manager, id)
+            @info "Trying to attach to device $(id)..."
+            res = Poplar.DeviceAttach(device)
+            if res
+                @info "Successfully attached to device $(id)"
+                push!(attached_devices, device)
+            end
         end
+        actual_n = length(attached_devices)
+        if actual_n < n
+            @warn "Requested $(n) devices, but could attach only to $(actual_n)"
+        end
+        if !(actual_n == n == 1)
+            # Do not print the summary of the attached devices if we requested one and got one.
+            @info "Attached to devices with IDs $(Int.(Poplar.DeviceGetId.(attached_devices)))"
+        end
+        append!(ATTACHED_DEVICES, attached_devices)
+        attached_devices
     end
-    actual_n = length(attached_devices)
-    if actual_n < n
-        @warn "Requested $(n) devices, but could attach only to $(actual_n)"
-    end
-    if !(actual_n == n == 1)
-        # Do not print the summary of the attached devices if we requested one and got one.
-        @info "Attached to devices with IDs $(Int.(Poplar.DeviceGetId.(attached_devices)))"
-    end
-    return attached_devices
 end
 
 """
-    get_ipu_device(hint::Union{AbstractVector{<:Integer},Integer}=0)
+    Poplar.get_ipu_device(hint::Union{AbstractVector{<:Integer},Integer}=0)
 
-Similar to [`get_ipu_devices`](@ref), but request exactly one IPU device.  If it can attach
+Similar to [`Poplar.get_ipu_devices`](@ref), but request exactly one IPU device.  If it can attach
 to a device, return that pointer only (not in a vector, like `get_ipu_devices`), otherwise
 return `nothing`.  You can release the device with `Poplar.DeviceDetach(device)`.
+To release all devices previously attached with `Poplar.get_ipu_device` or [`Poplar.get_ipu_devices`](@ref) use [`Poplar.detach_devices`](@ref).
 
 The optional argument `hint` suggests to which device IDs to try and
 attach.  It can have different types:
@@ -180,6 +188,21 @@ function get_ipu_device(hint::Union{AbstractVector{<:Integer},Integer}=0)
     device = get_ipu_devices(1, hint)
     if isone(length(device))
         return only(device)
+    end
+    return nothing
+end
+
+"""
+    Poplar.detach_devices() -> Nothing
+
+Detach all devices previously attached in the current Julia session with [`Poplar.get_ipu_devices`](@ref) or [`Poplar.get_ipu_device`](@ref).
+"""
+function detach_devices()
+    lock(ATTACHED_DEVICES_LOCK) do
+        for device in ATTACHED_DEVICES
+            Poplar.DeviceDetach(device)
+        end
+        empty!(ATTACHED_DEVICES)
     end
     return nothing
 end

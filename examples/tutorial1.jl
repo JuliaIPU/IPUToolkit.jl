@@ -67,4 +67,4 @@ Poplar.EngineReadTensor(engine, "v3-read", h3)
 print("h3 data: ")
 display(h3')
 
-Poplar.DeviceDetach(device)
+Poplar.detach_devices()

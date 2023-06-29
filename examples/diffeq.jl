@@ -79,4 +79,4 @@ Poplar.EngineReadTensor(engine, "u1-read", u1)
 Poplar.EngineReadTensor(engine, "u2-read", u2)
 Poplar.EngineReadTensor(engine, "u3-read", u3)
 
-Poplar.DeviceDetach(device)
+Poplar.detach_devices()

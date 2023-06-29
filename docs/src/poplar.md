@@ -17,7 +17,7 @@ julia> device = Poplar.get_ipu_device();
 julia> Int(Poplar.DeviceGetId(device))
 0
 
-julia> Poplar.DeviceDetach(device)
+julia> Poplar.detach_devices()
 ```
 
 A couple of basic examples of programs running on the IPU written using the interface to the Poplar SDK are available in the files [`examples/tutorial1.jl`](https://github.com/giordano/IPUToolkit.jl/blob/main/examples/tutorial1.jl) and [`examples/tutorial2.jl`](https://github.com/giordano/IPUToolkit.jl/blob/main/examples/tutorial2.jl).

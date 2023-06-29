@@ -52,4 +52,4 @@ Poplar.OptionFlagsSet(flags, "debug.instrument", "true")
 
 engine = Poplar.Engine(graph, prog, flags)
 Poplar.EngineLoadAndRun(engine, device)
-Poplar.DeviceDetach(device)
+Poplar.detach_devices()

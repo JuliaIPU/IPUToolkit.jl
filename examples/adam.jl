@@ -66,4 +66,4 @@ engine = Poplar.Engine(graph, prog, flags)
 Poplar.EngineLoadAndRun(engine, device)
 Poplar.EngineReadTensor(engine, "minima-read", minima)
 
-Poplar.DeviceDetach(device)
+Poplar.detach_devices()
