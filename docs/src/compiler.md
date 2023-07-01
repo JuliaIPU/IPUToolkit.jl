@@ -12,7 +12,7 @@ The code inside a codelet has the same limitations as all the compilation models
 * you cannot use functionalities which require the Julia runtime, most notably the garbage collector;
 * you cannot call into any other external binary library at runtime, for example you cannot call into a BLAS library.
 
-After defining a codelet with `@codelet` you can add a vertex calling this codelet to the graph with the function [`add_vertex`](@ref), which also allows controlling the tile mapping in a basic way.
+After defining a codelet with `@codelet` you can add a vertex calling this codelet to the graph with the function [`add_vertex`](@ref), which also allows controlling the tile mapping in a basic way, or `Poplar.GraphAddVertex`.
 
 ```@docs
 @codelet
