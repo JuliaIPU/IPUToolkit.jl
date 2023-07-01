@@ -10,6 +10,8 @@ The main motivation for this project is to explore Julia's introspection and met
     This package is currently a proof-of-concept, not suitable for production usage.
 	Its API may be subject to frequent development and breaking changes.
 
+[Mosè Giordano](https://github.com/giordano)'s work on this package was funded by [UCL Centre for Advance Research Computing](https://www.ucl.ac.uk/advanced-research-computing).
+
 ## Requirements
 
 This package requires
