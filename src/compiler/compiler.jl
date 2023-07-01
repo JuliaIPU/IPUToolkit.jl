@@ -72,9 +72,9 @@ Call the [`__builtin_ipu_get_scount_l()`](https://docs.graphcore.ai/projects/pop
 """
 function get_scount_l end
 """
-    get_scount_l()
+    get_tile_id()
 
-Call the [`__builtin_ipu_get_scount_l()`](https://docs.graphcore.ai/projects/poplar-api/en/latest/ipu_intrinsics/ipu_builtins.html#_CPPv425__builtin_ipu_get_tile_idv) builtin:
+Call the [`__builtin_ipu_get_tile_id()`](https://docs.graphcore.ai/projects/poplar-api/en/latest/ipu_intrinsics/ipu_builtins.html#_CPPv425__builtin_ipu_get_tile_idv) builtin:
 
 > Get the tile ID of the current tile.
 """
@@ -183,7 +183,7 @@ If a program is passed, a new compute set will be automatically created.
 
 `add_vertex` also evenly maps all tensors and vertices across all `tiles`, which can be either a single tile ID or an `AbstractVector` of IDs and defaults to single tile 0 if this argument is omitted.
 Note that all argument tensors `args` must be longer than or equal to the number of `tiles`.
-If you want to have better control over tile mapping, do not use `add_vertex`.
+If you want to have better control over tile mapping, use `Poplar.GraphAddVertex` instead.
 """
 add_vertex
 
