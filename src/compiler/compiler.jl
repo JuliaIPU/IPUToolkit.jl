@@ -202,6 +202,7 @@ const POPLAR_SDK_LLVM_MAPPING = Dict(
     v"3.0.0" => v"15.0.0",
     v"3.1.0" => v"15.0.0",
     v"3.2.0" => v"15.0.0",
+    v"3.3.0" => v"16.0.0",
 )
 
 function __init__()
