@@ -72,17 +72,17 @@ end
 @generated function _ipuprintf(::Val{fmt}) where {fmt}
     @dispose ctx=Context() begin
 
-        T_void = LLVM.VoidType(ctx)
-        T_int32 = LLVM.Int32Type(ctx)
-        T_pint8 = LLVM.PointerType(LLVM.Int8Type(ctx))
+        T_void = LLVM.VoidType()
+        T_int32 = LLVM.Int32Type()
+        T_pint8 = LLVM.PointerType(LLVM.Int8Type())
 
         # create functions
         llvm_f, llvm_ft = create_function(T_int32, LLVMType[])
         mod = LLVM.parent(llvm_f)
 
         # generate IR
-        @dispose builder=IRBuilder(ctx) begin
-            entry = BasicBlock(llvm_f, "entry"; ctx)
+        @dispose builder=IRBuilder() begin
+            entry = BasicBlock(llvm_f, "entry")
             position!(builder, entry)
 
             str = globalstring_ptr!(builder, String(fmt))
@@ -104,18 +104,18 @@ end
         arg_exprs = vcat(:( argspec1 ), [:( argspec[$i] ) for i in 1:length(argspec)])
         arg_types = [argspec1, argspec...]
 
-        T_void = LLVM.VoidType(ctx)
-        T_int32 = LLVM.Int32Type(ctx)
-        T_pint8 = LLVM.PointerType(LLVM.Int8Type(ctx))
+        T_void = LLVM.VoidType()
+        T_int32 = LLVM.Int32Type()
+        T_pint8 = LLVM.PointerType(LLVM.Int8Type())
 
         # create functions
-        param_types = LLVMType[convert(LLVMType, typ; ctx) for typ in arg_types]
+        param_types = LLVMType[convert(LLVMType, typ) for typ in arg_types]
         llvm_f, llvm_ft = create_function(T_int32, param_types)
         mod = LLVM.parent(llvm_f)
 
         # generate IR
-        @dispose builder=IRBuilder(ctx) begin
-            entry = BasicBlock(llvm_f, "entry"; ctx)
+        @dispose builder=IRBuilder() begin
+            entry = BasicBlock(llvm_f, "entry")
             position!(builder, entry)
 
             str = globalstring_ptr!(builder, String(fmt))
