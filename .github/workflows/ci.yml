@@ -13,7 +13,17 @@ on:
 jobs:
   CI:
     runs-on: ubuntu-latest
-    container: graphcore/poplar:2.5.1-ubuntu-20.04-20220629
+    container: ${{ matrix.docker_image }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - julia_version: "1.9"
+            docker_image: graphcore/poplar:2.5.1-ubuntu-20.04-20220629
+            build_docs: true
+          - julia_version: "^1.10.0-0"
+            docker_image: graphcore/poplar:3.2.0-ubuntu-20.04-20230314
+            build_docs: false
     steps:
       - name: "Install g++ and git"
         # g++ is needed to build the wrapper, git to publish the docs.
@@ -36,8 +46,7 @@ jobs:
           git status
       - uses: julia-actions/setup-julia@latest
         with:
-          # With Poplar SDK 2.5.1 we need to match Julia v1.9
-          version: 1.9
+          version: ${{ matrix.julia_version }}
       - uses: julia-actions/cache@v1
         with:
           cache-registries: "true"
@@ -45,6 +54,7 @@ jobs:
         env:
           CXX: g++
       - uses: julia-actions/julia-docdeploy@releases/v1
+        if: ${{ matrix.build_docs }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}

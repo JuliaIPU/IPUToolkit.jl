@@ -216,7 +216,7 @@ function __build_codelet(graph::Poplar.GraphAllocated, kernel, name::String, ori
     job = CompilerJob(source, config)
     llvm_ir = JuliaContext() do ctx
         try
-            string(GPUCompiler.compile(:llvm, job; ctx)[1])
+            string(GPUCompiler.compile(:llvm, job)[1])
         catch err
             if err isa InvalidIRError && DEBUG_COMPILATION_ERRORS[]
                 code_typed(err; interactive = true)

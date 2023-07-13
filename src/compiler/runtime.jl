@@ -38,13 +38,17 @@ function report_exception_frame(idx, func, file, line)
 end
 
 # IPU builtins: https://docs.graphcore.ai/projects/poplar-api/en/latest/ipu_intrinsics/ipu_builtins.html
-get_scount_l() = ccall("extern @llvm.colossus.get.scount.l",  llvmcall, Cuint, ())
-get_tile_id() = ccall("extern @llvm.colossus.get.tile.id",  llvmcall, Cuint, ())
+# Note: ideally we'd always call the LLVM intrisics `llvm.colossus....` as is, but that
+# works only when targeting a Colossus-aware LLVM, so for the general case we call fake
+# external `_llvm_colossus_...` intrinsics and then rename them before writing to file.  Not
+# great, but it does the job.
+get_scount_l() = ccall("extern _llvm_colossus_get_scount_l",  llvmcall, Cuint, ())
+get_tile_id() = ccall("extern _llvm_colossus_get_tile_id",  llvmcall, Cuint, ())
 # Random functions, based on IPU intrinsics
-Base.rand(T::Type{Float16}) = ccall("extern @llvm.colossus.urand.f16",  llvmcall, Float16, ()) + T(0.5)
-Base.rand(T::Type{Float32}) = ccall("extern @llvm.colossus.urand.f32",  llvmcall, Float32, ()) + T(0.5)
-Base.rand(T::Type{UInt32}) = ccall("extern @llvm.colossus.urand32",  llvmcall, UInt32, ()) + T(0.5)
-Base.rand(T::Type{UInt64}) = ccall("extern @llvm.colossus.urand64",  llvmcall, UInt64, ()) + T(0.5)
+Base.rand(T::Type{Float16}) = ccall("extern _llvm_colossus_urand_f16",  llvmcall, Float16, ()) + T(0.5)
+Base.rand(T::Type{Float32}) = ccall("extern _llvm_colossus_urand_f32",  llvmcall, Float32, ()) + T(0.5)
+Base.rand(T::Type{UInt32}) = ccall("extern _llvm_colossus_urand32",  llvmcall, UInt32, ()) + T(0.5)
+Base.rand(T::Type{UInt64}) = ccall("extern _llvm_colossus_urand64",  llvmcall, UInt64, ()) + T(0.5)
 
 ## Math functions.
 # There are different reasons why we prefer LLVM intrinsics on the IPU: implementations in
