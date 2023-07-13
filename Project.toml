@@ -19,8 +19,8 @@ libcxxwrap_julia_jll = "3eaa8342-bff7-56a5-9981-c04077f7cee7"
 
 [compat]
 Clang = "0.14, 0.17.4"
-GPUCompiler = "0.19, 0.20"
-LLVM = "5"
+GPUCompiler = "0.21.4"
+LLVM = "6"
 ProgressMeter = "1.7"
 Scratch = "1.1"
 julia = "1.6"
