@@ -1,3 +1,8 @@
+# In Julia register CI, do nothing
+if get(ENV, "JULIA_REGISTRYCI_AUTOMERGE", "false") == "true"
+    exit(0)
+end
+
 ##
 using Clang
 using Clang.LibClang
