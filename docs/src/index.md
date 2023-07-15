@@ -10,7 +10,8 @@ The main motivation for this project is to explore Julia's introspection and met
     This package is currently a proof-of-concept, not suitable for production usage.
 	Its API may be subject to frequent development and breaking changes.
 
-[Mosè Giordano](https://github.com/giordano)'s work on this package was funded by [UCL Centre for Advance Research Computing](https://www.ucl.ac.uk/advanced-research-computing).
+This package was initially created by Emily Dietrich and Luk Burchard, and later expanded by Mosè Giordano.
+[Mosè](https://github.com/giordano)'s work on this package was funded by [UCL Centre for Advance Research Computing](https://www.ucl.ac.uk/advanced-research-computing).
 
 ## Requirements
 
@@ -37,7 +38,7 @@ To install the package, run the commands
 
 ```julia
 using Pkg
-Pkg.add(; url="https://github.com/JuliaIPU/IPUToolkit.jl")
+Pkg.add("IPUToolkit")
 ```
 
 You will need to build the wrapper around the Poplar SDK.
@@ -49,11 +50,11 @@ Pkg.build()
 
 This step requires a C++ compiler supporting C++17 standard.
 You have to set the compiler with the `CXX` environment variable, this can be either its absolute path or simply its name if it is in the [`PATH`](https://en.wikipedia.org/wiki/PATH_(variable)) environment variable.
-The compiler must be able to find Poplar header files automatically, depending on your installation of the Poplar SDK you may have to add its `include/` directory to the [`CPATH`](https://gcc.gnu.org/onlinedocs/cpp/Environment-Variables.html) environment variable.
+The compiler must be able to find Poplar header files automatically, depending on your installation of the Poplar SDK you may have to add its `include/` directory to the [`CPATH`](https://gcc.gnu.org/onlinedocs/cpp/Environment-Variables.html) environment variable, but this should be done automatically by the script to activate a Poplar SDK.
 
 !!! note
 
-	Compiling the wrapper around the Poplar SDK will take a while, without printing an update to screen.
+	Compiling the wrapper around the Poplar SDK will take several minutes (up to about 7 minutes, depending on the Poplar version), without printing any progress to screen.
 	Hold on.
 
 ## Usage
