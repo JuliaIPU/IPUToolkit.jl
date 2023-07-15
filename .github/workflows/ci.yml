@@ -44,18 +44,18 @@ jobs:
         run: |
           git config --global --add safe.directory "${PWD}"
           git status
-      - uses: julia-actions/setup-julia@latest
+      - uses: julia-actions/setup-julia@v1
         with:
           version: ${{ matrix.julia_version }}
       - uses: julia-actions/cache@v1
         with:
           cache-registries: "true"
-      - uses: julia-actions/julia-buildpkg@latest
+      - uses: julia-actions/julia-buildpkg@v1
         env:
           CXX: g++
-      - uses: julia-actions/julia-docdeploy@releases/v1
+      - uses: julia-actions/julia-docdeploy@v1
         if: ${{ matrix.build_docs }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
-      - uses: julia-actions/julia-runtest@latest
+      - uses: julia-actions/julia-runtest@v1
