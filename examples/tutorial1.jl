@@ -9,24 +9,24 @@ graph = Poplar.Graph(target)
 
 h3 = zeros(Float32, 4, 4)
 
-c1 = Poplar.GraphAddConstant(graph, Float32[1.0, 1.5, 2.0, 2.5])
-v1 = similar(graph, c1, "v1")
-v2 = similar(graph, c1, "v2")
-v3 = similar(graph, h3, "v3")
-v4 = Poplar.GraphAddVariable(graph, Poplar.INT(), UInt64[10], "v4")
+@graph begin
+    c1 = Poplar.GraphAddConstant(Float32[1.0, 1.5, 2.0, 2.5])
+    v1 = similar(c1, "v1")
+    v2 = similar(c1, "v2")
+    v3 = similar(h3, "v3")
+    v4 = Poplar.GraphAddVariable(Poplar.INT(), UInt64[10], "v4")
 
-Poplar.GraphSetTileMapping(graph, v1, 0)
+    Poplar.GraphSetTileMapping(v1, 0)
+    Poplar.GraphSetTileMapping(v3, 0)
+    Poplar.GraphSetTileMapping(v4, 0)
+    Poplar.GraphSetTileMapping(c1, 0)
+end
 
 for i in UInt64(0):UInt64(3)
     Poplar.GraphSetTileMapping(graph, v2[i], i)
 end
 
-Poplar.GraphSetTileMapping(graph, v3, 0)
-Poplar.GraphSetTileMapping(graph, v4, 0)
-
 prog = Poplar.ProgramSequence()
-
-Poplar.GraphSetTileMapping(graph, c1, 0)
 
 Poplar.ProgramSequenceAdd(prog, Poplar.ProgramCopy(c1, v1))
 Poplar.ProgramSequenceAdd(prog, Poplar.ProgramPrintTensor("v1-debug", v1))
