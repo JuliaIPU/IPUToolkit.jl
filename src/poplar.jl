@@ -5,6 +5,66 @@ using Scratch
 const libpoplar_dir = joinpath(@get_scratch!("libpoplar"), "v$(Base.thispatch(VERSION))")
 const libpoplar = joinpath(libpoplar_dir, "libpoplar_julia.so")
 
+export @graph
+
+function _graph(g, expr::Expr)
+    out = copy(expr)
+    insert!(out.args, 2, g)
+    return out
+end
+
+"""
+    @graph [graph] expr
+
+This is a convenient macro to automatically inject `graph` as first argument of all function calls in the expression passed as last argument to the macro.
+
+The `graph` argument should be the graph object you want to pass as first argument to the function calls.
+If it is a local variable called exactly `graph`, this argument can be omitted and this name will be used automatically.
+
+!!! note
+
+    This macro is not very sophisticated and will fail with complex expressions involving, for example, control flows like `if` or `for`.
+    See the examples below.
+
+## Examples
+
+```julia
+julia> @macroexpand @graph begin
+           c1 = Poplar.GraphAddConstant(Float32[1.0, 1.5, 2.0, 2.5])
+           v1 = similar(c1, "v1")
+
+           Poplar.GraphSetTileMapping(c1, 0)
+           Poplar.GraphSetTileMapping(v1, 0)
+       end
+quote
+    c1 = Poplar.GraphAddConstant(graph, Float32[1.0, 1.5, 2.0, 2.5])
+    v1 = similar(graph, c1, "v1")
+    Poplar.GraphSetTileMapping(graph, c1, 0)
+    Poplar.GraphSetTileMapping(graph, v1, 0)
+end
+```
+"""
+macro graph(g, x::Expr)
+    x.head === :block || error("The last argument to the `@graph` macro must be a begin-end block")
+    out = Expr(:block)
+    for expr in x.args
+        if expr isa LineNumberNode
+            continue
+        elseif expr.head === :call
+            push!(out.args, _graph(g, expr))
+        elseif expr.head === :(=) && expr.args[2].head === :call
+            tmp = copy(expr)
+            tmp.args[2] = _graph(g, expr.args[2])
+            push!(out.args, tmp)
+        end
+    end
+    return esc(out)
+end
+
+macro graph(x::Expr)
+    esc( :( $(@__MODULE__).@graph graph $(x) ) )
+end
+
 # Note: this is really only needed for Poplar SDK ≥ v2.0.0, but at this point we don't know
 # the version number yet.  It doesn't really hurt defining this struct unconditionally.
 struct VertexPerfEstimate

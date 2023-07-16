@@ -15,8 +15,10 @@ function test_poplar_program(device)
 
     for i in 0:1
         for j in 0:1
-            Poplar.GraphSetTileMapping(graph, v1[i][j], i*2 + j)
-            Poplar.GraphSetTileMapping(graph, v2[i][j], j*2 + i)
+            @graph begin
+                Poplar.GraphSetTileMapping(v1[i][j], i*2 + j)
+                Poplar.GraphSetTileMapping(v2[i][j], j*2 + i)
+            end
         end
     end
 
@@ -27,8 +29,10 @@ function test_poplar_program(device)
 
     c1 = @cxxtest Poplar.GraphAddConstant(graph, h1)
     c2 = @cxxtest Poplar.GraphAddConstant(graph, h2)
-    Poplar.GraphSetTileMapping(graph, c1, 0)
-    Poplar.GraphSetTileMapping(graph, c2, 0)
+    @graph begin
+        Poplar.GraphSetTileMapping(c1, 0)
+        Poplar.GraphSetTileMapping(c2, 0)
+    end
 
     Poplar.ProgramSequenceAdd(prog, Poplar.ProgramCopy(c1, Poplar.TensorFlatten(v1)))
     Poplar.ProgramSequenceAdd(prog, Poplar.ProgramCopy(c2, Poplar.TensorFlatten(v2)))
@@ -42,11 +46,13 @@ function test_poplar_program(device)
     # Init some variables which will be used to read back from the IPU
     # (model) the results of some basic operations.
     h3 = zeros(Float32, 4)
-    Poplar.GraphCreateHostRead(graph, "v3-read", v3)
     h4 = zeros(Float32, 4)
-    Poplar.GraphCreateHostRead(graph, "v4-read", v4)
     h5 = zeros(Float32, 4)
-    Poplar.GraphCreateHostRead(graph, "v5-read", v5)
+    @graph begin
+        Poplar.GraphCreateHostRead("v3-read", v3)
+        Poplar.GraphCreateHostRead("v4-read", v4)
+        Poplar.GraphCreateHostRead("v5-read", v5)
+    end
 
     engine = @cxxtest Poplar.Engine(graph, prog, flags)
     Poplar.EngineLoadAndRun(engine, device)
