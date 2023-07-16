@@ -50,6 +50,9 @@ jobs:
       - uses: julia-actions/cache@v1
         with:
           cache-registries: "true"
+          cache-artifacts: "true"
+          cache-packages: "true"
+          cache-compiled: "true"
       - uses: julia-actions/julia-buildpkg@v1
         env:
           CXX: g++
