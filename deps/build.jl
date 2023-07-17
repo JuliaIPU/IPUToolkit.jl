@@ -34,7 +34,7 @@ DefaultBindgenContext() = DefaultBindgenContext([], [], Set([]), Set([]), "", ""
 
 
 function get_system_includes()::Vector{String}
-    cxx = get(ENV, "CXX", "g++-10")
+    cxx = get(ENV, "CXX", "g++")
     io = IOBuffer()
     readchomp(pipeline(`$(cxx) -x c++ -E -Wp,-v - -fsyntax-only`; stdin=IOBuffer(""), stderr=io))
     m = match(r"#include <\.\.\.> search starts here:(.*)End of search list\."s, String(take!(io)))[1]
