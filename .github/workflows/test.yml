@@ -1,0 +1,55 @@
+name: Tests and docs
+
+on:
+  push:
+    branches: "**"
+    tags: ["*"]
+  pull_request:
+  release:
+
+# Note: ideally we'd have one job for running the tests and another for building
+# documentation, but running CI of this package is a bit expensive, the easiest
+# thing to do is to run everything together in a single job.
+jobs:
+  CI:
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ matrix.docker_image }}
+      options: --privileged
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - julia_version: "1.9"
+            docker_image: graphcore/poplar:2.5.1-ubuntu-20.04-20220629
+    steps:
+      - name: "Install g++ and git"
+        # g++ is needed to build the wrapper, git to publish the docs.
+        run: |
+          apt-get update -y
+          apt-get install -y g++ git
+        env:
+          DEBIAN_FRONTEND: noninteractive
+      - uses: actions/checkout@v3
+      - name: "Declare git repo safe"
+        # In the docker container the repo is owned by 1001:123, causing the
+        # following error when running git commands:
+        #
+        # fatal: detected dubious ownership in repository at '/__w/IPUToolkit.jl/IPUToolkit.jl'
+        # To add an exception for this directory, call:
+        #
+        # 	git config --global --add safe.directory /__w/IPUToolkit.jl/IPUToolkit.jl
+        run: |
+          git config --global --add safe.directory "${PWD}"
+          git status
+      - uses: julia-actions/setup-julia@v1
+        with:
+          version: ${{ matrix.julia_version }}
+      - uses: julia-actions/cache@v1
+        with:
+          cache-registries: "true"
+          cache-artifacts: "true"
+          cache-packages: "true"
+          cache-compiled: "true"
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
