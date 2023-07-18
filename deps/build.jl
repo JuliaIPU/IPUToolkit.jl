@@ -14,6 +14,7 @@ using UUIDs
 ##
 
 const libpoplar_dir = joinpath(get_scratch!(UUID(TOML.parsefile(joinpath(dirname(@__DIR__), "Project.toml"))["uuid"]), "libpoplar"), "v$(Base.thispatch(VERSION))")
+const cxx = get(ENV, "CXX", "g++")
 const allowed_namespaces = ("poplar", "popops")
 
 # TODO: I really shouldn't be using strings everywhere for these
@@ -34,7 +35,6 @@ DefaultBindgenContext() = DefaultBindgenContext([], [], Set([]), Set([]), "", ""
 
 
 function get_system_includes()::Vector{String}
-    cxx = get(ENV, "CXX", "g++")
     io = IOBuffer()
     readchomp(pipeline(`$(cxx) -x c++ -E -Wp,-v - -fsyntax-only`; stdin=IOBuffer(""), stderr=io))
     m = match(r"#include <\.\.\.> search starts here:(.*)End of search list\."s, String(take!(io)))[1]
@@ -640,7 +640,6 @@ function build_bindings(; path::String=joinpath(libpoplar_dir, "libpoplar_julia.
 
     if compile
         cxxwrap_include_dir = joinpath(libcxxwrap_julia_jll.artifact_dir, "include")
-        cxx = get(ENV, "CXX", "g++-10")
         julia_include_dir = joinpath(dirname(Sys.BINDIR), "include", "julia")
         mkpath(dirname(path))
         run(```
