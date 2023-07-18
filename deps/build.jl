@@ -640,7 +640,7 @@ function build_bindings(; path::String=joinpath(libpoplar_dir, "libpoplar_julia.
 
     if compile
         cxxwrap_include_dir = joinpath(libcxxwrap_julia_jll.artifact_dir, "include")
-        cxx = get(ENV, "CXX", "g++-10")
+        cxx = get(ENV, "CXX", "g++")
         julia_include_dir = joinpath(dirname(Sys.BINDIR), "include", "julia")
         mkpath(dirname(path))
         run(```
