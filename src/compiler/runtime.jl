@@ -68,7 +68,7 @@ Base.rand(T::Type{UInt64}) = ccall("extern _llvm_colossus_urand64",  llvmcall, U
 # Same, for Float16
 @device_override Base.sin(x::Float16) = ccall("llvm.sin.f16", llvmcall, Float16, (Float16,), x)
 @device_override Base.cos(x::Float16) = ccall("llvm.cos.f16", llvmcall, Float16, (Float16,), x)
-# @device_override Base.tan(x::Float16) = ...
+@device_override Base.tan(x::Float16) = Float16(tan(Float32(x)))
 @device_override Base.exp(x::Float16) = ccall("llvm.exp.f16", llvmcall, Float16, (Float16,), x)
 @device_override Base.exp2(x::Float16) = ccall("llvm.exp2.f16", llvmcall, Float16, (Float16,), x)
 @device_override Base.log(x::Float16) = ccall("llvm.log.f16", llvmcall, Float16, (Float16,), x)
