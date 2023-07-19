@@ -18,3 +18,11 @@ The package is called `IPUToolkit` because it provides different tools to interf
 
 These approaches are exploratory of the functionalities, and are often limited in scope and are described in more details in the [documentation](https://juliaipu.github.io/IPUToolkit.jl/).
 For examples of usage of this package, see the [`examples/`](https://github.com/JuliaIPU/IPUToolkit.jl/tree/main/examples) directory of the official repository.
+
+## Talks and demos
+
+Here is some material that you may find useful for learning more about Julia on the IPU and trying it out yourself:
+
+* [Pluto notebook](https://giordano.github.io/blog/2023-07-20-julia-ipu/) of presentation given at Graphcore and at JuliaCon in July 2023
+* [JuliaIpuDemo](https://github.com/JuliaIPU/JuliaIpuDemo), repository with instructions for running some Jupyter notebooks on Paperspace cloud.
+  This service offers also IPU time for free, these sessions are limited to 6 hours each and one at the time, but you can run as many as you want.
