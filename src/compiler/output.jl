@@ -140,6 +140,7 @@ export @ipuprint, @ipuprintln
 # `@ipuprint` pretty directly maps to `@ipuprintf`; we should just support `write(::IO)`.
 const ipuprint_conversions = Dict(
     Float32         => (x->:(Float64($x)),                  Float64),
+    Float16         => (x->:(Float64($x)),                  Float64),
     Ptr{<:Any}      => (x->:(convert(Ptr{Cvoid}, $x)),      Ptr{Cvoid}),
     LLVMPtr{<:Any}  => (x->:(reinterpret(Ptr{Cvoid}, $x)),  Ptr{Cvoid}),
     Bool            => (x->:(Int32($x)),                    Int32),
