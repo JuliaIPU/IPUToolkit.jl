@@ -19,7 +19,7 @@ libcxxwrap_julia_jll = "3eaa8342-bff7-56a5-9981-c04077f7cee7"
 
 [compat]
 Clang = "0.14, 0.17.4"
-CxxWrap = "0.13.4"
+CxxWrap = "0.13.4, 0.14"
 GPUCompiler = "0.21.4"
 JSON = "0.21.4"
 LLVM = "6"
