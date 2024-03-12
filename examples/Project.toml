@@ -5,3 +5,12 @@ IPUToolkit = "92e0b95a-4011-435a-96f4-10064551ddbe"
 OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+
+[compat]
+DiffEqGPU = "3.4.1"
+Enzyme = "0.11.19"
+IPUToolkit = "1.2.0"
+OrdinaryDiffEq = "6.74.0"
+Plots = "1.40.2"
+StaticArrays = "1.9.3"
+julia = "1.9"
