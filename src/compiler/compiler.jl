@@ -36,15 +36,7 @@ macro device_override(ex)
         ex = eval(ex)
         error()
     end
-    code = quote
-        $GPUCompiler.@override($method_table, $ex)
-    end
-    if isdefined(Base.Experimental, Symbol("@overlay"))
-        return esc(code)
-    else
-        push!(overrides, code)
-        return
-    end
+    return esc(:( Base.Experimental.@overlay($method_table, $ex) ))
 end
 
 macro device_function(ex)

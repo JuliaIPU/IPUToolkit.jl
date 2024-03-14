@@ -5,7 +5,7 @@ const check_bounds = Base.JLOptions().check_bounds == 1
 
 using Test
 using IPUToolkit.IPUCompiler
-using GPUCompiler: KernelError
+using GPUCompiler: GPUCompiler
 using IPUToolkit.Poplar
 if Poplar.SDK_VERSION ≥ v"2.2.0" || !check_bounds
     using Enzyme
@@ -58,8 +58,9 @@ function test_compiler_program(device)
     end
 
     # Test some invalid kernels
-    @test_throws KernelError @codelet graph f_access_out_scalar(x::VertexScalar{Float32, Out}) = @ipushow x[]
-    @test_throws KernelError @codelet graph f_set_in_scalar(x::VertexScalar{Float32, In}) = x[] = 3.14f0
+    invalid_error = pkgversion(GPUCompiler) <= v"0.23" ? GPUCompiler.KernelError : GPUCompiler.InvalidIRError
+    @test_throws invalid_error @codelet graph f_access_out_scalar(x::VertexScalar{Float32, Out}) = @ipushow x[]
+    @test_throws invalid_error @codelet graph f_set_in_scalar(x::VertexScalar{Float32, In}) = x[] = 3.14f0
 
     # This function would contain a reference to a literal pointer, likely an
     # invalid memory address on the IPU.
