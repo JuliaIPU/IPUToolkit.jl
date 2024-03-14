@@ -29,11 +29,15 @@ IPUCompiler.PROGRESS_SPINNER
 
 Inside codelets defined with [`@codelet`](@ref) all calls to random functions
 
+* `rand(Float16)`
 * `rand(Float32)`
 * `rand(UInt32)`
 * `rand(UInt64)`
+* `randn(Float16)`
+* `randn(Float32)`
 
-result to call to corresponding IPU builtins for [random number generation](https://docs.graphcore.ai/projects/poplar-api/en/latest/ipu_intrinsics/ipu_builtins.html#random-number-generation), but with the general semantic of the Julia function `rand` (numbers uniformely distributed in the $[0, 1)$ range).
+result to call to corresponding IPU builtins for [random number generation](https://docs.graphcore.ai/projects/poplar-api/en/latest/ipu_intrinsics/ipu_builtins.html#random-number-generation).
+The uniformly distributed numbers follow the general semantic of the Julia function `rand` (numbers uniformely distributed in the $[0, 1)$ range), while the normally distributed numbers have the properties described in the Poplar SDK documentation (numbers are in the range $[-5-13/16, 5+13/16]$).
 
 Additionally, you can use the [IPU builtins](https://docs.graphcore.ai/projects/poplar-api/en/latest/ipu_intrinsics/ipu_builtins.html) listed below.
 
