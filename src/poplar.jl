@@ -3,7 +3,7 @@ using CxxWrap
 using Scratch
 
 const libpoplar_dir = joinpath(@get_scratch!("libpoplar"), "v$(Base.thispatch(VERSION))")
-const libpoplar = joinpath(libpoplar_dir, "libpoplar_julia.so")
+get_libpoplar_path() = joinpath(libpoplar_dir, "libpoplar_julia.so")
 
 export @graph
 
@@ -74,11 +74,12 @@ struct VertexPerfEstimate
         new(UInt64(cycles), UInt64(flops))
 end
 
-@wrapmodule(libpoplar)
+@wrapmodule(get_libpoplar_path)
 
 const SDK_VERSION = VersionNumber(match(r"[\d.]+", String(Poplar.getVersionString())).match)
 
 function __init__()
+    libpoplar = get_libpoplar_path()
     if !isfile(libpoplar)
         error("""
               `$(basename(libpoplar))` expected to exist at path `$(libpoplar)`, but could not be found.
