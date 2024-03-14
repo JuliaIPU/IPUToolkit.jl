@@ -8,7 +8,6 @@ makedocs(
         "Poplar SDK" => "poplar.md",
         "Writing codelets" => "compiler.md",
     ],
-    strict = true,
     format = Documenter.HTML(; edit_link="main"),
 )
 
