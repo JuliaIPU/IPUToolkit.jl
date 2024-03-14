@@ -24,6 +24,9 @@ jobs:
           - julia_version: "1.10"
             docker_image: graphcore/poplar:3.2.0-ubuntu-20.04-20230314
             build_docs: true
+          - julia_version: "^1.11.0-0"
+            docker_image: graphcore/poplar:3.3.0-ubuntu-20.04-20230703
+            build_docs: false
     steps:
       - name: "Install, g++, git, jq"
         # g++ is needed to build the wrapper, git to publish the docs, jq for
