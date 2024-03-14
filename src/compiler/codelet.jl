@@ -235,6 +235,8 @@ function __build_codelet(graph::Poplar.GraphAllocated, kernel, name::String, ori
                       "_llvm_colossus_urand_f32" => "llvm.colossus.urand.f32",
                       "_llvm_colossus_urand32" => "llvm.colossus.urand32",
                       "_llvm_colossus_urand64" => "llvm.colossus.urand64",
+                      "_llvm_colossus_f16v2grand" => "llvm.colossus.f16v2grand",
+                      "_llvm_colossus_f32v2grand" => "llvm.colossus.f32v2grand",
                       )
 
     method = methods(origKernel)[end]

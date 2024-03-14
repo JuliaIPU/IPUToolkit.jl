@@ -198,6 +198,7 @@ function test_ipubuiltins(device)
     outvec1 = PoplarVector{Float16}(undef, N)
     outvec2 = PoplarVector{Float16}(undef, N)
     outvec3 = PoplarVector{Float16}(undef, N)
+    outvec4 = PoplarVector{Float16}(undef, N)
 
     @ipuprogram device begin
         function Random(out::VertexVector{Float16, Out})
@@ -214,14 +215,21 @@ function test_ipubuiltins(device)
             copyto!(out, in)
             sort!(out; rev=true)
         end
+        function RandomNorm(out::VertexVector{Float16, Out})
+            for idx in eachindex(out)
+                out[idx] = randn(Float16)
+            end
+        end
 
         Random(outvec1)
         TimesTwoSin(outvec1, outvec2)
         Sort16(outvec2, outvec3)
+        RandomNorm(outvec4)
 
         jl_outvec1 = outvec1
         jl_outvec2 = outvec2
         jl_outvec3 = outvec3
+        jl_outvec4 = outvec4
     end
     Poplar.detach_devices()
     # There's a non-zero probability that this test may fail, but assuming an
@@ -230,6 +238,8 @@ function test_ipubuiltins(device)
     @test mean(jl_outvec1) ≈ 0.5 rtol=(pi * sqrt(N) / N)
     @test jl_outvec2 ≈ sin.(2 .* jl_outvec1)
     @test jl_outvec3 ≈ sort(jl_outvec2; rev=true)
+    @test mean(jl_outvec4) ≈ 0 atol=0.02
+    @test std(jl_outvec4) ≈ 1 rtol=0.02
 end
 
 rosenbrock(x, y=4) = (1 - x) ^ 2 + 100 * (y - x ^ 2) ^ 2
