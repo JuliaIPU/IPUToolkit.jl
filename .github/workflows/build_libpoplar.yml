@@ -1,0 +1,58 @@
+name: Build libpoplar wrapper
+
+on:
+  push:
+    branches: "main"
+    tags: ["*"]
+  pull_request:
+  release:
+
+jobs:
+  build-libpoplar:
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ matrix.docker_image }}
+      options: --privileged
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - docker_image: graphcore/poplar:3.2.0-ubuntu-20.04-20230314
+    steps:
+      - name: "Install, g++, jq"
+        # g++ is needed to build the wrapper, jq for
+        # the `julia-actions/cache` workflow
+        run: |
+          apt-get update -y
+          apt-get install -y g++ jq
+        env:
+          DEBIAN_FRONTEND: noninteractive
+      - uses: actions/checkout@v4
+      - uses: julia-actions/setup-julia@v1
+        with:
+          version: "1.7"
+      - uses: julia-actions/cache@v1
+      - name: Instantiate wrapper generation environment
+        working-directory: ${{ github.workspace }}/deps
+        run: |
+          julia --project=. --color=yes -e 'using Pkg; Pkg.instantiate(); Pkg.precompile()'
+      - name: Generate source code of libpoplar wrapper
+        working-directory: ${{ github.workspace }}/deps
+        shell: julia --project=. --color=yes {0}
+        run: |
+          include(joinpath(pwd(), "generate_wrapper.jl"))
+          generate_wrapper()
+        env:
+          CXX: g++
+      - name: Instantiate build environment
+        working-directory: ${{ github.workspace }}/deps/bb_recipe
+        run: |
+          julia --project=. --color=yes -e 'using Pkg; Pkg.instantiate(); Pkg.precompile()'
+      - name: Compile libpoplar wrapper
+        working-directory: ${{ github.workspace }}/deps/bb_recipe
+        run: |
+          julia --project=. --color=yes build_tarballs.jl --verbose
+      - uses: actions/upload-artifact@v4
+        with:
+          name: products
+          path: ${{ github.workspace }}/deps/bb_recipe/products
