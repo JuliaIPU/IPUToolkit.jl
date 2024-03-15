@@ -32,6 +32,7 @@ If it is a local variable called exactly `graph`, this argument can be omitted a
 julia> @macroexpand @graph begin
            c1 = Poplar.GraphAddConstant(Float32[1.0, 1.5, 2.0, 2.5])
            v1 = similar(c1, "v1")
+           copyto!(v1, Float32[4.0, 3.0, 2.0, 1.0])
 
            Poplar.GraphSetTileMapping(c1, 0)
            Poplar.GraphSetTileMapping(v1, 0)
@@ -39,6 +40,7 @@ julia> @macroexpand @graph begin
 quote
     c1 = Poplar.GraphAddConstant(graph, Float32[1.0, 1.5, 2.0, 2.5])
     v1 = similar(graph, c1, "v1")
+    copyto!(graph, v1, Float32[4.0, 3.0, 2.0, 1.0])
     Poplar.GraphSetTileMapping(graph, c1, 0)
     Poplar.GraphSetTileMapping(graph, v1, 0)
 end
@@ -159,9 +161,10 @@ end
         [debug::String]
     ) -> Poplar.TensorAllocated
 
-Adds to `graph` a variable tensor with the same shape as `tensor`, which can be either an IPU tensor or a plain Julia `Array`.
+Adds to `graph` a variable tensor with the same shape as `tensor`, which can be either an IPU tensor or a plain CPU host `Array`, using [`Graph::addVariable`](https://docs.graphcore.ai/projects/poplar-api/en/latest/poplar/graph/Graph.html#_CPPv4N6poplar5Graph11addVariableERK4Type8ArrayRefINSt6size_tEERK12DebugContext) under the hood.
 If a `type` (this is a Julia type, like `Float32` or `Int32`) argument is not passed, the same element type as `tensor` will be automatically used.
 An optional `debug` context can also be passed, as a `String`.
+This function returns a pointer to the tensor added to the graph.
 """
 Base.similar(graph::Graph, t::Union{TensorAllocated,Array}) =
     Poplar.GraphAddVariable(graph, _get_type(t), _size(t))
@@ -171,6 +174,33 @@ Base.similar(graph::Graph, t::Union{TensorAllocated,Array}, type::DataType) =
     Poplar.GraphAddVariable(graph, _get_type(type), _size(t))
 Base.similar(graph::Graph, t::Union{TensorAllocated,Array}, type::DataType, debug::String) =
     Poplar.GraphAddVariable(graph, _get_type(type), _size(t), debug)
+
+"""
+    copyto!(
+        graph::Poplar.Graph,
+        dest::Poplar.TensorAllocated,
+        src::Array
+    ) -> Poplar.TensorAllocated
+
+In the given `graph` copies the elements of the CPU host array `src` to the IPU tensor `dest`, using [`Graph::setInitialValue`](https://docs.graphcore.ai/projects/poplar-api/en/latest/poplar/graph/Graph.html#_CPPv4I0EN6poplar5Graph15setInitialValueEvRK6Tensor1TPNSt9enable_ifIFN10TypeTraits12isSimpleTypeI1TEEvEE4typeE) under the hood.
+The elements of `src` must have a type corresponding to the type of `dest` (e.g. `Float16` for a `half` IPU tensor, or `Float32` for a `float` IPU tensor).
+This function returns `dest`.
+"""
+function Base.copyto!(graph::Poplar.GraphAllocated, dest::Poplar.TensorAllocated, src::Array{T}) where {T}
+    dest_type = _get_type(dest)
+    # I think we can't use the `==` operator defined for `Type` in the SDK, so
+    # we have to compare hashes.  Not too bad, but annoying.
+    if Poplar.TypeHash(dest_type) != Poplar.TypeHash(_get_type(T))
+        dest_type_string = Poplar.StringRefCloneAsString(Poplar.TypeToString(dest_type))
+        throw(ArgumentError("The destination tensor has type $(dest_type_string), but the source has type $(T)"))
+    end
+    if T == Float16
+        Poplar.GraphSetInitialValueHalf(graph, dest, collect(reinterpret(UInt16, src)))
+    else
+        Poplar.GraphSetInitialValue(graph, dest, src)
+    end
+    return dest
+end
 
 const ATTACHED_DEVICES = Poplar.DeviceAllocated[]
 const ATTACHED_DEVICES_LOCK = ReentrantLock()

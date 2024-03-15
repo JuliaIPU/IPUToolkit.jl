@@ -11,6 +11,7 @@ function test_poplar_program(device)
     Poplar.PopopsAddCodelets(graph)
 
     v1 = @cxxtest Poplar.GraphAddVariable(graph, Poplar.FLOAT(), UInt64[2, 2], "v1")
+    @test_throws ArgumentError copyto!(graph, v1, [1, 2, 3, 4])
     v2 = @cxxtest similar(graph, v1, "v2")
 
     for i in 0:1
@@ -27,7 +28,16 @@ function test_poplar_program(device)
     h1 = Float32[1.0, 1.5, 2.0, 2.5]
     h2 = Float32[4.0, 3.0, 2.0, 1.0]
 
-    c1 = @cxxtest Poplar.GraphAddConstant(graph, h1)
+    # We want to exercise the use of `copyto!` (-> `Graph::setInitialValue`) on
+    # a tensor allocated with `Graph::addVariable`, but for some reason the test
+    # below would fail with older SDKs and on an IPU model, so in that case we
+    # use good ol' `Graph::AddConstant`.
+    if Poplar.SDK_VERSION < v"2.6" && !USE_HARDWARE_IPU
+        c1 = @cxxtest Poplar.GraphAddConstant(graph, h1)
+    else
+        c1 = @cxxtest Poplar.GraphAddVariable(graph, Poplar.FLOAT(), UInt64[4], "c1")
+        copyto!(graph, c1, h1)
+    end
     c2 = @cxxtest Poplar.GraphAddConstant(graph, h2)
     @graph begin
         Poplar.GraphSetTileMapping(c1, 0)
