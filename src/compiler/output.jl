@@ -53,7 +53,7 @@ to match, eg. printing a 64-bit Julia integer requires the `%ld` formatting stri
 More user-friendly versions of this macro are [`@ipuprint`](@ref), [`@ipuprintln`](@ref).
 See also [`@ipushow`](@ref), which is built on top of `@ipuprintf` functionalities.
 
-Printing can be completely disabled by setting
+Printing can be completely disabled by setting [`IPUCompiler.DISABLE_PRINT`](@ref):
 ```julia
 $(@__MODULE__).DISABLE_PRINT[] = true
 ```
@@ -241,7 +241,7 @@ Limited string interpolation is also possible:
     @ipuprint "Hello, World \$(42)\\n"
 ```
 
-Printing can be completely disabled by setting
+Printing can be completely disabled by setting [`IPUCompiler.DISABLE_PRINT`](@ref):
 ```julia
 $(@__MODULE__).DISABLE_PRINT[] = true
 ```
@@ -300,7 +300,7 @@ IPU analogue of `Base.@show`. It comes with the same type restrictions as [`@ipu
 @ipushow x
 ```
 
-Printing can be completely disabled by setting
+Printing can be completely disabled by setting [`IPUCompiler.DISABLE_PRINT`](@ref):
 ```julia
 $(@__MODULE__).DISABLE_PRINT[] = true
 ```
