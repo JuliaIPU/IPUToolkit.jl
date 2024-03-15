@@ -47,7 +47,7 @@ This works also with `host_array::Array{Float16}`.
 
 You can slice a tensor with the usual Julia notation `tensor[index1:index2]`, this corresponds to a call to [`Tensor.slice(index1, index2+1)`](https://docs.graphcore.ai/projects/poplar-api/en/latest/poplar/graph/Tensor.html#_CPPv4NK6poplar6Tensor5sliceENSt6size_tENSt6size_tE).
 
-[`similar`](@ref) can be used to add to `graph` a tensor with the same shape and optionally element type as `tensor`.
+[`similar`](@ref) can be used to add to `graph` a tensor with the same shape and optionally element type as `tensor`, while [`copyto!`](@ref) can be used to copy elements of a CPU host array into an IPU tensor.
 
 ```@autodocs
 Modules = [IPUToolkit.Poplar]
