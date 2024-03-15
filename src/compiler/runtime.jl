@@ -82,6 +82,13 @@ Base.randn(T::Type{Float32}) = @inbounds ccall("extern _llvm_colossus_f32v2grand
 @device_override Base.:^(b::Float16, p::Int16) = ccall("llvm.powi.f16.i16", llvmcall, Float16, (Float16, Int16), b, p)
 @device_override Base.:^(b::Float16, p::Float16) = ccall("llvm.pow.f16", llvmcall, Float16, (Float16, Float16), b, p)
 @device_override Base.sqrt(x::Float16) = ccall("llvm.sqrt.f16", llvmcall, Float16, (Float16,), x)
+# `literal_pow` doesn't support Float16: <https://github.com/JuliaLang/julia/issues/53745>.
+@device_override Base.literal_pow(::typeof(^), x::Float16, ::Val{0}) = one(x)
+@device_override Base.literal_pow(::typeof(^), x::Float16, ::Val{1}) = x
+@device_override Base.literal_pow(::typeof(^), x::Float16, ::Val{2}) = x*x
+@device_override Base.literal_pow(::typeof(^), x::Float16, ::Val{3}) = x*x*x
+@device_override Base.literal_pow(::typeof(^), x::Float16, ::Val{-1}) = inv(x)
+@device_override Base.literal_pow(::typeof(^), x::Float16, ::Val{-2}) = (i=inv(x); i*i)
 
 ## quirks, adapted from
 ## https://github.com/JuliaGPU/CUDA.jl/blob/5c51766d0a9e7819ea79f314e37ed6a8a5d24369/src/device/quirks.jl
