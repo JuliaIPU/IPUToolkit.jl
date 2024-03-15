@@ -49,6 +49,9 @@ Base.rand(T::Type{Float16}) = ccall("extern _llvm_colossus_urand_f16",  llvmcall
 Base.rand(T::Type{Float32}) = ccall("extern _llvm_colossus_urand_f32",  llvmcall, Float32, ()) + T(0.5)
 Base.rand(T::Type{UInt32}) = ccall("extern _llvm_colossus_urand32",  llvmcall, UInt32, ()) + T(0.5)
 Base.rand(T::Type{UInt64}) = ccall("extern _llvm_colossus_urand64",  llvmcall, UInt64, ()) + T(0.5)
+# Note: `llvm.colossus.f{16,32}v2grand` return 2-tuples of numbers, but Julia's `Base.randn`
+# returns a single number at a time, sadly we have to discard one of the numbers to keep the
+# same semantic.
 Base.randn(T::Type{Float16}) = @inbounds ccall("extern _llvm_colossus_f16v2grand",  llvmcall, NTuple{2, VecElement{Float16}}, ())[1].value
 Base.randn(T::Type{Float32}) = @inbounds ccall("extern _llvm_colossus_f32v2grand",  llvmcall, NTuple{2, VecElement{Float32}}, ())[1].value
 

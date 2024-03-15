@@ -37,7 +37,7 @@ Inside codelets defined with [`@codelet`](@ref) all calls to random functions
 * `randn(Float32)`
 
 result to call to corresponding IPU builtins for [random number generation](https://docs.graphcore.ai/projects/poplar-api/en/latest/ipu_intrinsics/ipu_builtins.html#random-number-generation).
-The uniformly distributed numbers follow the general semantic of the Julia function `rand` (numbers uniformely distributed in the $[0, 1)$ range), while the normally distributed numbers have the properties described in the Poplar SDK documentation (numbers are in the range $[-5-13/16, 5+13/16]$).
+The uniformly distributed numbers follow the general semantic of the Julia function `rand` (floating point numbers are uniformely distributed in the $[0, 1)$ range), while the normally distributed numbers have the properties described in the Poplar SDK documentation (numbers are in the range $[-93/16, 93/16]$).
 
 Additionally, you can use the [IPU builtins](https://docs.graphcore.ai/projects/poplar-api/en/latest/ipu_intrinsics/ipu_builtins.html) listed below.
 
@@ -87,7 +87,7 @@ The printing macros `@ipucycles` and `@ipushowcycles` can be made completely no-
 
 If your kernel references a non-constant (`const`) global variable, the generated code will result in a reference to a memory address on the host, and this will fatally fail at runtime because programs running on the IPU don't have access to the host memory.
 Constant variables are not affected by this problem because their values are inlined when the function is compiled.
-If you can't or don't want to make a variable constant you can interpolate its value with a top-level `@eval` when defining the codelet.
+If you can't or don't want to make a variable constant you can interpolate its value with a top-level [`@eval`](https://docs.julialang.org/en/v1/base/base/#Base.@eval) when defining the codelet.
 For example:
 
 ```julia

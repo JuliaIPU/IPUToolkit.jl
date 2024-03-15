@@ -30,7 +30,7 @@ Other versions of the Poplar SDK are not currently supported.
     * the Poplar SDK version 2.2 uses LLVM 13, which is available in Julia v1.8;
     * the Poplar SDK versions 2.3-2.5 use LLVM 14, which is available in Julia v1.9;
     * the Poplar SDK versions 2.6-3.2 use LLVM 15, which is available in Julia v1.10;
-    * the Poplar SDK version 3.3 use LLVM 16, which as of 2023-07-05 is not available in any Julia version.
+    * the Poplar SDK version 3.3 uses LLVM 16, which is available in Julia v1.11.
 
 ## Installation
 
@@ -72,5 +72,6 @@ These approaches are exploratory of the functionalities, and are often limited i
 Here is some material that you may find useful for learning more about Julia on the IPU and trying it out yourself:
 
 * [Pluto notebook](https://giordano.github.io/blog/2023-07-20-julia-ipu/) of presentation given at Graphcore and at JuliaCon in July 2023
+* Talk "[Julia meets the Intelligence Processing Unit](https://www.youtube.com/watch?v=-fxB0kmcCVE)" at JuliaCon 2023
 * [JuliaIpuDemo](https://github.com/JuliaIPU/JuliaIpuDemo), repository with instructions for running some Jupyter notebooks on Paperspace cloud.
   This service offers also IPU time for free, these sessions are limited to 6 hours each and one at the time, but you can run as many as you want.
