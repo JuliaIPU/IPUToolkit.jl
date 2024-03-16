@@ -69,7 +69,7 @@ function _codelet(graph, usr_kern::Expr)
             $(kern_call)
             return $(esc(nothing))
         end
-        _build_codelet($(esc(graph)), $(codelet_fun), $(String(name)), $(esc(name)))
+        _build_codelet($(esc(graph)), $(codelet_fun), $(esc(name)), $(String(name)))
     end
 end
 
@@ -208,46 +208,19 @@ _print_t(::Type{Float32}) = "float"
 _print_arg(io::IO, ::Type{VertexVector{T, S}}, name::String) where {T,S} = println(io, "poplar::", _print_s(S), "<poplar::Vector<", _print_t(T), ">> ", name, ";")
 _print_arg(io::IO, ::Type{VertexScalar{T, S}}, name::String) where {T,S} = println(io, "poplar::", _print_s(S), "<", _print_t(T), "> ", name, ";")
 
-function __build_codelet(graph::Poplar.GraphAllocated, kernel, name::String, origKernel::Function)
-    target = _get_target()
-    source = methodinstance(typeof(kernel), Tuple{})
-    params = IPUCompilerParams(name)
-    config = CompilerConfig(target, params)
-    job = CompilerJob(source, config)
-    llvm_ir = JuliaContext() do ctx
-        try
-            string(GPUCompiler.compile(:llvm, job)[1])
-        catch err
-            if err isa InvalidIRError && DEBUG_COMPILATION_ERRORS[]
-                code_typed(err; interactive = true)
-            else
-                rethrow()
-            end
-        end
-    end
-    # For some reasons the Colossus intrinsics names get dots converted into underscores:
-    # <https://github.com/JuliaGPU/GPUCompiler.jl/issues/464>.  Let's convert them back to
-    # dots before writing the file to disk.
-    llvm_ir = replace(llvm_ir,
-                      "_llvm_colossus_get_scount_l" => "llvm.colossus.get.scount.l",
-                      "_llvm_colossus_get_tile_id" => "llvm.colossus.get.tile.id",
-                      "_llvm_colossus_urand_f16" => "llvm.colossus.urand.f16",
-                      "_llvm_colossus_urand_f32" => "llvm.colossus.urand.f32",
-                      "_llvm_colossus_urand32" => "llvm.colossus.urand32",
-                      "_llvm_colossus_urand64" => "llvm.colossus.urand64",
-                      "_llvm_colossus_f16v2grand" => "llvm.colossus.f16v2grand",
-                      "_llvm_colossus_f32v2grand" => "llvm.colossus.f32v2grand",
-                      )
-
+# This is an internal function, but it can be used to compile a codelet starting from LLVM
+# IR in string form (e.g. if you generated it outside of the current process).  NOTE:
+# `origKernel` *must* match the name and the signature of the kernel you put in the LLVM IR.
+# By default we create the codelet file in temporary directory, so that we don't pollute the
+# file system with codelet files everywhere, but you can change that with the `output_path`
+# keyword argument.
+function ___build_codelet(llvm_ir::String, origKernel::Function, name::String=string(origKernel);
+                          output_path::String=joinpath(mktempdir(), name * ".gp"))
     method = methods(origKernel)[end]
     args = method.sig.parameters[2:end]
     argnames = string.(Base.method_argnames(method)[2:end])
 
     kernel_name = match(Regex("(_Z[\\d_]+$(name)[\\d_]+)"), llvm_ir)[1]
-
-    # Create codelet file in temporary directory, so taht we don't pollute the
-    # file system with codelet files everywhere.
-    output_path = joinpath(mktempdir(), name * ".gp")
 
     mktempdir() do dir
         open(joinpath(dir, "gen_codelet.cpp"), "w") do io
@@ -291,15 +264,56 @@ function __build_codelet(graph::Poplar.GraphAllocated, kernel, name::String, ori
             ```)
     end
 
+    return nothing
+end
+
+# Similar to the function above, but it also adds the codelet to the graph.
+function ___build_codelet(graph::Poplar.GraphAllocated, llvm_ir::String, origKernel::Function, name::String=string(origKernel);
+                          output_path::String=joinpath(mktempdir(), name * ".gp"))
+    ___build_codelet(llvm_ir, origKernel, name; output_path)
     Poplar.GraphAddCodelets(graph, output_path)
     return nothing
 end
 
-function _build_codelet(graph::Poplar.GraphAllocated, kernel, name::String, origKernel::Function)
+function __build_codelet(graph::Poplar.GraphAllocated, kernel, origKernel::Function, name::String=string(origKernel))
+    target = _get_target()
+    source = methodinstance(typeof(kernel), Tuple{})
+    params = IPUCompilerParams(name)
+    config = CompilerConfig(target, params)
+    job = CompilerJob(source, config)
+    llvm_ir = JuliaContext() do ctx
+        try
+            string(GPUCompiler.compile(:llvm, job)[1])
+        catch err
+            if err isa InvalidIRError && DEBUG_COMPILATION_ERRORS[]
+                code_typed(err; interactive = true)
+            else
+                rethrow()
+            end
+        end
+    end
+    # For some reasons the Colossus intrinsics names get dots converted into underscores:
+    # <https://github.com/JuliaGPU/GPUCompiler.jl/issues/464>.  Let's convert them back to
+    # dots before writing the file to disk.
+    llvm_ir = replace(llvm_ir,
+                      "_llvm_colossus_get_scount_l" => "llvm.colossus.get.scount.l",
+                      "_llvm_colossus_get_tile_id" => "llvm.colossus.get.tile.id",
+                      "_llvm_colossus_urand_f16" => "llvm.colossus.urand.f16",
+                      "_llvm_colossus_urand_f32" => "llvm.colossus.urand.f32",
+                      "_llvm_colossus_urand32" => "llvm.colossus.urand32",
+                      "_llvm_colossus_urand64" => "llvm.colossus.urand64",
+                      "_llvm_colossus_f16v2grand" => "llvm.colossus.f16v2grand",
+                      "_llvm_colossus_f32v2grand" => "llvm.colossus.f32v2grand",
+                      )
+
+    ___build_codelet(graph, llvm_ir, origKernel, name)
+end
+
+function _build_codelet(graph::Poplar.GraphAllocated, kernel, origKernel::Function, name::String=string(origKernel))
     # Progress spinner is disabled if interactive debugging is enabled.
     if PROGRESS_SPINNER[] && !DEBUG_COMPILATION_ERRORS[]
         prog = ProgressUnknown("Compiling codelet $(name):"; spinner=true)
-        task = Threads.@spawn __build_codelet(graph, kernel, name, origKernel)
+        task = Threads.@spawn __build_codelet(graph, kernel, origKernel, name)
         while !istaskdone(task)
             ProgressMeter.next!(prog; spinner="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏")
             sleep(0.1)
@@ -307,6 +321,6 @@ function _build_codelet(graph::Poplar.GraphAllocated, kernel, name::String, orig
         ProgressMeter.finish!(prog)
         fetch(task)
     else
-        __build_codelet(graph, kernel, name, origKernel)
+        __build_codelet(graph, kernel, origKernel, name)
     end
 end
