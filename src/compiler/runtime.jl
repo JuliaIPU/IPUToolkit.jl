@@ -89,6 +89,11 @@ Base.randn(T::Type{Float32}) = @inbounds ccall("extern _llvm_colossus_f32v2grand
 @device_override Base.literal_pow(::typeof(^), x::Float16, ::Val{3}) = x*x*x
 @device_override Base.literal_pow(::typeof(^), x::Float16, ::Val{-1}) = inv(x)
 @device_override Base.literal_pow(::typeof(^), x::Float16, ::Val{-2}) = (i=inv(x); i*i)
+@device_override Base.min(a::Float32, b::Float32) = ccall("llvm.minnum.f32", llvmcall, Float32, (Float32, Float32), a, b)
+@device_override Base.max(a::Float32, b::Float32) = ccall("llvm.maxnum.f32", llvmcall, Float32, (Float32, Float32), a, b)
+@device_override Base.tanh(x::Float32) = ccall("extern _llvm_colossus_tanh_f32", llvmcall, Float32, (Float32,), x)
+# @device_override Base.:(==)(a::Float32, b::Float32) = Bool(ccall("extern _llvm_colossus_f32cmpeq", llvmcall, Float32, (Float32, Float32), a, b))
+# @device_override Base.:(!=)(a::Float32, b::Float32) = Bool(ccall("extern _llvm_colossus_f32cmpne", llvmcall, Float32, (Float32, Float32), a, b))
 
 ## quirks, adapted from
 ## https://github.com/JuliaGPU/CUDA.jl/blob/5c51766d0a9e7819ea79f314e37ed6a8a5d24369/src/device/quirks.jl
