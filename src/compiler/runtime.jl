@@ -42,18 +42,18 @@ end
 # works only when targeting a Colossus-aware LLVM, so for the general case we call fake
 # external `_llvm_colossus_...` intrinsics and then rename them before writing to file.  Not
 # great, but it does the job.
-get_scount_l() = ccall("extern _llvm_colossus_get_scount_l",  llvmcall, Cuint, ())
-get_tile_id() = ccall("extern _llvm_colossus_get_tile_id",  llvmcall, Cuint, ())
+get_scount_l() = ccall("extern _llvm_colossus_get_scount_l", llvmcall, Cuint, ())
+get_tile_id() = ccall("extern _llvm_colossus_get_tile_id", llvmcall, Cuint, ())
 # Random functions, based on IPU intrinsics
-Base.rand(T::Type{Float16}) = ccall("extern _llvm_colossus_urand_f16",  llvmcall, Float16, ()) + T(0.5)
-Base.rand(T::Type{Float32}) = ccall("extern _llvm_colossus_urand_f32",  llvmcall, Float32, ()) + T(0.5)
-Base.rand(T::Type{UInt32}) = ccall("extern _llvm_colossus_urand32",  llvmcall, UInt32, ()) + T(0.5)
-Base.rand(T::Type{UInt64}) = ccall("extern _llvm_colossus_urand64",  llvmcall, UInt64, ()) + T(0.5)
+@device_override Base.rand(T::Type{Float16}) = ccall("extern _llvm_colossus_urand_f16", llvmcall, Float16, ()) + T(0.5)
+@device_override Base.rand(T::Type{Float32}) = ccall("extern _llvm_colossus_urand_f32", llvmcall, Float32, ()) + T(0.5)
+@device_override Base.rand(T::Type{UInt32}) = ccall("extern _llvm_colossus_urand32", llvmcall, UInt32, ()) + T(0.5)
+@device_override Base.rand(T::Type{UInt64}) = ccall("extern _llvm_colossus_urand64", llvmcall, UInt64, ()) + T(0.5)
 # Note: `llvm.colossus.f{16,32}v2grand` return 2-tuples of numbers, but Julia's `Base.randn`
 # returns a single number at a time, sadly we have to discard one of the numbers to keep the
 # same semantic.
-Base.randn(T::Type{Float16}) = @inbounds ccall("extern _llvm_colossus_f16v2grand",  llvmcall, NTuple{2, VecElement{Float16}}, ())[1].value
-Base.randn(T::Type{Float32}) = @inbounds ccall("extern _llvm_colossus_f32v2grand",  llvmcall, NTuple{2, VecElement{Float32}}, ())[1].value
+@device_override Base.randn(T::Type{Float16}) = @inbounds ccall("extern _llvm_colossus_f16v2grand", llvmcall, NTuple{2, VecElement{Float16}}, ())[1].value
+@device_override Base.randn(T::Type{Float32}) = @inbounds ccall("extern _llvm_colossus_f32v2grand", llvmcall, NTuple{2, VecElement{Float32}}, ())[1].value
 
 ## Math functions.
 # There are different reasons why we prefer LLVM intrinsics on the IPU: implementations in
@@ -61,7 +61,7 @@ Base.randn(T::Type{Float32}) = @inbounds ccall("extern _llvm_colossus_f32v2grand
 # symbols (maybe because they aren't implemented for `double`s on the IPU).
 @device_override Base.sin(x::Float32) = ccall("llvm.sin.f32", llvmcall, Float32, (Float32,), x)
 @device_override Base.cos(x::Float32) = ccall("llvm.cos.f32", llvmcall, Float32, (Float32,), x)
-@device_override Base.tan(x::Float32) = ccall("extern tanf",  llvmcall, Float32, (Float32,), x)
+@device_override Base.tan(x::Float32) = ccall("extern tanf", llvmcall, Float32, (Float32,), x)
 @device_override Base.exp(x::Float32) = ccall("llvm.exp.f32", llvmcall, Float32, (Float32,), x)
 @device_override Base.exp2(x::Float32) = ccall("llvm.exp2.f32", llvmcall, Float32, (Float32,), x)
 @device_override Base.log(x::Float32) = ccall("llvm.log.f32", llvmcall, Float32, (Float32,), x)
@@ -92,6 +92,10 @@ Base.randn(T::Type{Float32}) = @inbounds ccall("extern _llvm_colossus_f32v2grand
 @device_override Base.min(a::Float32, b::Float32) = ccall("llvm.minnum.f32", llvmcall, Float32, (Float32, Float32), a, b)
 @device_override Base.max(a::Float32, b::Float32) = ccall("llvm.maxnum.f32", llvmcall, Float32, (Float32, Float32), a, b)
 @device_override Base.tanh(x::Float32) = ccall("extern _llvm_colossus_tanh_f32", llvmcall, Float32, (Float32,), x)
+# For some reasons I didn't have the time to investigate the `==` and `!=` methods below cause
+# crashes.  But also, quick benchmarks didn't show significant performance improvements compared
+# to the default behaviour in Julia (also for the other comparison operators), so that they
+# don't seem to be too much worth the effort, we keep the code below just for reference.
 # @device_override Base.:(==)(a::Float32, b::Float32) = Bool(ccall("extern _llvm_colossus_f32cmpeq", llvmcall, Float32, (Float32, Float32), a, b))
 # @device_override Base.:(!=)(a::Float32, b::Float32) = Bool(ccall("extern _llvm_colossus_f32cmpne", llvmcall, Float32, (Float32, Float32), a, b))
 
