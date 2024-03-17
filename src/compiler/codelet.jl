@@ -296,14 +296,28 @@ function __build_codelet(graph::Poplar.GraphAllocated, kernel, origKernel::Funct
     # <https://github.com/JuliaGPU/GPUCompiler.jl/issues/464>.  Let's convert them back to
     # dots before writing the file to disk.
     llvm_ir = replace(llvm_ir,
+                      # Ref for IPU builtins:
+                      # <https://docs.graphcore.ai/projects/poplar-api/en/latest/ipu_intrinsics/ipu_builtins.html>.
                       "_llvm_colossus_get_scount_l" => "llvm.colossus.get.scount.l",
                       "_llvm_colossus_get_tile_id" => "llvm.colossus.get.tile.id",
+                      # Random number generation
                       "_llvm_colossus_urand_f16" => "llvm.colossus.urand.f16",
                       "_llvm_colossus_urand_f32" => "llvm.colossus.urand.f32",
                       "_llvm_colossus_urand32" => "llvm.colossus.urand32",
                       "_llvm_colossus_urand64" => "llvm.colossus.urand64",
                       "_llvm_colossus_f16v2grand" => "llvm.colossus.f16v2grand",
                       "_llvm_colossus_f32v2grand" => "llvm.colossus.f32v2grand",
+                      # Float operation
+                      "_llvm_colossus_tanh_f32" => "llvm.colossus.tanh.f32",
+                      # Float comparisons
+                      "_llvm_colossus_f32cmpeq" => "llvm.colossus.f32cmpeq",
+                      "_llvm_colossus_f32cmpge" => "llvm.colossus.f32cmpge",
+                      "_llvm_colossus_f32cmpgt" => "llvm.colossus.f32cmpgt",
+                      "_llvm_colossus_f32cmple" => "llvm.colossus.f32cmple",
+                      "_llvm_colossus_f32cmplt" => "llvm.colossus.f32cmplt",
+                      "_llvm_colossus_f32cmpne" => "llvm.colossus.f32cmpne",
+                      # Float classification (see IEEE 754-2008, § 5.7.2 General operations)
+                      "_llvm_colossus_f32class" => "llvm.colossus.f32class",
                       )
 
     ___build_codelet(graph, llvm_ir, origKernel, name)
