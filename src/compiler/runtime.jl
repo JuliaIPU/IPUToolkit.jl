@@ -1,6 +1,6 @@
 module IPURuntime
 
-import ..IPUCompiler: @device_override, @ipuprintf, @ipuprintln, get_scount_l, get_tile_id
+import ..IPUCompiler: @device_override, @ipuprintf, @ipuprintln, get_scount_l, get_tile_id, randn2!, VertexVector, Out, InOut
 using GPUCompiler: reset_runtime
 import LinearAlgebra
 
@@ -54,6 +54,17 @@ get_tile_id() = ccall("extern _llvm_colossus_get_tile_id", llvmcall, Cuint, ())
 # same semantic.
 @device_override Base.randn(T::Type{Float16}) = @inbounds ccall("extern _llvm_colossus_f16v2grand", llvmcall, NTuple{2, VecElement{Float16}}, ())[1].value
 @device_override Base.randn(T::Type{Float32}) = @inbounds ccall("extern _llvm_colossus_f32v2grand", llvmcall, NTuple{2, VecElement{Float32}}, ())[1].value
+function randn2!(v::VertexVector{T}) where {T}
+    for idx in UInt32(1):UInt32(2):UInt32(length(v))
+        rnd = if T == Float32
+            ccall("extern _llvm_colossus_f32v2grand", llvmcall, NTuple{2, VecElement{Float32}}, ())
+        elseif T == Float16
+            ccall("extern _llvm_colossus_f16v2grand", llvmcall, NTuple{2, VecElement{Float16}}, ())
+        end
+        @inbounds v[idx]   = rnd[1].value
+        @inbounds v[idx+1] = rnd[2].value
+    end
+end
 
 ## Math functions.
 # There are different reasons why we prefer LLVM intrinsics on the IPU: implementations in
