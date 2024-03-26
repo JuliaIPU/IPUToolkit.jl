@@ -222,7 +222,7 @@ attach.  It can have different types:
 * if of type `AbstractVector`, try to attach to `n` devices from that list of
   IDs.
 
-See [`get_ipu_device`](@ref) for requesting exactly one IPU device.
+See [`Poplar.get_ipu_device`](@ref) for requesting exactly one IPU device.
 To release all devices previously attached with `Poplar.get_ipu_devices` or [`Poplar.get_ipu_device`](@ref) use [`Poplar.detach_devices`](@ref).
 """
 function get_ipu_devices(n::Int, hint::Union{AbstractVector{<:Integer},Integer}=0)
