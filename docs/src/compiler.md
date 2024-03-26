@@ -39,11 +39,17 @@ Inside codelets defined with [`@codelet`](@ref) all calls to random functions
 result to call to corresponding IPU builtins for [random number generation](https://docs.graphcore.ai/projects/poplar-api/en/latest/ipu_intrinsics/ipu_builtins.html#random-number-generation).
 The uniformly distributed numbers follow the general semantic of the Julia function `rand` (floating point numbers are uniformely distributed in the $[0, 1)$ range), while the normally distributed numbers have the properties described in the Poplar SDK documentation (numbers are in the range $[-93/16, 93/16]$).
 
+!!! note
+
+    The IPU builtins for random numbers return pairs of numbers, but the Julia functions `randn(Float16)` and `randn(Float32)` return only a single number, discarding the second number of the pair.
+    If you have a vector of even length that you want to fill in-place with normally distributed numbers, you can use the [`randn2!`](@ref) function to do that efficiently, without discarding any number.
+
 Additionally, you can use the [IPU builtins](https://docs.graphcore.ai/projects/poplar-api/en/latest/ipu_intrinsics/ipu_builtins.html) listed below.
 
 ```@docs
 get_scount_l
 get_tile_id
+randn2!
 ```
 
 ## Printing

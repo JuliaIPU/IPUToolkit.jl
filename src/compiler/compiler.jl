@@ -1,7 +1,7 @@
 # based on GPUCompiler example https://github.com/JuliaGPU/GPUCompiler.jl/blob/master/examples/kernel.jl
 module IPUCompiler
 
-export @codelet, @ipuprogram, VertexVector, VertexScalar, In, Out, InOut, get_scount_l, get_tile_id, add_vertex
+export @codelet, @ipuprogram, VertexVector, VertexScalar, In, Out, InOut, get_scount_l, get_tile_id, randn2!, add_vertex
 
 include("output.jl")
 
@@ -80,8 +80,17 @@ Call the [`__builtin_ipu_get_tile_id()`](https://docs.graphcore.ai/projects/popl
 """
 function get_tile_id end
 
-include("runtime.jl")
+"""
+    randn2!(v::VertexVector) -> v
+
+Fill the vector `v` with normally-distributed (mean 0, standard deviation 1) random numbers.
+The vector *must* have even length.
+This function takes advantage of [IPU builtins for random number generation](https://docs.graphcore.ai/projects/poplar-api/en/latest/ipu_intrinsics/ipu_builtins.html#random-number-generation), which return pairs of numbers at a time.
+"""
+function randn2! end
+
 include("vertices.jl")
+include("runtime.jl")
 
 GPUCompiler.runtime_module(::CompilerJob{<:Any,IPUCompilerParams}) = IPURuntime
 # `GPUCompiler.isintrinsic` specifies functions which are to be considered intrinsics for
