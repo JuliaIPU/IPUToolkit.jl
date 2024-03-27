@@ -1,11 +1,34 @@
+template<size_t ndims>
+struct VertexVector {
+    uint64_t beginPtr;
+    uint32_t  size_[ndims];
+    constexpr size_t numDims() { return ndims; }
+};
+
+
+
+
 extern "C" {
 #include <stdint.h>
     extern void KERNEL_NAME();
     struct VertexVector {
-        uintptr_t beginPtr;
-        uint32_t  size_;
+        uint64_t beginPtr;
+        uint64_t  numDims;
+        uint32_t  size_[0];
     };
     static VertexVector* vertclass;
+
+/*
+struct VertexVector* construct(void* baseptr, std::vector<uint64_t> dims) {
+    VertexVector* vert = (struct VertexVector)malloc(sizeof(VertexVector) + dims.size() * sizeof(uint32_t));
+    alloca(...) // stack allocation
+    vert->beginPtr = baseptr;
+    vert->numDims = dims.size();
+    for (size_t i=0; i<dims.size(); i++)
+      vert->size_[i] = dims[i];
+    return vert;
+}
+*/
 
     // Function to get the pointer to the i-th vector.
     uintptr_t GET_VEC_PTR_NAME(int32_t i) {
