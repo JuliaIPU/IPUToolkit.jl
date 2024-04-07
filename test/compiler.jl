@@ -347,8 +347,7 @@ end
                                match_mode=:any,
                                Poplar.get_ipu_device())
                 else
-                    model = @cxxtest Poplar.IPUModel()
-                    Poplar.IPUModelCreateDevice(model)
+                    Poplar.get_ipu_model()
                 end
 
                 # Run a test program

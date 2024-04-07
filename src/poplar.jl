@@ -207,7 +207,7 @@ const ATTACHED_DEVICES_LOCK = ReentrantLock()
 
 # Be sure to quit all julia sessions which hold devices!!!
 """
-    Poplar.get_ipu_devices(n::Int, hint::Union{AbstractVector{<:Integer},Integer}=0)
+    Poplar.get_ipu_devices(n::Int, hint::Union{AbstractVector{<:Integer},Integer}=0) -> Vector{Poplar.DeviceAllocated}
 
 Try to attach to `n` IPU devices, returns a vector of the pointers to the devices
 successfully attached to.  You can release them with `Poplar.DeviceDetach` (note that this
@@ -222,8 +222,8 @@ attach.  It can have different types:
 * if of type `AbstractVector`, try to attach to `n` devices from that list of
   IDs.
 
-See [`Poplar.get_ipu_device`](@ref) for requesting exactly one IPU device.
-To release all devices previously attached with `Poplar.get_ipu_devices` or [`Poplar.get_ipu_device`](@ref) use [`Poplar.detach_devices`](@ref).
+See [`Poplar.get_ipu_device`](@ref) for requesting exactly one IPU device, and [`Poplar.get_ipu_model`](@ref) for requesting an IPU Model.
+To release all devices previously attached with `Poplar.get_ipu_devices`, [`Poplar.get_ipu_device`](@ref), or [`Poplar.get_ipu_model`](@ref) use [`Poplar.detach_devices`](@ref).
 """
 function get_ipu_devices(n::Int, hint::Union{AbstractVector{<:Integer},Integer}=0)
     lock(ATTACHED_DEVICES_LOCK) do
@@ -261,12 +261,16 @@ function get_ipu_devices(n::Int, hint::Union{AbstractVector{<:Integer},Integer}=
 end
 
 """
-    Poplar.get_ipu_device(hint::Union{AbstractVector{<:Integer},Integer}=0)
+    Poplar.get_ipu_device(hint::Union{AbstractVector{<:Integer},Integer}=0) -> Poplar.DeviceAllocated
 
 Similar to [`Poplar.get_ipu_devices`](@ref), but request exactly one IPU device.  If it can attach
 to a device, return that pointer only (not in a vector, like `get_ipu_devices`), otherwise
-return `nothing`.  You can release the device with `Poplar.DeviceDetach(device)`.
-To release all devices previously attached with `Poplar.get_ipu_device` or [`Poplar.get_ipu_devices`](@ref) use [`Poplar.detach_devices`](@ref).
+return `nothing`.
+
+See [`Poplar.get_ipu_model`](@ref) for requesting an IPU Model.
+
+You can release the device with `Poplar.DeviceDetach(device)`.
+To release all devices previously attached with `Poplar.get_ipu_device`, [`Poplar.get_ipu_devices`](@ref), or [`Poplar.get_ipu_model`](@ref) use [`Poplar.detach_devices`](@ref).
 
 The optional argument `hint` suggests to which device IDs to try and
 attach.  It can have different types:
@@ -284,9 +288,32 @@ function get_ipu_device(hint::Union{AbstractVector{<:Integer},Integer}=0)
 end
 
 """
+    Poplar.get_ipu_model(ipu_version::String="ipu2") -> Poplar.DeviceAllocated
+
+Attach to an [IPU Model](https://docs.graphcore.ai/projects/poplar-user-guide/en/latest/poplar_programs.html#programming-with-poplar), and return the attached device.
+This uses [`IPUModel::createDevice`](https://docs.graphcore.ai/projects/poplar-api/en/3.4.0/poplar/profiling/IPUModel.html#_CPPv4NK6poplar8IPUModel12createDeviceE11OptionFlagsbj) under the hood.
+
+The optional positional argument `ipu_version::String`, `ipu2` by default`, represents the version of the IPU to emulate.
+Valid values for `ipu_version` are `ipu1` and `ipu2` (for Mk1 and Mk2 IPU architectures respectively).
+
+See [`Poplar.get_ipu_device`](@ref) and [`Poplar.get_ipu_devices`](@ref) for requesting one or mode hardware IPUs.
+
+You can release the device with `Poplar.DeviceDetach(device)`.
+To release all devices previously attached with `Poplar.get_ipu_model`, [`Poplar.get_ipu_device`](@ref) or [`Poplar.get_ipu_devices`](@ref) use [`Poplar.detach_devices`](@ref).
+"""
+function get_ipu_model(ipu_version::String="ipu2")
+    lock(ATTACHED_DEVICES_LOCK) do
+        model = Poplar.IPUModel(ipu_version)
+        device = Poplar.IPUModelCreateDevice(model)
+        push!(ATTACHED_DEVICES, device)
+        device
+    end
+end
+
+"""
     Poplar.detach_devices() -> Nothing
 
-Detach all devices previously attached in the current Julia session with [`Poplar.get_ipu_devices`](@ref) or [`Poplar.get_ipu_device`](@ref).
+Detach all devices previously attached in the current Julia session with [`Poplar.get_ipu_devices`](@ref), [`Poplar.get_ipu_device`](@ref), or [`Poplar.get_ipu_model`](@ref).
 """
 function detach_devices()
     lock(ATTACHED_DEVICES_LOCK) do
