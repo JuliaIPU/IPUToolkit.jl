@@ -209,7 +209,7 @@ const POPLAR_SDK_LLVM_MAPPING = Dict(
 function __init__()
     @static if get(POPLAR_SDK_LLVM_MAPPING, Base.thisminor(Poplar.SDK_VERSION), v"0") != Base.thismajor(Base.libllvm_version)
         sdk_llvm_version = get(POPLAR_SDK_LLVM_MAPPING, Base.thisminor(Poplar.SDK_VERSION), "UNKNOWN")
-        @static if sdk_llvm_version == "UNKNOWN" && !isnothing(Sys.which("popc"))
+        if sdk_llvm_version == "UNKNOWN" && !isnothing(Sys.which("popc"))
             sdk_llvm_version = match(r"clang version ([\d.]+)", readchomp(`popc --version`))[1]
         end
         @warn """
