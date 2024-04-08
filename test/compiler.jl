@@ -5,7 +5,7 @@ const check_bounds = Base.JLOptions().check_bounds == 1
 
 using Test
 using IPUToolkit.IPUCompiler
-using GPUCompiler: KernelError
+using GPUCompiler: GPUCompiler
 using IPUToolkit.Poplar
 if Poplar.SDK_VERSION ≥ v"2.2.0" || !check_bounds
     using Enzyme
@@ -58,8 +58,9 @@ function test_compiler_program(device)
     end
 
     # Test some invalid kernels
-    @test_throws KernelError @codelet graph f_access_out_scalar(x::VertexScalar{Float32, Out}) = @ipushow x[]
-    @test_throws KernelError @codelet graph f_set_in_scalar(x::VertexScalar{Float32, In}) = x[] = 3.14f0
+    invalid_error = pkgversion(GPUCompiler) <= v"0.23" ? GPUCompiler.KernelError : GPUCompiler.InvalidIRError
+    @test_throws invalid_error @codelet graph f_access_out_scalar(x::VertexScalar{Float32, Out}) = @ipushow x[]
+    @test_throws invalid_error @codelet graph f_set_in_scalar(x::VertexScalar{Float32, In}) = x[] = 3.14f0
 
     # This function would contain a reference to a literal pointer, likely an
     # invalid memory address on the IPU.
@@ -76,10 +77,7 @@ function test_compiler_program(device)
 
     add_vertex(graph, prog, TimesTwo, inconst, outvec1)
     add_vertex(graph, prog, Sort, outvec1, outvec2)
-    if VERSION ≥ v"1.7"
-        # The `@device_override` business works well only on Julia v1.7+
-        add_vertex(graph, prog, Sin, outvec2, outvec3)
-    end
+    add_vertex(graph, prog, Sin, outvec2, outvec3)
     add_vertex(graph, prog, Print, 3.14f0)
     # Pass as codelet a function with more than one method
     @test_throws ArgumentError add_vertex(graph, prog, +, outvec3)
@@ -92,10 +90,8 @@ function test_compiler_program(device)
     Poplar.GraphCreateHostRead(graph, "timestwo-read", outvec1)
     output_sort = similar(input)
     Poplar.GraphCreateHostRead(graph, "sort-read", outvec2)
-    if VERSION ≥ v"1.7"
-        output_sin = similar(input)
-        Poplar.GraphCreateHostRead(graph, "sin-read", outvec3)
-    end
+    output_sin = similar(input)
+    Poplar.GraphCreateHostRead(graph, "sin-read", outvec3)
 
     flags = @cxxtest Poplar.OptionFlags()
     Poplar.OptionFlagsSet(flags, "debug.instrument", "true")
@@ -128,10 +124,8 @@ function test_compiler_program(device)
     @test output_timestwo == 2 .* input
     Poplar.EngineReadTensor(engine, "sort-read", output_sort)
     @test output_sort == sort(output_timestwo)
-    if VERSION ≥ v"1.7"
-        Poplar.EngineReadTensor(engine, "sin-read", output_sin)
-        @test output_sin == sin.(output_sort)
-    end
+    Poplar.EngineReadTensor(engine, "sin-read", output_sin)
+    @test output_sin == sin.(output_sort)
 
     Poplar.detach_devices()
 end

@@ -71,9 +71,7 @@ end
 # In Julia v1.9 the default algorithm for sorting arrays requires a scratch area, but we
 # can't use it on an IPU because it'd need to allocate an extra array, so let's default to
 # the simple fully in-place `QuickSort`.
-if VERSION ≥ v"1.9.0-"
-    Base.Sort.defalg(::VertexVector) = QuickSort
-end
+Base.Sort.defalg(::VertexVector) = QuickSort
 
 # Simple methods, don't access the elements
 Base.show(io::IO, x::VertexVector) = Base.show_default(io, x)
