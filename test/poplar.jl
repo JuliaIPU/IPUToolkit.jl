@@ -100,8 +100,7 @@ end
 
     # Test a simple program using a software-emulated IPU (IPU model)
     @testset "IPU Model" begin
-        model = @cxxtest Poplar.IPUModel()
-        device = @cxxtest Poplar.IPUModelCreateDevice(model)
+        device = @cxxtest Poplar.get_ipu_model()
         test_poplar_program(device)
     end
 

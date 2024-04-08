@@ -49,6 +49,21 @@ You can slice a tensor with the usual Julia notation `tensor[index1:index2]`, th
 
 [`similar`](@ref) can be used to add to `graph` a tensor with the same shape and optionally element type as `tensor`, while [`copyto!`](@ref) can be used to copy elements of a CPU host array into an IPU tensor.
 
+## Using `IPUToolkit.jl` without an IPU
+
+While this package requires a physical IPU to use all the available features, you can still experiment with the IPU programming model even if you do not have access to a hardware IPU.
+The Poplar SDK provides a feature called IPU Model, which is a software emulation of the behaviour of the IPU hardware.
+While the IPU model comes with [some limitations](https://docs.graphcore.ai/projects/poplar-user-guide/en/latest/poplar_programs.html#programming-with-poplar), it can be useful for testing or debugging.
+
+To use the IPU model in `IPUToolkit.jl`, define the device of your IPU program with `Poplar.IPUModelCreateDevice` (which calls [`IPUModel::createDevice`](https://docs.graphcore.ai/projects/poplar-api/en/3.4.0/poplar/profiling/IPUModel.html#_CPPv4NK6poplar8IPUModel12createDeviceE11OptionFlagsbj) under the hood):
+```julia
+device = Poplar.get_ipu_model()
+# Then the rest of the program continues as usual
+target = Poplar.DeviceGetTarget(device)
+graph = Poplar.Graph(target)
+# ...
+```
+
 ```@autodocs
 Modules = [IPUToolkit.Poplar]
 ```

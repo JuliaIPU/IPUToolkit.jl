@@ -1,7 +1,6 @@
 using IPUToolkit.Poplar
 
-# model = Poplar.IPUModel()
-# device = Poplar.IPUModelCreateDevice(model)
+# device = Poplar.get_ipu_model()
 device = Poplar.get_ipu_device()
 
 target = Poplar.DeviceGetTarget(device)

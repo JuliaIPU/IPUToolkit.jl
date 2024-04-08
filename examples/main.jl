@@ -1,11 +1,7 @@
 using IPUToolkit.IPUCompiler
 using IPUToolkit.Poplar
 
-device = if Poplar.SDK_VERSION < v"2.0"
-    Poplar.IPUModelCreateDevice(Poplar.IPUModel())
-else
-    Poplar.get_ipu_device()
-end
+device = Poplar.get_ipu_device()
 
 target = Poplar.DeviceGetTarget(device)
 graph = Poplar.Graph(target)
