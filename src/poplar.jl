@@ -293,7 +293,7 @@ end
 Attach to an [IPU Model](https://docs.graphcore.ai/projects/poplar-user-guide/en/latest/poplar_programs.html#programming-with-poplar), and return the attached device.
 This uses [`IPUModel::createDevice`](https://docs.graphcore.ai/projects/poplar-api/en/3.4.0/poplar/profiling/IPUModel.html#_CPPv4NK6poplar8IPUModel12createDeviceE11OptionFlagsbj) under the hood.
 
-The optional positional argument `ipu_version::String`, `ipu2` by default`, represents the version of the IPU to emulate.
+The optional positional argument `ipu_version::String`, `ipu2` by default, represents the version of the IPU to emulate.
 Valid values for `ipu_version` are `ipu1` and `ipu2` (for Mk1 and Mk2 IPU architectures respectively).
 
 See [`Poplar.get_ipu_device`](@ref) and [`Poplar.get_ipu_devices`](@ref) for requesting one or mode hardware IPUs.
