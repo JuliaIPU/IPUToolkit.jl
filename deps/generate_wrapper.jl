@@ -39,7 +39,7 @@ function resolve_header(header::String, include_paths::Vector{String})::String
             return path
         end
     end
-    error("Couldn't resolve $(header)")
+    error("Couldn't find $(header) in $(join(repr.(include_paths), ", "))")
 end
 # Find header files in the include paths
 resolve_headers(headers::Vector{String}, include_paths::Vector{String})::Vector{String} =
