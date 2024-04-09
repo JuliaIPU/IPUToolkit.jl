@@ -57,6 +57,19 @@ jobs:
           cache-artifacts: "true"
           cache-packages: "true"
           cache-compiled: "true"
+      - name: "Export environment variables"
+        # Starting from graphcore/poplar:3.3.0 some environment variables like `CPATH` and
+        # `LD_LIBRARY_PATH`, which we need for building the bindings, are only set with the
+        # `bash` shell, while GHA uses by default `sh` for steps inside containers.  So we
+        # need to start a step with `shell: bash` and re-export the relevant variables for
+        # the following steps.
+        shell: bash
+        run: |
+          echo "PATH=${PATH}" >> "${GITHUB_ENV}"
+          echo "CPATH=${CPATH}" >> "${GITHUB_ENV}"
+          echo "LIBRARY_PATH=${LIBRARY_PATH}" >> "${GITHUB_ENV}"
+          echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> "${GITHUB_ENV}"
+          echo "POPLAR_SDK_ENABLED=${POPLAR_SDK_ENABLED}" >> "${GITHUB_ENV}"
       - uses: julia-actions/julia-buildpkg@v1
         env:
           CXX: g++
