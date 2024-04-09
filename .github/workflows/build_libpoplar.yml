@@ -18,6 +18,9 @@ jobs:
       matrix:
         include:
           - docker_image: graphcore/poplar:3.2.0-ubuntu-20.04-20230314
+            artifact_name: poplar-3.2.0
+          - docker_image: graphcore/poplar:3.3.0-ubuntu-20.04-20230703
+            artifact_name: poplar-3.3.0
     steps:
       - name: "Install, g++, jq"
         # g++ is needed to build the wrapper, jq for
@@ -32,6 +35,19 @@ jobs:
         with:
           version: "1.7"
       - uses: julia-actions/cache@v1
+      - name: "Export environment variables"
+        # Starting from graphcore/poplar:3.3.0 some environment variables like `CPATH` and
+        # `LD_LIBRARY_PATH`, which we need for building the bindings, are only set with the
+        # `bash` shell, while GHA uses by default `sh` for steps inside containers.  So we
+        # need to start a step with `shell: bash` and re-export the relevant variables for
+        # the following steps.
+        shell: bash
+        run: |
+          echo "PATH=${PATH}" >> "${GITHUB_ENV}"
+          echo "CPATH=${CPATH}" >> "${GITHUB_ENV}"
+          echo "LIBRARY_PATH=${LIBRARY_PATH}" >> "${GITHUB_ENV}"
+          echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> "${GITHUB_ENV}"
+          echo "POPLAR_SDK_ENABLED=${POPLAR_SDK_ENABLED}" >> "${GITHUB_ENV}"
       - name: Instantiate wrapper generation environment
         working-directory: ${{ github.workspace }}/deps
         run: |
@@ -54,5 +70,5 @@ jobs:
           julia --project=. --color=yes build_tarballs.jl --verbose
       - uses: actions/upload-artifact@v4
         with:
-          name: products
+          name: products-${{ matrix.artifact_name }}
           path: ${{ github.workspace }}/deps/bb_recipe/products

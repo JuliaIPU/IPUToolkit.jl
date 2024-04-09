@@ -7,7 +7,7 @@ UUIDs = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 libcxxwrap_julia_jll = "3eaa8342-bff7-56a5-9981-c04077f7cee7"
 
 [compat]
-Clang = "0.14, 0.17.4"
+Clang = "0.14, 0.17.4, 0.18"
 JSON = "0.21.4"
 Pkg = "1"
 Scratch = "1.1"
