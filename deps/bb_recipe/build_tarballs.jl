@@ -41,9 +41,17 @@ c++ \
 install_license /usr/share/licenses/MIT
 """
 
-platforms = [
-    Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11", julia_version="1.10.0"),
+julia_versions = if VersionNumber(ENV["SDK_VERSION"]) < v"3.3"
+    ["1.9.0", "1.10.0"]
+else
+    ["1.11.0"]
+end
+
+base_platforms = [
+    Platform("x86_64", "linux"; libc="glibc", cxxstring_abi="cxx11")
 ]
+
+platforms = vcat([(p = deepcopy(platform); p["julia_version"] = julia_version; p) for platform in base_platforms, julia_version in julia_versions]...)
 
 products = [
     LibraryProduct("libpoplar_julia", :libpoplar_julia; dont_dlopen=true),
