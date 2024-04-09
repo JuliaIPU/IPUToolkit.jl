@@ -38,6 +38,7 @@ jobs:
           DEBIAN_FRONTEND: noninteractive
       - uses: actions/checkout@v4
       - name: "Declare git repo safe"
+        if: ${{ matrix.build_docs }}
         # In the docker container the repo is owned by 1001:123, causing the
         # following error when running git commands:
         #
