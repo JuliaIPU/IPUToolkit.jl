@@ -48,7 +48,7 @@ jobs:
       - uses: julia-actions/setup-julia@v2
         with:
           version: ${{ matrix.julia_version }}
-      - uses: julia-actions/cache@v1
+      - uses: julia-actions/cache@v2
         with:
           cache-registries: "true"
           cache-artifacts: "true"
