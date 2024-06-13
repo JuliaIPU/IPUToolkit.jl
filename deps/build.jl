@@ -27,7 +27,7 @@ function build_bindings(; path::String=joinpath(libpoplar_dir, "libpoplar_julia.
         run(```
             $(cxx)
             -O0
-            -std=c++17
+            -std=c++2a
             -fPIC
             -shared
             -I$(julia_include_dir)
