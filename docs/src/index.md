@@ -19,7 +19,7 @@ This package requires
 
 * Julia v1.6+ (currently tested up to Julia v1.10),
 * the Poplar SDK v1.3 or v2.0-v3.2 including the `popc` compiler,
-* a C++ compiler supporting C++17 standard for compiling the wrapper around the Poplar SDK (e.g. g++ 9 or following releases).
+* a C++ compiler supporting C++17 standard for compiling the wrapper around the Poplar SDK (e.g. G++ 9 or following releases).
 
 Other versions of the Poplar SDK are not currently supported.
 
@@ -30,7 +30,7 @@ Other versions of the Poplar SDK are not currently supported.
     * the Poplar SDK version 2.2 uses LLVM 13, which is available in Julia v1.8;
     * the Poplar SDK versions 2.3-2.5 use LLVM 14, which is available in Julia v1.9;
     * the Poplar SDK versions 2.6-3.2 use LLVM 15, which is available in Julia v1.10;
-    * the Poplar SDK version 3.3 uses LLVM 16, which is available in Julia v1.11 (NOTE: this combination has ***not** been tested yet and is likely not to work at the moment).
+    * the Poplar SDK version 3.3 uses LLVM 16, which is available in Julia v1.11 (NOTE: this combination has ***not*** been tested yet and is likely not to work at the moment).
 
 ## Installation
 
