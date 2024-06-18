@@ -30,7 +30,7 @@ jobs:
         # the `julia-actions/cache` workflow
         run: |
           apt-get update -y
-          apt-get install -y g++-10 git jq
+          apt-get install -y g++ git jq
         env:
           DEBIAN_FRONTEND: noninteractive
       - uses: actions/checkout@v4
@@ -56,11 +56,10 @@ jobs:
           cache-compiled: "true"
       - uses: julia-actions/julia-buildpkg@v1
         env:
-          CXX: g++-10
+          CXX: g++
       - uses: julia-actions/julia-docdeploy@v1
         if: ${{ matrix.build_docs }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
-          CXX: g++-10
       - uses: julia-actions/julia-runtest@v1
