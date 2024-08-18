@@ -46,7 +46,7 @@ resolve_headers(headers::Vector{String}, include_paths::Vector{String})::Vector{
     resolve_header.(headers, Ref(include_paths))
 
 function get_full_name(cursor, funcargs::Bool=true, buf="")
-    parent = Clang.getCursorLexicalParent(cursor)
+    parent = Clang.getCursorSemanticParent(cursor)
     parent_kind = spelling(kind(parent))
     cursor_name = name(cursor)
     if !funcargs
@@ -111,6 +111,36 @@ function get_julia_name(cursor::CLCursor)
     replace(vname, "::" => "")
 end
 
+nns(x::Clang.CLInvalidFile) = ""
+nns(x::Clang.CLTranslationUnit) = ""
+function nns(x::CLCursor)
+    pn = nns(Clang.getCursorSemanticParent(x))
+    if isempty(pn)
+        return spelling(x)
+    else
+        return pn * "::" * spelling(x)
+    end
+end
+get_qualified_name(x::CLCursor) = isempty(spelling(x)) ? "" : nns(x)
+
+get_qualified_basename(x::CLCursor) = ""
+function get_qualified_basename(x::CLTypeRef)
+    n = spelling(x)
+    startswith(n, "class ") && return split(n, "class ")[2]
+    startswith(n, "struct ") && return split(n, "struct ")[2]
+    startswith(n, "Union ") && return split(n, "Union ")[2]
+    return ""
+end
+get_qualified_basename(x::CLCXXBaseSpecifier) = get_qualified_basename(children(x)[1])
+function get_qualified_basename(x::Union{CLClassDecl,CLStructDecl,CLUnionDecl})
+    bn = get_qualified_basename(children(x)[1])
+    if isempty(bn)
+        return spelling(x)
+    else
+        return bn * "::" * spelling(x)
+    end
+end
+
 function object_decl_handler(ctx::BindgenContext, classdecl::CLCursor)::Tuple{Union{Nothing, String}, Union{Nothing, String}}
     full_name = get_full_name(classdecl)
     length(children(classdecl)) == 0 && return nothing, "skip_empty_classdecl"
@@ -123,10 +153,10 @@ function object_decl_handler(ctx::BindgenContext, classdecl::CLCursor)::Tuple{Un
     end
 
     # handle simple inheritance
-    if length(children(classdecl)) > 1 && kind(children(classdecl)[1]) == Clang.CXCursor_CXXBaseSpecifier
-
-        if startswith(get_full_name(children(classdecl)[1]), "class ")
-            base_class = split(get_full_name(children(classdecl)[1]), "class ")[2]
+    subnodes = children(classdecl)
+    if length(subnodes) > 1 && kind(subnodes[1]) == Clang.CXCursor_CXXBaseSpecifier
+        base_class = get_qualified_basename(subnodes[1])
+        if !isempty(base_class)
 
             ctx.outputSupertypes *= "template<> struct SuperType<$full_name> { typedef $base_class type; };\n"
 
