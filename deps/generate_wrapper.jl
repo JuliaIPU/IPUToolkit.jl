@@ -1,6 +1,7 @@
 ##
 using Clang
 using Clang.LibClang
+using Clang.Generators
 using JSON
 ##
 
@@ -66,14 +67,14 @@ end
 function get_namespace(cursor::CLCursor)
     tmpcursor = cursor
 
-    while spelling(kind(tmpcursor)) != "Namespace" && Clang.getCursorLexicalParent(tmpcursor) != tmpcursor
-        tmpcursor = Clang.getCursorLexicalParent(tmpcursor)
+    while spelling(kind(tmpcursor)) != "Namespace" && Clang.getCursorSemanticParent(tmpcursor) != tmpcursor
+        tmpcursor = Clang.getCursorSemanticParent(tmpcursor)
     end
 
     if get_full_name(tmpcursor) == ""
         tmpcursor = Clang.clang_getCursorDefinition(cursor)
-        while spelling(kind(tmpcursor)) != "Namespace" && Clang.getCursorLexicalParent(tmpcursor) != tmpcursor
-            tmpcursor = Clang.getCursorLexicalParent(tmpcursor)
+        while spelling(kind(tmpcursor)) != "Namespace" && Clang.getCursorSemanticParent(tmpcursor) != tmpcursor
+            tmpcursor = Clang.getCursorSemanticParent(tmpcursor)
         end
         return get_full_name(tmpcursor)
     end
@@ -83,8 +84,8 @@ end
 
 function get_class_name(cursor::CLCursor)
     tmpcursor = cursor
-    while spelling(kind(tmpcursor)) != "StructDecl" && spelling(kind(tmpcursor)) != "ClassDecl" && Clang.getCursorLexicalParent(tmpcursor) != tmpcursor
-        tmpcursor = Clang.getCursorLexicalParent(tmpcursor)
+    while spelling(kind(tmpcursor)) != "StructDecl" && spelling(kind(tmpcursor)) != "ClassDecl" && Clang.getCursorSemanticParent(tmpcursor) != tmpcursor
+        tmpcursor = Clang.getCursorSemanticParent(tmpcursor)
     end
     return get_full_name(tmpcursor)
 end
@@ -188,7 +189,7 @@ end
 function arg_list(method::CLCursor, types=true::Bool, cutoff=Inf, varnames=true::Bool)
     Clang.getNumArguments(Clang.getCursorType(method)) == 0 && return ""
     cutoff == 0 && return ""
-    arglist = get_full_name(method)
+    arglist = get_full_name(method) # -> spelling(method)
     arglist = split(arglist, "(")[2]
     arglist = split(arglist, ")")[1]
     # TODO: this is **really** not a good way to do this
@@ -419,7 +420,7 @@ function enum_const_handler(ctx::BindgenContext, decl::CLCursor)::Tuple{Union{No
 
     full_name = get_full_name(decl)
     julia_name = get_julia_name(decl)
-    parent_name = get_julia_name(Clang.getCursorLexicalParent(decl))
+    parent_name = get_julia_name(Clang.getCursorSemanticParent(decl))
     return "mod.set_const(\"$parent_name$julia_name\", $full_name);", nothing
 end
 
@@ -606,7 +607,7 @@ function gen_bindings(headers::Vector{String}, blacklist::Vector{String})
         println(io, "#include <$(header)>")
     end
 
-    includes = get_system_includes()
+    includes = [joinpath(@__DIR__, "wrapper", "3.3", "include")]
     ctx = DefaultBindgenContext()
     ctx.searched_headers = resolve_headers(headers, includes)
     ctx.blacklisted_headers = resolve_headers(blacklist, includes)
@@ -618,7 +619,14 @@ function gen_bindings(headers::Vector{String}, blacklist::Vector{String})
     tus = []
     symbol_names = String[]
     # add compiler flags
-    clang_args = ["-I"*inc for inc in includes]
+    # clang_args = ["-I"*inc for inc in includes]
+    # cross-compiling setup for DEBUG:
+    args = get_default_args("x86_64-linux-gnu", is_cxx=true, version=v"9.1.0")
+    append!(args, ["-I"*inc for inc in includes])
+    push!(args, "-nostdinc++", "-nostdlib++")
+    push!(args, "-xc++")
+    # push!(args, "-v")
+    clang_args = args
     for h in ctx.searched_headers
         tu = Clang.TranslationUnit(idx, h, clang_args, flags)
         push!(tus, tu)
@@ -659,3 +667,5 @@ function generate_wrapper()
 
     return nothing
 end
+
+generate_wrapper()
