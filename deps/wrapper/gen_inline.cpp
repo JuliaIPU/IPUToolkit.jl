@@ -278,9 +278,9 @@ mod.set_const("LayoutVectorLayoutScaledPtr32", poplar::layout::Vector::ScaledPtr
 mod.set_const("LayoutVectorLayoutScaledPtr64", poplar::layout::Vector::ScaledPtr64);
 // poplar::layout::Vector::ScaledPtr128__EnumConstantDecl
 mod.set_const("LayoutVectorLayoutScaledPtr128", poplar::layout::Vector::ScaledPtr128);
-// poplar::layout::to_string(const poplar::layout::Vector)__FunctionDecl
+// poplar::layout::to_string(const Vector)__FunctionDecl
 { using namespace poplar::layout;
-mod.method("LayoutTo_String", [](const poplar::layout::Vector a) {return poplar::layout::to_string(a);} ); }
+mod.method("LayoutTo_String", [](const Vector a) {return poplar::layout::to_string(a);} ); }
 // poplar::layout::VectorList::NotAVector__EnumConstantDecl
 mod.set_const("LayoutVectorListLayoutNotAVector", poplar::layout::VectorList::NotAVector);
 // poplar::layout::VectorList::OnePtr__EnumConstantDecl
@@ -295,6 +295,13 @@ mod.set_const("LayoutVectorListLayoutScaledPtr128", poplar::layout::VectorList::
 mod.set_const("LayoutVectorListLayoutDeltaN", poplar::layout::VectorList::DeltaN);
 // poplar::layout::VectorList::DeltaNElements__EnumConstantDecl
 mod.set_const("LayoutVectorListLayoutDeltaNElements", poplar::layout::VectorList::DeltaNElements);
+// poplar::layout::to_string(const VectorList)__FunctionDecl
+{ using namespace poplar::layout;
+mod.method("LayoutTo_String", [](const VectorList a) {return poplar::layout::to_string(a);} ); }
+// std::string::StringRef(const StringRef &)__CXXConstructor
+{ using namespace poplar;
+JLStringRef.constructor<const StringRef &>();
+}
 // std::string::StringRef(const std::string &)__CXXConstructor
 { using namespace poplar;
 JLStringRef.constructor<const std::string &>();
@@ -311,21 +318,21 @@ JLStringRef.constructor<const char *>();
 { using namespace poplar;
 JLStringRef.method("StringRefCloneAsString", [](poplar::StringRef& cl) {return cl.cloneAsString();});
 }
-// poplar::OptionFlags::iterator::iterator(const poplar::OptionFlags::iterator &)__CXXConstructor
+// poplar::OptionFlags::iterator::iterator(const iterator &)__CXXConstructor
 { using namespace poplar;
-JLOptionFlagsiterator.constructor<const poplar::OptionFlags::iterator &>();
+JLOptionFlagsiterator.constructor<const iterator &>();
 }
-// poplar::OptionFlags::OptionFlags(const poplar::OptionFlags &)__CXXConstructor
+// poplar::OptionFlags::OptionFlags(const OptionFlags &)__CXXConstructor
 { using namespace poplar;
-JLOptionFlags.constructor<const poplar::OptionFlags &>();
+JLOptionFlags.constructor<const OptionFlags &>();
 }
-// poplar::OptionFlags::set(std::string, std::string)__CXXMethod
+// poplar::OptionFlags::set(StringRef, StringRef)__CXXMethod
 { using namespace poplar;
-JLOptionFlags.method("OptionFlagsSet", [](poplar::OptionFlags& cl, std::string a, std::string b) {return cl.set(a, b);});
+JLOptionFlags.method("OptionFlagsSet", [](poplar::OptionFlags& cl, StringRef a, StringRef b) {return cl.set(a, b);});
 }
-// poplar::OptionFlags::at(std::string)__CXXMethod
+// poplar::OptionFlags::at(StringRef)__CXXMethod
 { using namespace poplar;
-JLOptionFlags.method("OptionFlagsAt", [](poplar::OptionFlags& cl, std::string a) {return cl.at(a);});
+JLOptionFlags.method("OptionFlagsAt", [](poplar::OptionFlags& cl, StringRef a) {return cl.at(a);});
 }
 // poplar::OptionFlags::clear()__CXXMethod
 { using namespace poplar;
@@ -339,22 +346,22 @@ JLOptionFlags.method("OptionFlagsBegin", [](poplar::OptionFlags& cl) {return cl.
 { using namespace poplar;
 JLOptionFlags.method("OptionFlagsEnd", [](poplar::OptionFlags& cl) {return cl.end();});
 }
-// poplar::getAsProfileValue(const poplar::OptionFlags &)__FunctionDecl
+// poplar::getAsProfileValue(const OptionFlags &)__FunctionDecl
 { using namespace poplar;
-mod.method("PoplarGetAsProfileValue", [](const poplar::OptionFlags & a) {return poplar::getAsProfileValue(a);} ); }
-// poplar::readJSON(std::string, poplar::OptionFlags &)__FunctionDecl
+mod.method("PoplarGetAsProfileValue", [](const OptionFlags & a) {return poplar::getAsProfileValue(a);} ); }
+// poplar::readJSON(StringRef, OptionFlags &)__FunctionDecl
 { using namespace poplar;
-mod.method("PoplarReadJSON", [](std::string a, poplar::OptionFlags & b) {return poplar::readJSON(a, b);} ); }
-// poplar::readJSONFromEnv(std::string, poplar::OptionFlags &)__FunctionDecl
+mod.method("PoplarReadJSON", [](StringRef a, OptionFlags & b) {return poplar::readJSON(a, b);} ); }
+// poplar::readJSONFromEnv(StringRef, OptionFlags &)__FunctionDecl
 { using namespace poplar;
-mod.method("PoplarReadJSONFromEnv", [](std::string a, poplar::OptionFlags & b) {return poplar::readJSONFromEnv(a, b);} ); }
+mod.method("PoplarReadJSONFromEnv", [](StringRef a, OptionFlags & b) {return poplar::readJSONFromEnv(a, b);} ); }
 // poplar::GlobalExchangeFlow::GlobalExchangeFlow(unsigned int, unsigned int)__CXXConstructor
 { using namespace poplar;
 JLGlobalExchangeFlow.constructor<unsigned int, unsigned int>();
 }
-// poplar::GlobalExchangeConstraint::GlobalExchangeConstraint(double, ArrayRef<poplar::GlobalExchangeFlow>)__CXXConstructor
+// poplar::GlobalExchangeConstraint::GlobalExchangeConstraint(double, ArrayRef<GlobalExchangeFlow>)__CXXConstructor
 { using namespace poplar;
-JLGlobalExchangeConstraint.constructor<double, ArrayRef<poplar::GlobalExchangeFlow>>();
+JLGlobalExchangeConstraint.constructor<double, jlcxx::ArrayRef<GlobalExchangeFlow>>();
 }
 // poplar::IpuLinkConfiguration::Default__EnumConstantDecl
 mod.set_const("PoplarIpuLinkConfigurationPoplarDefault", poplar::IpuLinkConfiguration::Default);
@@ -372,9 +379,9 @@ mod.set_const("PoplarTargetTypePoplarIPU", poplar::TargetType::IPU);
 mod.set_const("PoplarTargetTypePoplarIPU_MODEL", poplar::TargetType::IPU_MODEL);
 // poplar::TargetType::CPU__EnumConstantDecl
 mod.set_const("PoplarTargetTypePoplarCPU", poplar::TargetType::CPU);
-// poplar::Type::Type(const poplar::Type &)__CXXConstructor
+// poplar::Type::Type(const Type &)__CXXConstructor
 { using namespace poplar;
-JLType.constructor<const poplar::Type &>();
+JLType.constructor<const Type &>();
 }
 // poplar::Type::toString()__CXXMethod
 { using namespace poplar;
@@ -392,9 +399,9 @@ JLType.method("TypeIsFloatingPoint", [](poplar::Type& cl) {return cl.isFloatingP
 { using namespace poplar;
 JLType.method("TypeRequiresMetadata", [](poplar::Type& cl) {return cl.requiresMetadata();});
 }
-// poplar::Target::Target(const poplar::Target &)__CXXConstructor
+// poplar::Target::Target(const Target &)__CXXConstructor
 { using namespace poplar;
-JLTarget.constructor<const poplar::Target &>();
+JLTarget.constructor<const Target &>();
 }
 // poplar::Target::hash()__CXXMethod
 { using namespace poplar;
@@ -540,21 +547,21 @@ JLTarget.method("TargetGetQuarterVectorWidth", [](poplar::Target& cl) {return cl
 { using namespace poplar;
 JLTarget.method("TargetGetVectorWidth", [](poplar::Target& cl, const poplar::Type & a) {return cl.getVectorWidth(a);});
 }
-// poplar::Target::getWeightsPerConvUnit(const poplar::Type &)__CXXMethod
+// poplar::Target::getWeightsPerConvUnit(const Type &)__CXXMethod
 { using namespace poplar;
-JLTarget.method("TargetGetWeightsPerConvUnit", [](poplar::Target& cl, const poplar::Type & a) {return cl.getWeightsPerConvUnit(a);});
+JLTarget.method("TargetGetWeightsPerConvUnit", [](poplar::Target& cl, const Type & a) {return cl.getWeightsPerConvUnit(a);});
 }
-// poplar::Target::getConvUnitInputLoadElemsPerCycle(const poplar::Type &)__CXXMethod
+// poplar::Target::getConvUnitInputLoadElemsPerCycle(const Type &)__CXXMethod
 { using namespace poplar;
-JLTarget.method("TargetGetConvUnitInputLoadElemsPerCycle", [](poplar::Target& cl, const poplar::Type & a) {return cl.getConvUnitInputLoadElemsPerCycle(a);});
+JLTarget.method("TargetGetConvUnitInputLoadElemsPerCycle", [](poplar::Target& cl, const Type & a) {return cl.getConvUnitInputLoadElemsPerCycle(a);});
 }
-// poplar::Target::getConvUnitMaxPipelineDepth(const poplar::Type &)__CXXMethod
+// poplar::Target::getConvUnitMaxPipelineDepth(const Type &)__CXXMethod
 { using namespace poplar;
-JLTarget.method("TargetGetConvUnitMaxPipelineDepth", [](poplar::Target& cl, const poplar::Type & a) {return cl.getConvUnitMaxPipelineDepth(a);});
+JLTarget.method("TargetGetConvUnitMaxPipelineDepth", [](poplar::Target& cl, const Type & a) {return cl.getConvUnitMaxPipelineDepth(a);});
 }
-// poplar::Target::getNumConvUnits(const poplar::Type &, const poplar::Type &)__CXXMethod
+// poplar::Target::getNumConvUnits(const Type &, const Type &)__CXXMethod
 { using namespace poplar;
-JLTarget.method("TargetGetNumConvUnits", [](poplar::Target& cl, const poplar::Type & a, const poplar::Type & b) {return cl.getNumConvUnits(a, b);});
+JLTarget.method("TargetGetNumConvUnits", [](poplar::Target& cl, const Type & a, const Type & b) {return cl.getNumConvUnits(a, b);});
 }
 // poplar::Target::getMaxIPUSyncDelay()__CXXMethod
 { using namespace poplar;
@@ -584,9 +591,9 @@ JLTarget.method("TargetGetTileHostExchangeContext", [](poplar::Target& cl, unsig
 { using namespace poplar;
 JLTarget.method("TargetGetTileHostExchangeContextPosition", [](poplar::Target& cl, unsigned int a) {return cl.getTileHostExchangeContextPosition(a);});
 }
-// poplar::Target::getTypeSize(const poplar::Type &)__CXXMethod
+// poplar::Target::getTypeSize(const Type &)__CXXMethod
 { using namespace poplar;
-JLTarget.method("TargetGetTypeSize", [](poplar::Target& cl, const poplar::Type & a) {return cl.getTypeSize(a);});
+JLTarget.method("TargetGetTypeSize", [](poplar::Target& cl, const Type & a) {return cl.getTypeSize(a);});
 }
 // poplar::Target::getAtomicStoreGranularity()__CXXMethod
 { using namespace poplar;
@@ -634,33 +641,33 @@ JLTarget.method("TargetCreateCPUTarget", [](poplar::Target& cl) {return cl.creat
 JLTarget.method("TargetCreateCPUTarget", [](poplar::Target& cl, bool a) {return cl.createCPUTarget(a);});
 JLTarget.method("TargetCreateCPUTarget", [](poplar::Target& cl, bool a, unsigned int b) {return cl.createCPUTarget(a, b);});
 }
-// poplar::Target::createIPUTarget(std::string, const poplar::OptionFlags &)__CXXMethod
+// poplar::Target::createIPUTarget(StringRef, const OptionFlags &)__CXXMethod
 { using namespace poplar;
-JLTarget.method("TargetCreateIPUTarget", [](poplar::Target& cl, std::string a) {return cl.createIPUTarget(a);});
-JLTarget.method("TargetCreateIPUTarget", [](poplar::Target& cl, std::string a, const poplar::OptionFlags & b) {return cl.createIPUTarget(a, b);});
+JLTarget.method("TargetCreateIPUTarget", [](poplar::Target& cl, StringRef a) {return cl.createIPUTarget(a);});
+JLTarget.method("TargetCreateIPUTarget", [](poplar::Target& cl, StringRef a, const OptionFlags & b) {return cl.createIPUTarget(a, b);});
 }
-// poplar::Target::createIPUTarget(unsigned int, std::string, const poplar::OptionFlags &)__CXXMethod
+// poplar::Target::createIPUTarget(unsigned int, StringRef, const OptionFlags &)__CXXMethod
 { using namespace poplar;
-JLTarget.method("TargetCreateIPUTarget", [](poplar::Target& cl, unsigned int a, std::string b) {return cl.createIPUTarget(a, b);});
-JLTarget.method("TargetCreateIPUTarget", [](poplar::Target& cl, unsigned int a, std::string b, const poplar::OptionFlags & c) {return cl.createIPUTarget(a, b, c);});
+JLTarget.method("TargetCreateIPUTarget", [](poplar::Target& cl, unsigned int a, StringRef b) {return cl.createIPUTarget(a, b);});
+JLTarget.method("TargetCreateIPUTarget", [](poplar::Target& cl, unsigned int a, StringRef b, const OptionFlags & c) {return cl.createIPUTarget(a, b, c);});
 }
-// poplar::Target::createIPUTarget(unsigned int, unsigned int, std::string, const poplar::OptionFlags &)__CXXMethod
+// poplar::Target::createIPUTarget(unsigned int, unsigned int, StringRef, const OptionFlags &)__CXXMethod
 { using namespace poplar;
-JLTarget.method("TargetCreateIPUTarget", [](poplar::Target& cl, unsigned int a, unsigned int b, std::string c) {return cl.createIPUTarget(a, b, c);});
-JLTarget.method("TargetCreateIPUTarget", [](poplar::Target& cl, unsigned int a, unsigned int b, std::string c, const poplar::OptionFlags & d) {return cl.createIPUTarget(a, b, c, d);});
+JLTarget.method("TargetCreateIPUTarget", [](poplar::Target& cl, unsigned int a, unsigned int b, StringRef c) {return cl.createIPUTarget(a, b, c);});
+JLTarget.method("TargetCreateIPUTarget", [](poplar::Target& cl, unsigned int a, unsigned int b, StringRef c, const OptionFlags & d) {return cl.createIPUTarget(a, b, c, d);});
 }
-// poplar::copyDeviceHalfToFloat(const poplar::Target &, const void *, float *, std::size_t)__FunctionDecl
+// poplar::copyDeviceHalfToFloat(const Target &, const void *, float *, std::size_t)__FunctionDecl
 { using namespace poplar;
-mod.method("PoplarCopyDeviceHalfToFloat", [](const poplar::Target & a, const void * b, float * c, std::size_t d) {return poplar::copyDeviceHalfToFloat(a, b, c, d);} ); }
-// poplar::copyFloatToDeviceHalf(const poplar::Target &, const float *, void *, std::size_t)__FunctionDecl
+mod.method("PoplarCopyDeviceHalfToFloat", [](const Target & a, const void * b, float * c, std::size_t d) {return poplar::copyDeviceHalfToFloat(a, b, c, d);} ); }
+// poplar::copyFloatToDeviceHalf(const Target &, const float *, void *, std::size_t)__FunctionDecl
 { using namespace poplar;
-mod.method("PoplarCopyFloatToDeviceHalf", [](const poplar::Target & a, const float * b, void * c, std::size_t d) {return poplar::copyFloatToDeviceHalf(a, b, c, d);} ); }
-// poplar::copyDeviceHalfToDouble(const poplar::Target &, const void *, double *, std::size_t)__FunctionDecl
+mod.method("PoplarCopyFloatToDeviceHalf", [](const Target & a, const float * b, void * c, std::size_t d) {return poplar::copyFloatToDeviceHalf(a, b, c, d);} ); }
+// poplar::copyDeviceHalfToDouble(const Target &, const void *, double *, std::size_t)__FunctionDecl
 { using namespace poplar;
-mod.method("PoplarCopyDeviceHalfToDouble", [](const poplar::Target & a, const void * b, double * c, std::size_t d) {return poplar::copyDeviceHalfToDouble(a, b, c, d);} ); }
-// poplar::copyDoubleToDeviceHalf(const poplar::Target &, const double *, void *, std::size_t)__FunctionDecl
+mod.method("PoplarCopyDeviceHalfToDouble", [](const Target & a, const void * b, double * c, std::size_t d) {return poplar::copyDeviceHalfToDouble(a, b, c, d);} ); }
+// poplar::copyDoubleToDeviceHalf(const Target &, const double *, void *, std::size_t)__FunctionDecl
 { using namespace poplar;
-mod.method("PoplarCopyDoubleToDeviceHalf", [](const poplar::Target & a, const double * b, void * c, std::size_t d) {return poplar::copyDoubleToDeviceHalf(a, b, c, d);} ); }
+mod.method("PoplarCopyDoubleToDeviceHalf", [](const Target & a, const double * b, void * c, std::size_t d) {return poplar::copyDoubleToDeviceHalf(a, b, c, d);} ); }
 // poplar::Device::getId()__CXXMethod
 { using namespace poplar;
 JLDevice.method("DeviceGetId", [](poplar::Device& cl) {return cl.getId();});
@@ -718,23 +725,23 @@ JLDevice.method("DeviceCreateVirtualDevice", [](poplar::Device& cl, unsigned int
 JLDevice.method("DeviceCreateCPUDevice", [](poplar::Device& cl) {return cl.createCPUDevice();});
 JLDevice.method("DeviceCreateCPUDevice", [](poplar::Device& cl, unsigned int a) {return cl.createCPUDevice(a);});
 }
-// poplar::Device::createSimulatorDevice(const poplar::Target &, const poplar::OptionFlags &)__CXXMethod
+// poplar::Device::createSimulatorDevice(const Target &, const OptionFlags &)__CXXMethod
 { using namespace poplar;
-JLDevice.method("DeviceCreateSimulatorDevice", [](poplar::Device& cl, const poplar::Target & a) {return cl.createSimulatorDevice(a);});
-JLDevice.method("DeviceCreateSimulatorDevice", [](poplar::Device& cl, const poplar::Target & a, const poplar::OptionFlags & b) {return cl.createSimulatorDevice(a, b);});
+JLDevice.method("DeviceCreateSimulatorDevice", [](poplar::Device& cl, const Target & a) {return cl.createSimulatorDevice(a);});
+JLDevice.method("DeviceCreateSimulatorDevice", [](poplar::Device& cl, const Target & a, const OptionFlags & b) {return cl.createSimulatorDevice(a, b);});
 }
-// poplar::DeviceManager::DeviceManager(const poplar::DeviceManager &)__CXXConstructor
+// poplar::DeviceManager::DeviceManager(const DeviceManager &)__CXXConstructor
 { using namespace poplar;
-JLDeviceManager.constructor<const poplar::DeviceManager &>();
+JLDeviceManager.constructor<const DeviceManager &>();
 }
 // poplar::DeviceManager::getNumDevices()__CXXMethod
 { using namespace poplar;
 JLDeviceManager.method("DeviceManagerGetNumDevices", [](poplar::DeviceManager& cl) {return cl.getNumDevices();});
 }
-// poplar::DeviceManager::getDevice(unsigned int, const poplar::OptionFlags &)__CXXMethod
+// poplar::DeviceManager::getDevice(unsigned int, const OptionFlags &)__CXXMethod
 { using namespace poplar;
 JLDeviceManager.method("DeviceManagerGetDevice", [](poplar::DeviceManager& cl, unsigned int a) {return cl.getDevice(a);});
-JLDeviceManager.method("DeviceManagerGetDevice", [](poplar::DeviceManager& cl, unsigned int a, const poplar::OptionFlags & b) {return cl.getDevice(a, b);});
+JLDeviceManager.method("DeviceManagerGetDevice", [](poplar::DeviceManager& cl, unsigned int a, const OptionFlags & b) {return cl.getDevice(a, b);});
 }
 // poplar::DeviceManager::getChildDeviceIds(unsigned int, unsigned int)__CXXMethod
 { using namespace poplar;
@@ -762,12 +769,12 @@ mod.set_const("PoplarCodeletFileTypePoplarAuto", poplar::CodeletFileType::Auto);
 // poplar::getCodeletFileType(const char *)__FunctionDecl
 { using namespace poplar;
 mod.method("PoplarGetCodeletFileType", [](const char * a) {return poplar::getCodeletFileType(a);} ); }
-// poplar::getExtensionFromFileType(poplar::CodeletFileType)__FunctionDecl
+// poplar::getExtensionFromFileType(CodeletFileType)__FunctionDecl
 { using namespace poplar;
-mod.method("PoplarGetExtensionFromFileType", [](poplar::CodeletFileType a) {return poplar::getExtensionFromFileType(a);} ); }
-// poplar::getLanguageOption(poplar::CodeletFileType)__FunctionDecl
+mod.method("PoplarGetExtensionFromFileType", [](CodeletFileType a) {return poplar::getExtensionFromFileType(a);} ); }
+// poplar::getLanguageOption(CodeletFileType)__FunctionDecl
 { using namespace poplar;
-mod.method("PoplarGetLanguageOption", [](poplar::CodeletFileType a) {return poplar::getLanguageOption(a);} ); }
+mod.method("PoplarGetLanguageOption", [](CodeletFileType a) {return poplar::getLanguageOption(a);} ); }
 // poplar::DataStreamType::HostToDeviceFIFO__EnumConstantDecl
 mod.set_const("PoplarDataStreamTypePoplarHostToDeviceFIFO", poplar::DataStreamType::HostToDeviceFIFO);
 // poplar::DataStreamType::DeviceToHostFIFO__EnumConstantDecl
@@ -776,22 +783,22 @@ mod.set_const("PoplarDataStreamTypePoplarDeviceToHostFIFO", poplar::DataStreamTy
 mod.set_const("PoplarDataStreamTypePoplarHostToDeviceBuffer", poplar::DataStreamType::HostToDeviceBuffer);
 // poplar::DataStreamType::DeviceToHostBuffer__EnumConstantDecl
 mod.set_const("PoplarDataStreamTypePoplarDeviceToHostBuffer", poplar::DataStreamType::DeviceToHostBuffer);
-// poplar::isDeviceToHost(poplar::DataStreamType)__FunctionDecl
+// poplar::isDeviceToHost(DataStreamType)__FunctionDecl
 { using namespace poplar;
-mod.method("PoplarIsDeviceToHost", [](poplar::DataStreamType a) {return poplar::isDeviceToHost(a);} ); }
-// poplar::isHostToDevice(poplar::DataStreamType)__FunctionDecl
+mod.method("PoplarIsDeviceToHost", [](DataStreamType a) {return poplar::isDeviceToHost(a);} ); }
+// poplar::isHostToDevice(DataStreamType)__FunctionDecl
 { using namespace poplar;
-mod.method("PoplarIsHostToDevice", [](poplar::DataStreamType a) {return poplar::isHostToDevice(a);} ); }
-// poplar::isRemoteBuffer(poplar::DataStreamType)__FunctionDecl
+mod.method("PoplarIsHostToDevice", [](DataStreamType a) {return poplar::isHostToDevice(a);} ); }
+// poplar::isRemoteBuffer(DataStreamType)__FunctionDecl
 { using namespace poplar;
-mod.method("PoplarIsRemoteBuffer", [](poplar::DataStreamType a) {return poplar::isRemoteBuffer(a);} ); }
+mod.method("PoplarIsRemoteBuffer", [](DataStreamType a) {return poplar::isRemoteBuffer(a);} ); }
 // poplar::ReplicatedStreamMode::REPLICATE__EnumConstantDecl
 mod.set_const("PoplarReplicatedStreamModePoplarREPLICATE", poplar::ReplicatedStreamMode::REPLICATE);
 // poplar::ReplicatedStreamMode::BROADCAST__EnumConstantDecl
 mod.set_const("PoplarReplicatedStreamModePoplarBROADCAST", poplar::ReplicatedStreamMode::BROADCAST);
-// poplar::DataStream::DataStream(const poplar::DataStream &)__CXXConstructor
+// poplar::DataStream::DataStream(const DataStream &)__CXXConstructor
 { using namespace poplar;
-JLDataStream.constructor<const poplar::DataStream &>();
+JLDataStream.constructor<const DataStream &>();
 }
 // poplar::DataStream::handle()__CXXMethod
 { using namespace poplar;
@@ -817,9 +824,9 @@ JLDataStream.method("DataStreamType", [](poplar::DataStream& cl) {return cl.type
 { using namespace poplar;
 JLDataStream.method("DataStreamElementType", [](poplar::DataStream& cl) {return cl.elementType();});
 }
-// poplar::RemoteBuffer::RemoteBuffer(const poplar::RemoteBuffer &)__CXXConstructor
+// poplar::RemoteBuffer::RemoteBuffer(const RemoteBuffer &)__CXXConstructor
 { using namespace poplar;
-JLRemoteBuffer.constructor<const poplar::RemoteBuffer &>();
+JLRemoteBuffer.constructor<const RemoteBuffer &>();
 }
 // poplar::RemoteBuffer::handle()__CXXMethod
 { using namespace poplar;
@@ -887,9 +894,9 @@ JLProfileValue.method("ProfileValueAsUint", [](poplar::ProfileValue& cl) {return
 { using namespace poplar;
 JLProfileValue.method("ProfileValueAsDouble", [](poplar::ProfileValue& cl) {return cl.asDouble();});
 }
-// poplar::ProfileValue::getOrNull(std::string)__CXXMethod
+// poplar::ProfileValue::getOrNull(StringRef)__CXXMethod
 { using namespace poplar;
-JLProfileValue.method("ProfileValueGetOrNull", [](poplar::ProfileValue& cl, std::string a) {return cl.getOrNull(a);});
+JLProfileValue.method("ProfileValueGetOrNull", [](poplar::ProfileValue& cl, StringRef a) {return cl.getOrNull(a);});
 }
 // poplar::ProfileValue::asMap()__CXXMethod
 { using namespace poplar;
@@ -927,33 +934,33 @@ JLProfileValue.method("ProfileValueSum2DInt", [](poplar::ProfileValue& cl) {retu
 { using namespace poplar;
 JLProfileValue.method("ProfileValueSum2DUint", [](poplar::ProfileValue& cl) {return cl.sum2DUint();});
 }
-// poplar::ProfileValue::ProfileValue(poplar::ProfileValue::String)__CXXConstructor
+// poplar::ProfileValue::ProfileValue(String)__CXXConstructor
 { using namespace poplar;
-JLProfileValue.constructor<poplar::ProfileValue::String>();
+JLProfileValue.constructor<String>();
 }
-// poplar::ProfileValue::ProfileValue(poplar::ProfileValue::Vector)__CXXConstructor
+// poplar::ProfileValue::ProfileValue(Vector)__CXXConstructor
 { using namespace poplar;
-JLProfileValue.constructor<poplar::ProfileValue::Vector>();
+JLProfileValue.constructor<Vector>();
 }
-// poplar::ProfileValue::ProfileValue(poplar::ProfileValue::Map)__CXXConstructor
+// poplar::ProfileValue::ProfileValue(Map)__CXXConstructor
 { using namespace poplar;
-JLProfileValue.constructor<poplar::ProfileValue::Map>();
+JLProfileValue.constructor<Map>();
 }
-// poplar::ProfileValue::ProfileValue(poplar::ProfileValue::Number)__CXXConstructor
+// poplar::ProfileValue::ProfileValue(Number)__CXXConstructor
 { using namespace poplar;
-JLProfileValue.constructor<poplar::ProfileValue::Number>();
+JLProfileValue.constructor<Number>();
 }
-// poplar::ProfileValue::ProfileValue(poplar::ProfileValue::Boolean)__CXXConstructor
+// poplar::ProfileValue::ProfileValue(Boolean)__CXXConstructor
 { using namespace poplar;
-JLProfileValue.constructor<poplar::ProfileValue::Boolean>();
+JLProfileValue.constructor<Boolean>();
 }
 // poplar::ProfileValue::ProfileValue(const char *)__CXXConstructor
 { using namespace poplar;
 JLProfileValue.constructor<const char *>();
 }
-// poplar::ProfileValue::ProfileValue(const poplar::ProfileValue &)__CXXConstructor
+// poplar::ProfileValue::ProfileValue(const ProfileValue &)__CXXConstructor
 { using namespace poplar;
-JLProfileValue.constructor<const poplar::ProfileValue &>();
+JLProfileValue.constructor<const ProfileValue &>();
 }
 // poplar::SerializationFormat::Binary__EnumConstantDecl
 mod.set_const("PoplarSerializationFormatPoplarBinary", poplar::SerializationFormat::Binary);
@@ -990,9 +997,9 @@ JLSourceLocation.method("SourceLocationCurrent", [](poplar::SourceLocation& cl, 
 mod.set_const("PoplarDebugSerializationFormatPoplarJSON", poplar::DebugSerializationFormat::JSON);
 // poplar::DebugSerializationFormat::CBOR__EnumConstantDecl
 mod.set_const("PoplarDebugSerializationFormatPoplarCBOR", poplar::DebugSerializationFormat::CBOR);
-// poplar::DebugInfo::DebugInfo(const poplar::DebugContext &, std::string)__CXXConstructor
+// poplar::DebugInfo::DebugInfo(const DebugContext &, std::string)__CXXConstructor
 { using namespace poplar;
-JLDebugInfo.constructor<std::string, std::string>();
+JLDebugInfo.constructor<const DebugContext &, std::string>();
 }
 // poplar::DebugInfo::getId()__CXXMethod
 { using namespace poplar;
@@ -1002,42 +1009,42 @@ JLDebugInfo.method("DebugInfoGetId", [](poplar::DebugInfo& cl) {return cl.getId(
 { using namespace poplar;
 JLDebugInfo.method("DebugInfoGetPathName", [](poplar::DebugInfo& cl) {return cl.getPathName();});
 }
-// poplar::DebugInfo::initializeStreamer(const std::string &, const poplar::DebugSerializationFormat &)__CXXMethod
+// poplar::DebugInfo::initializeStreamer(const std::string &, const DebugSerializationFormat &)__CXXMethod
 { using namespace poplar;
 JLDebugInfo.method("DebugInfoInitializeStreamer", [](poplar::DebugInfo& cl, const std::string & a) {return cl.initializeStreamer(a);});
-JLDebugInfo.method("DebugInfoInitializeStreamer", [](poplar::DebugInfo& cl, const std::string & a, const poplar::DebugSerializationFormat & b) {return cl.initializeStreamer(a, b);});
+JLDebugInfo.method("DebugInfoInitializeStreamer", [](poplar::DebugInfo& cl, const std::string & a, const DebugSerializationFormat & b) {return cl.initializeStreamer(a, b);});
 }
 // poplar::DebugInfo::closeStreamer()__CXXMethod
 { using namespace poplar;
 JLDebugInfo.method("DebugInfoCloseStreamer", [](poplar::DebugInfo& cl) {return cl.closeStreamer();});
 }
-// poplar::DebugInfo::setValue(std::string, poplar::ProfileValue)__CXXMethod
+// poplar::DebugInfo::setValue(std::string, ProfileValue)__CXXMethod
 { using namespace poplar;
-JLDebugInfo.method("DebugInfoSetValue", [](poplar::DebugInfo& cl, std::string a, poplar::ProfileValue b) {return cl.setValue(a, b);});
+JLDebugInfo.method("DebugInfoSetValue", [](poplar::DebugInfo& cl, std::string a, ProfileValue b) {return cl.setValue(a, b);});
 }
-// poplar::DebugNameAndId::DebugNameAndId(std::string, poplar::DebugId, std::string)__CXXConstructor
+// poplar::DebugNameAndId::DebugNameAndId(std::string, DebugId, std::string)__CXXConstructor
 { using namespace poplar;
 JLDebugNameAndId.constructor<std::string>();
-JLDebugNameAndId.constructor<std::string, poplar::DebugId>();
-JLDebugNameAndId.constructor<std::string, poplar::DebugId, std::string>();
+JLDebugNameAndId.constructor<std::string, DebugId>();
+JLDebugNameAndId.constructor<std::string, DebugId, std::string>();
 }
 // poplar::DebugNameAndId::DebugNameAndId(const char *)__CXXConstructor
 { using namespace poplar;
 JLDebugNameAndId.constructor<const char *>();
 }
-// poplar::DebugNameAndId::DebugNameAndId(poplar::DebugId)__CXXConstructor
+// poplar::DebugNameAndId::DebugNameAndId(DebugId)__CXXConstructor
 { using namespace poplar;
-JLDebugNameAndId.constructor<poplar::DebugId>();
+JLDebugNameAndId.constructor<DebugId>();
 }
-// poplar::DebugNameAndId::DebugNameAndId(const poplar::DebugInfo &, std::string)__CXXConstructor
+// poplar::DebugNameAndId::DebugNameAndId(const DebugInfo &, std::string)__CXXConstructor
 { using namespace poplar;
-JLDebugNameAndId.constructor<const poplar::DebugInfo &>();
-JLDebugNameAndId.constructor<const poplar::DebugInfo &, std::string>();
+JLDebugNameAndId.constructor<const DebugInfo &>();
+JLDebugNameAndId.constructor<const DebugInfo &, std::string>();
 }
-// poplar::DebugNameAndId::DebugNameAndId(const poplar::DebugNameAndId &, std::string)__CXXConstructor
+// poplar::DebugNameAndId::DebugNameAndId(const DebugNameAndId &, StringRef)__CXXConstructor
 { using namespace poplar;
-JLDebugNameAndId.constructor<const poplar::DebugNameAndId &>();
-JLDebugNameAndId.constructor<const poplar::DebugNameAndId &, std::string>();
+JLDebugNameAndId.constructor<const DebugNameAndId &>();
+JLDebugNameAndId.constructor<const DebugNameAndId &, StringRef>();
 }
 // poplar::DebugNameAndId::getPathName()__CXXMethod
 { using namespace poplar;
@@ -1131,19 +1138,19 @@ mod.set_const("PoplarErrorCodePoplarHOST_LINK_DOWN", poplar::ErrorCode::HOST_LIN
 mod.set_const("PoplarErrorCodePoplarHOST_SYNC_TIMEOUT", poplar::ErrorCode::HOST_SYNC_TIMEOUT);
 // poplar::ErrorCode::IPU_MEMORY_FAILURE__EnumConstantDecl
 mod.set_const("PoplarErrorCodePoplarIPU_MEMORY_FAILURE", poplar::ErrorCode::IPU_MEMORY_FAILURE);
-// poplar::errorCodeToString(poplar::ErrorCode)__FunctionDecl
+// poplar::errorCodeToString(ErrorCode)__FunctionDecl
 { using namespace poplar;
-mod.method("PoplarErrorCodeToString", [](poplar::ErrorCode a) {return poplar::errorCodeToString(a);} ); }
-// poplar::errorCodeFromString(std::string)__FunctionDecl
+mod.method("PoplarErrorCodeToString", [](ErrorCode a) {return poplar::errorCodeToString(a);} ); }
+// poplar::errorCodeFromString(StringRef)__FunctionDecl
 { using namespace poplar;
-mod.method("PoplarErrorCodeFromString", [](std::string a) {return poplar::errorCodeFromString(a);} ); }
+mod.method("PoplarErrorCodeFromString", [](StringRef a) {return poplar::errorCodeFromString(a);} ); }
 // poplar::ErrorLocation::getTile()__CXXMethod
 { using namespace poplar;
 JLErrorLocation.method("ErrorLocationGetTile", [](poplar::ErrorLocation& cl) {return cl.getTile();});
 }
-// poplar::ErrorLocation::ErrorLocation(const poplar::ErrorLocation &)__CXXConstructor
+// poplar::ErrorLocation::ErrorLocation(const ErrorLocation &)__CXXConstructor
 { using namespace poplar;
-JLErrorLocation.constructor<const poplar::ErrorLocation &>();
+JLErrorLocation.constructor<const ErrorLocation &>();
 }
 // poplar::poplar_error::poplar_error(const std::string &)__CXXConstructor
 { using namespace poplar;
@@ -1153,9 +1160,9 @@ JLPoplar_error.constructor<const std::string &>();
 { using namespace poplar;
 JLPoplar_error.constructor<const char *>();
 }
-// poplar::poplar_error::attachSourceLocation(const poplar::DebugContext &)__CXXMethod
+// poplar::poplar_error::attachSourceLocation(const DebugContext &)__CXXMethod
 { using namespace poplar;
-JLPoplar_error.method("Poplar_errorAttachSourceLocation", [](poplar::poplar_error& cl, std::string a) {return cl.attachSourceLocation(a);});
+JLPoplar_error.method("Poplar_errorAttachSourceLocation", [](poplar::poplar_error& cl, const DebugContext & a) {return cl.attachSourceLocation(a);});
 }
 // poplar::poplar_error::what()__CXXMethod
 { using namespace poplar;
@@ -1417,13 +1424,13 @@ mod.set_const("PoplarRecoveryActionPoplarFULL_RESET", poplar::RecoveryAction::FU
 { using namespace poplar;
 JLRecoverable_runtime_error.method("Recoverable_runtime_errorGetRecoveryAction", [](poplar::recoverable_runtime_error& cl) {return cl.getRecoveryAction();});
 }
-// poplar::recoverable_runtime_error::recoverable_runtime_error(poplar::RecoveryAction, const std::string &)__CXXConstructor
+// poplar::recoverable_runtime_error::recoverable_runtime_error(RecoveryAction, const std::string &)__CXXConstructor
 { using namespace poplar;
-JLRecoverable_runtime_error.constructor<poplar::RecoveryAction, const std::string &>();
+JLRecoverable_runtime_error.constructor<RecoveryAction, const std::string &>();
 }
-// poplar::recoverable_runtime_error::recoverable_runtime_error(poplar::RecoveryAction, const char *)__CXXConstructor
+// poplar::recoverable_runtime_error::recoverable_runtime_error(RecoveryAction, const char *)__CXXConstructor
 { using namespace poplar;
-JLRecoverable_runtime_error.constructor<poplar::RecoveryAction, const char *>();
+JLRecoverable_runtime_error.constructor<RecoveryAction, const char *>();
 }
 // poplar::unrecoverable_runtime_error::unrecoverable_runtime_error(const std::string &)__CXXConstructor
 { using namespace poplar;
@@ -1481,9 +1488,9 @@ JLTypeTraits.method("TypeTraitsRequiresMetadata<>", [](poplar::TypeTraits& cl) {
 }
 // poplar::UpsampleMethod::REPEAT__EnumConstantDecl
 mod.set_const("PoplarUpsampleMethodPoplarREPEAT", poplar::UpsampleMethod::REPEAT);
-// poplar::Tensor::Tensor(const poplar::Tensor &)__CXXConstructor
+// poplar::Tensor::Tensor(const Tensor &)__CXXConstructor
 { using namespace poplar;
-JLTensor.constructor<const poplar::Tensor &>();
+JLTensor.constructor<const Tensor &>();
 }
 // poplar::Tensor::elementType()__CXXMethod
 { using namespace poplar;
@@ -1497,19 +1504,19 @@ JLTensor.method("TensorSlice", [](poplar::Tensor& cl, std::size_t a, std::size_t
 { using namespace poplar;
 JLTensor.method("TensorSlice", [](poplar::Tensor& cl, std::size_t a, std::size_t b) {return cl.slice(a, b);});
 }
-// poplar::Tensor::slice(const poplar::Interval &, unsigned int)__CXXMethod
+// poplar::Tensor::slice(const Interval &, unsigned int)__CXXMethod
 { using namespace poplar;
-JLTensor.method("TensorSlice", [](poplar::Tensor& cl, const poplar::Interval & a) {return cl.slice(a);});
-JLTensor.method("TensorSlice", [](poplar::Tensor& cl, const poplar::Interval & a, unsigned int b) {return cl.slice(a, b);});
+JLTensor.method("TensorSlice", [](poplar::Tensor& cl, const Interval & a) {return cl.slice(a);});
+JLTensor.method("TensorSlice", [](poplar::Tensor& cl, const Interval & a, unsigned int b) {return cl.slice(a, b);});
 }
 // poplar::Tensor::slice(ArrayRef<std::size_t>, ArrayRef<std::size_t>)__CXXMethod
 { using namespace poplar;
 JLTensor.method("TensorSlice", [](poplar::Tensor& cl, jlcxx::ArrayRef<std::size_t> a, jlcxx::ArrayRef<std::size_t> b) {return cl.slice(jlcxxToPoplar(a), jlcxxToPoplar(b));});
 }
-// poplar::Tensor::slices(ArrayRef<poplar::Interval>, unsigned int)__CXXMethod
+// poplar::Tensor::slices(ArrayRef<Interval>, unsigned int)__CXXMethod
 { using namespace poplar;
-JLTensor.method("TensorSlices", [](poplar::Tensor& cl, ArrayRef<poplar::Interval> a) {return cl.slices(a);});
-JLTensor.method("TensorSlices", [](poplar::Tensor& cl, ArrayRef<poplar::Interval> a, unsigned int b) {return cl.slices(a, b);});
+JLTensor.method("TensorSlices", [](poplar::Tensor& cl, jlcxx::ArrayRef<Interval> a) {return cl.slices(jlcxxToPoplar(a));});
+JLTensor.method("TensorSlices", [](poplar::Tensor& cl, jlcxx::ArrayRef<Interval> a, unsigned int b) {return cl.slices(jlcxxToPoplar(a), b);});
 }
 // poplar::Tensor::slices(const std::vector<std::vector<Interval>> &, unsigned int)__CXXMethod
 { using namespace poplar;
@@ -1570,17 +1577,17 @@ JLTensor.method("TensorTranspose", [](poplar::Tensor& cl) {return cl.transpose()
 { using namespace poplar;
 JLTensor.method("TensorSubSample", [](poplar::Tensor& cl, unsigned int a, unsigned int b) {return cl.subSample(a, b);});
 }
-// poplar::Tensor::upsample(unsigned int, unsigned int, poplar::UpsampleMethod)__CXXMethod
+// poplar::Tensor::upsample(unsigned int, unsigned int, UpsampleMethod)__CXXMethod
 { using namespace poplar;
-JLTensor.method("TensorUpsample", [](poplar::Tensor& cl, unsigned int a, unsigned int b, poplar::UpsampleMethod c) {return cl.upsample(a, b, c);});
+JLTensor.method("TensorUpsample", [](poplar::Tensor& cl, unsigned int a, unsigned int b, UpsampleMethod c) {return cl.upsample(a, b, c);});
 }
 // poplar::Tensor::broadcast(unsigned int, unsigned int)__CXXMethod
 { using namespace poplar;
 JLTensor.method("TensorBroadcast", [](poplar::Tensor& cl, unsigned int a, unsigned int b) {return cl.broadcast(a, b);});
 }
-// poplar::Tensor::reinterpret(const poplar::Type &)__CXXMethod
+// poplar::Tensor::reinterpret(const Type &)__CXXMethod
 { using namespace poplar;
-JLTensor.method("TensorReinterpret", [](poplar::Tensor& cl, const poplar::Type & a) {return cl.reinterpret(a);});
+JLTensor.method("TensorReinterpret", [](poplar::Tensor& cl, const Type & a) {return cl.reinterpret(a);});
 }
 // poplar::Tensor::reverse(unsigned int)__CXXMethod
 { using namespace poplar;
@@ -1626,9 +1633,9 @@ JLTensor.method("TensorGetContiguousRegions", [](poplar::Tensor& cl) {return cl.
 { using namespace poplar;
 JLTensor.method("TensorGetVarRegions", [](poplar::Tensor& cl) {return cl.getVarRegions();});
 }
-// poplar::Tensor::intersectsWith(const poplar::Tensor &)__CXXMethod
+// poplar::Tensor::intersectsWith(const Tensor &)__CXXMethod
 { using namespace poplar;
-JLTensor.method("TensorIntersectsWith", [](poplar::Tensor& cl, const poplar::Tensor & a) {return cl.intersectsWith(a);});
+JLTensor.method("TensorIntersectsWith", [](poplar::Tensor& cl, const Tensor & a) {return cl.intersectsWith(a);});
 }
 // poplar::Tensor::shapeToString()__CXXMethod
 { using namespace poplar;
@@ -1662,210 +1669,210 @@ JLTensor.method("TensorGetMetadata", [](poplar::Tensor& cl) {return cl.getMetada
 { using namespace poplar;
 JLTensor.method("TensorHasMetadata", [](poplar::Tensor& cl) {return cl.hasMetadata();});
 }
-// poplar::concat(ArrayRef<poplar::Tensor>, unsigned int)__FunctionDecl
+// poplar::concat(ArrayRef<Tensor>, unsigned int)__FunctionDecl
 { using namespace poplar;
-mod.method("PoplarConcat", [](ArrayRef<poplar::Tensor> a, unsigned int b) {return poplar::concat(a, b);} ); }
-// poplar::concat(const poplar::Tensor &, const poplar::Tensor &, unsigned int)__FunctionDecl
+mod.method("PoplarConcat", [](jlcxx::ArrayRef<Tensor> a, unsigned int b) {return poplar::concat(jlcxxToPoplar(a), b);} ); }
+// poplar::concat(const Tensor &, const Tensor &, unsigned int)__FunctionDecl
 { using namespace poplar;
-mod.method("PoplarConcat", [](const poplar::Tensor & a, const poplar::Tensor & b, unsigned int c) {return poplar::concat(a, b, c);} ); }
-// poplar::append(const poplar::Tensor &, const poplar::Tensor &, unsigned int)__FunctionDecl
+mod.method("PoplarConcat", [](const Tensor & a, const Tensor & b, unsigned int c) {return poplar::concat(a, b, c);} ); }
+// poplar::append(const Tensor &, const Tensor &, unsigned int)__FunctionDecl
 { using namespace poplar;
-mod.method("PoplarAppend", [](const poplar::Tensor & a, const poplar::Tensor & b, unsigned int c) {return poplar::append(a, b, c);} ); }
-// poplar::append(const poplar::Tensor &, const poplar::Tensor &)__FunctionDecl
+mod.method("PoplarAppend", [](const Tensor & a, const Tensor & b, unsigned int c) {return poplar::append(a, b, c);} ); }
+// poplar::append(const Tensor &, const Tensor &)__FunctionDecl
 { using namespace poplar;
-mod.method("PoplarAppend", [](const poplar::Tensor & a, const poplar::Tensor & b) {return poplar::append(a, b);} ); }
-// poplar::program::Program::Program(const poplar::program::Program &)__CXXConstructor
+mod.method("PoplarAppend", [](const Tensor & a, const Tensor & b) {return poplar::append(a, b);} ); }
+// poplar::program::Program::Program(const Program &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramProgram.constructor<const poplar::program::Program &>();
+JLProgramProgram.constructor<const Program &>();
 }
 // poplar::program::Program::isEmpty()__CXXMethod
 { using namespace poplar::program;
 JLProgramProgram.method("ProgramProgramIsEmpty", [](poplar::program::Program& cl) {return cl.isEmpty();});
 }
-// poplar::program::Execute::Execute(poplar::ComputeSet, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::Execute::Execute(ComputeSet, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramExecute.constructor<poplar::ComputeSet>();
-JLProgramExecute.constructor<poplar::ComputeSet, std::string>();
+JLProgramExecute.constructor<ComputeSet>();
+JLProgramExecute.constructor<ComputeSet, const DebugContext &>();
 }
-// poplar::program::Execute::Execute(poplar::ComputeSet, poplar::Tensor, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::Execute::Execute(ComputeSet, Tensor, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramExecute.constructor<poplar::ComputeSet, poplar::Tensor>();
-JLProgramExecute.constructor<poplar::ComputeSet, poplar::Tensor, std::string>();
+JLProgramExecute.constructor<ComputeSet, Tensor>();
+JLProgramExecute.constructor<ComputeSet, Tensor, const DebugContext &>();
 }
-// poplar::program::Sequence::add(const poplar::program::Program &)__CXXMethod
+// poplar::program::Sequence::add(const Program &)__CXXMethod
 { using namespace poplar::program;
-JLProgramSequence.method("ProgramSequenceAdd", [](poplar::program::Sequence& cl, const poplar::program::Program & a) {return cl.add(a);});
+JLProgramSequence.method("ProgramSequenceAdd", [](poplar::program::Sequence& cl, const Program & a) {return cl.add(a);});
 }
-// poplar::program::Repeat::Repeat(unsigned int, const poplar::program::Program &, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::Repeat::Repeat(unsigned int, const Program &, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramRepeat.constructor<unsigned int, const poplar::program::Program &>();
-JLProgramRepeat.constructor<unsigned int, const poplar::program::Program &, std::string>();
+JLProgramRepeat.constructor<unsigned int, const Program &>();
+JLProgramRepeat.constructor<unsigned int, const Program &, const DebugContext &>();
 }
-// poplar::program::RepeatWhileFalse::RepeatWhileFalse(const poplar::program::Program &, poplar::Tensor, const poplar::program::Program &, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::RepeatWhileFalse::RepeatWhileFalse(const Program &, Tensor, const Program &, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramRepeatWhileFalse.constructor<const poplar::program::Program &, poplar::Tensor, const poplar::program::Program &>();
-JLProgramRepeatWhileFalse.constructor<const poplar::program::Program &, poplar::Tensor, const poplar::program::Program &, std::string>();
+JLProgramRepeatWhileFalse.constructor<const Program &, Tensor, const Program &>();
+JLProgramRepeatWhileFalse.constructor<const Program &, Tensor, const Program &, const DebugContext &>();
 }
-// poplar::program::RepeatWhileTrue::RepeatWhileTrue(const poplar::program::Program &, poplar::Tensor, const poplar::program::Program &, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::RepeatWhileTrue::RepeatWhileTrue(const Program &, Tensor, const Program &, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramRepeatWhileTrue.constructor<const poplar::program::Program &, poplar::Tensor, const poplar::program::Program &>();
-JLProgramRepeatWhileTrue.constructor<const poplar::program::Program &, poplar::Tensor, const poplar::program::Program &, std::string>();
+JLProgramRepeatWhileTrue.constructor<const Program &, Tensor, const Program &>();
+JLProgramRepeatWhileTrue.constructor<const Program &, Tensor, const Program &, const DebugContext &>();
 }
-// poplar::program::Loop::Loop(const poplar::program::Program &, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::Loop::Loop(const Program &, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramLoop.constructor<const poplar::program::Program &>();
-JLProgramLoop.constructor<const poplar::program::Program &, std::string>();
+JLProgramLoop.constructor<const Program &>();
+JLProgramLoop.constructor<const Program &, const DebugContext &>();
 }
-// poplar::program::If::If(poplar::Tensor, const poplar::program::Program &, const poplar::program::Program &, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::If::If(Tensor, const Program &, const Program &, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramIf.constructor<poplar::Tensor, const poplar::program::Program &, const poplar::program::Program &>();
-JLProgramIf.constructor<poplar::Tensor, const poplar::program::Program &, const poplar::program::Program &, std::string>();
+JLProgramIf.constructor<Tensor, const Program &, const Program &>();
+JLProgramIf.constructor<Tensor, const Program &, const Program &, const DebugContext &>();
 }
-// poplar::program::Switch::Switch(poplar::Tensor, const std::vector<std::pair<std::int32_t, Program>> &, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::Switch::Switch(Tensor, const std::vector<std::pair<std::int32_t, Program>> &, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramSwitch.constructor<poplar::Tensor, const std::vector<std::pair<std::int32_t, Program>> &>();
-JLProgramSwitch.constructor<poplar::Tensor, const std::vector<std::pair<std::int32_t, Program>> &, std::string>();
+JLProgramSwitch.constructor<Tensor, const std::vector<std::pair<std::int32_t, Program>> &>();
+JLProgramSwitch.constructor<Tensor, const std::vector<std::pair<std::int32_t, Program>> &, const DebugContext &>();
 }
-// poplar::program::Switch::Switch(poplar::Tensor, const std::vector<std::pair<std::int32_t, Program>> &, const poplar::program::Program &, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::Switch::Switch(Tensor, const std::vector<std::pair<std::int32_t, Program>> &, const Program &, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramSwitch.constructor<poplar::Tensor, const std::vector<std::pair<std::int32_t, Program>> &, const poplar::program::Program &>();
-JLProgramSwitch.constructor<poplar::Tensor, const std::vector<std::pair<std::int32_t, Program>> &, const poplar::program::Program &, std::string>();
+JLProgramSwitch.constructor<Tensor, const std::vector<std::pair<std::int32_t, Program>> &, const Program &>();
+JLProgramSwitch.constructor<Tensor, const std::vector<std::pair<std::int32_t, Program>> &, const Program &, const DebugContext &>();
 }
-// poplar::program::Switch::Switch(poplar::Tensor, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::Switch::Switch(Tensor, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramSwitch.constructor<poplar::Tensor>();
-JLProgramSwitch.constructor<poplar::Tensor, std::string>();
+JLProgramSwitch.constructor<Tensor>();
+JLProgramSwitch.constructor<Tensor, const DebugContext &>();
 }
-// poplar::program::Switch::Switch(poplar::Tensor, const poplar::program::Program &, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::Switch::Switch(Tensor, const Program &, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramSwitch.constructor<poplar::Tensor, const poplar::program::Program &>();
-JLProgramSwitch.constructor<poplar::Tensor, const poplar::program::Program &, std::string>();
+JLProgramSwitch.constructor<Tensor, const Program &>();
+JLProgramSwitch.constructor<Tensor, const Program &, const DebugContext &>();
 }
-// poplar::program::Switch::add(std::int32_t, const poplar::program::Program &)__CXXMethod
+// poplar::program::Switch::add(std::int32_t, const Program &)__CXXMethod
 { using namespace poplar::program;
-JLProgramSwitch.method("ProgramSwitchAdd", [](poplar::program::Switch& cl, std::int32_t a, const poplar::program::Program & b) {return cl.add(a, b);});
+JLProgramSwitch.method("ProgramSwitchAdd", [](poplar::program::Switch& cl, std::int32_t a, const Program & b) {return cl.add(a, b);});
 }
-// poplar::program::Switch::switchWithBoundsChecking(poplar::Tensor, const std::vector<std::pair<std::int32_t, Program>> &, const poplar::DebugContext &)__CXXMethod
+// poplar::program::Switch::switchWithBoundsChecking(Tensor, const std::vector<std::pair<std::int32_t, Program>> &, const DebugContext &)__CXXMethod
 { using namespace poplar::program;
-JLProgramSwitch.method("ProgramSwitchSwitchWithBoundsChecking", [](poplar::program::Switch& cl, poplar::Tensor a, const std::vector<std::pair<std::int32_t, Program>> & b) {return cl.switchWithBoundsChecking(a, b);});
-JLProgramSwitch.method("ProgramSwitchSwitchWithBoundsChecking", [](poplar::program::Switch& cl, poplar::Tensor a, const std::vector<std::pair<std::int32_t, Program>> & b, std::string c) {return cl.switchWithBoundsChecking(a, b, c);});
+JLProgramSwitch.method("ProgramSwitchSwitchWithBoundsChecking", [](poplar::program::Switch& cl, Tensor a, const std::vector<std::pair<std::int32_t, Program>> & b) {return cl.switchWithBoundsChecking(a, b);});
+JLProgramSwitch.method("ProgramSwitchSwitchWithBoundsChecking", [](poplar::program::Switch& cl, Tensor a, const std::vector<std::pair<std::int32_t, Program>> & b, const DebugContext & c) {return cl.switchWithBoundsChecking(a, b, c);});
 }
-// poplar::program::Switch::switchWithUnreachableDefault(poplar::Tensor, const poplar::DebugContext &)__CXXMethod
+// poplar::program::Switch::switchWithUnreachableDefault(Tensor, const DebugContext &)__CXXMethod
 { using namespace poplar::program;
-JLProgramSwitch.method("ProgramSwitchSwitchWithUnreachableDefault", [](poplar::program::Switch& cl, poplar::Tensor a) {return cl.switchWithUnreachableDefault(a);});
-JLProgramSwitch.method("ProgramSwitchSwitchWithUnreachableDefault", [](poplar::program::Switch& cl, poplar::Tensor a, std::string b) {return cl.switchWithUnreachableDefault(a, b);});
+JLProgramSwitch.method("ProgramSwitchSwitchWithUnreachableDefault", [](poplar::program::Switch& cl, Tensor a) {return cl.switchWithUnreachableDefault(a);});
+JLProgramSwitch.method("ProgramSwitchSwitchWithUnreachableDefault", [](poplar::program::Switch& cl, Tensor a, const DebugContext & b) {return cl.switchWithUnreachableDefault(a, b);});
 }
-// poplar::program::Copy::Copy(poplar::Tensor, poplar::Tensor, bool, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::Copy::Copy(Tensor, Tensor, bool, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramCopy.constructor<poplar::Tensor, poplar::Tensor>();
-JLProgramCopy.constructor<poplar::Tensor, poplar::Tensor, bool>();
-JLProgramCopy.constructor<poplar::Tensor, poplar::Tensor, bool, std::string>();
+JLProgramCopy.constructor<Tensor, Tensor>();
+JLProgramCopy.constructor<Tensor, Tensor, bool>();
+JLProgramCopy.constructor<Tensor, Tensor, bool, const DebugContext &>();
 }
-// poplar::program::Copy::Copy(const poplar::DataStream &, poplar::Tensor, bool, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::Copy::Copy(const DataStream &, Tensor, bool, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramCopy.constructor<const poplar::DataStream &, poplar::Tensor>();
-JLProgramCopy.constructor<const poplar::DataStream &, poplar::Tensor, bool>();
-JLProgramCopy.constructor<const poplar::DataStream &, poplar::Tensor, bool, std::string>();
+JLProgramCopy.constructor<const DataStream &, Tensor>();
+JLProgramCopy.constructor<const DataStream &, Tensor, bool>();
+JLProgramCopy.constructor<const DataStream &, Tensor, bool, const DebugContext &>();
 }
-// poplar::program::Copy::Copy(poplar::Tensor, const poplar::DataStream &, bool, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::Copy::Copy(Tensor, const DataStream &, bool, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramCopy.constructor<poplar::Tensor, const poplar::DataStream &>();
-JLProgramCopy.constructor<poplar::Tensor, const poplar::DataStream &, bool>();
-JLProgramCopy.constructor<poplar::Tensor, const poplar::DataStream &, bool, std::string>();
+JLProgramCopy.constructor<Tensor, const DataStream &>();
+JLProgramCopy.constructor<Tensor, const DataStream &, bool>();
+JLProgramCopy.constructor<Tensor, const DataStream &, bool, const DebugContext &>();
 }
-// poplar::program::Copy::Copy(const poplar::RemoteBuffer &, poplar::Tensor, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::Copy::Copy(const RemoteBuffer &, Tensor, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramCopy.constructor<const poplar::RemoteBuffer &, poplar::Tensor>();
-JLProgramCopy.constructor<const poplar::RemoteBuffer &, poplar::Tensor, std::string>();
+JLProgramCopy.constructor<const RemoteBuffer &, Tensor>();
+JLProgramCopy.constructor<const RemoteBuffer &, Tensor, const DebugContext &>();
 }
-// poplar::program::Copy::Copy(const poplar::RemoteBuffer &, poplar::Tensor, poplar::Tensor, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::Copy::Copy(const RemoteBuffer &, Tensor, Tensor, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramCopy.constructor<const poplar::RemoteBuffer &, poplar::Tensor, poplar::Tensor>();
-JLProgramCopy.constructor<const poplar::RemoteBuffer &, poplar::Tensor, poplar::Tensor, std::string>();
+JLProgramCopy.constructor<const RemoteBuffer &, Tensor, Tensor>();
+JLProgramCopy.constructor<const RemoteBuffer &, Tensor, Tensor, const DebugContext &>();
 }
-// poplar::program::Copy::Copy(poplar::Tensor, const poplar::RemoteBuffer &, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::Copy::Copy(Tensor, const RemoteBuffer &, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramCopy.constructor<poplar::Tensor, const poplar::RemoteBuffer &>();
-JLProgramCopy.constructor<poplar::Tensor, const poplar::RemoteBuffer &, std::string>();
+JLProgramCopy.constructor<Tensor, const RemoteBuffer &>();
+JLProgramCopy.constructor<Tensor, const RemoteBuffer &, const DebugContext &>();
 }
-// poplar::program::Copy::Copy(poplar::Tensor, const poplar::RemoteBuffer &, poplar::Tensor, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::Copy::Copy(Tensor, const RemoteBuffer &, Tensor, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramCopy.constructor<poplar::Tensor, const poplar::RemoteBuffer &, poplar::Tensor>();
-JLProgramCopy.constructor<poplar::Tensor, const poplar::RemoteBuffer &, poplar::Tensor, std::string>();
+JLProgramCopy.constructor<Tensor, const RemoteBuffer &, Tensor>();
+JLProgramCopy.constructor<Tensor, const RemoteBuffer &, Tensor, const DebugContext &>();
 }
-// poplar::program::Copy::Copy(const poplar::FunctionBuffer &, const poplar::Function &, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::Copy::Copy(const FunctionBuffer &, const Function &, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramCopy.constructor<const poplar::FunctionBuffer &, const poplar::Function &>();
-JLProgramCopy.constructor<const poplar::FunctionBuffer &, const poplar::Function &, std::string>();
+JLProgramCopy.constructor<const FunctionBuffer &, const Function &>();
+JLProgramCopy.constructor<const FunctionBuffer &, const Function &, const DebugContext &>();
 }
-// poplar::program::CrossReplicaCopy::CrossReplicaCopy(poplar::Tensor, poplar::Tensor, std::map<unsigned int, unsigned int>, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::CrossReplicaCopy::CrossReplicaCopy(Tensor, Tensor, std::map<unsigned int, unsigned int>, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramCrossReplicaCopy.constructor<poplar::Tensor, poplar::Tensor, std::map<unsigned int, unsigned int>>();
-JLProgramCrossReplicaCopy.constructor<poplar::Tensor, poplar::Tensor, std::map<unsigned int, unsigned int>, std::string>();
+JLProgramCrossReplicaCopy.constructor<Tensor, Tensor, std::map<unsigned int, unsigned int>>();
+JLProgramCrossReplicaCopy.constructor<Tensor, Tensor, std::map<unsigned int, unsigned int>, const DebugContext &>();
 }
-// poplar::program::WriteUndef::WriteUndef(poplar::Tensor, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::WriteUndef::WriteUndef(Tensor, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramWriteUndef.constructor<poplar::Tensor>();
-JLProgramWriteUndef.constructor<poplar::Tensor, std::string>();
+JLProgramWriteUndef.constructor<Tensor>();
+JLProgramWriteUndef.constructor<Tensor, const DebugContext &>();
 }
-// poplar::program::AssumeEqualAcrossReplicas::AssumeEqualAcrossReplicas(poplar::Tensor, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::AssumeEqualAcrossReplicas::AssumeEqualAcrossReplicas(Tensor, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramAssumeEqualAcrossReplicas.constructor<poplar::Tensor>();
-JLProgramAssumeEqualAcrossReplicas.constructor<poplar::Tensor, std::string>();
+JLProgramAssumeEqualAcrossReplicas.constructor<Tensor>();
+JLProgramAssumeEqualAcrossReplicas.constructor<Tensor, const DebugContext &>();
 }
-// poplar::program::Block::Block(const poplar::program::Program &, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::Block::Block(const Program &, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramBlock.constructor<const poplar::program::Program &>();
-JLProgramBlock.constructor<const poplar::program::Program &, std::string>();
+JLProgramBlock.constructor<const Program &>();
+JLProgramBlock.constructor<const Program &, const DebugContext &>();
 }
-// poplar::program::Sync::Sync(poplar::SyncType, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::Sync::Sync(SyncType, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramSync.constructor<poplar::SyncType>();
-JLProgramSync.constructor<poplar::SyncType, std::string>();
+JLProgramSync.constructor<SyncType>();
+JLProgramSync.constructor<SyncType, const DebugContext &>();
 }
-// poplar::program::Call::Call(poplar::Function, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::Call::Call(Function, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramCall.constructor<poplar::Function>();
-JLProgramCall.constructor<poplar::Function, std::string>();
+JLProgramCall.constructor<Function>();
+JLProgramCall.constructor<Function, const DebugContext &>();
 }
-// poplar::program::Call::Call(poplar::HostFunction, ArrayRef<poplar::Tensor>, ArrayRef<poplar::Tensor>, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::Call::Call(HostFunction, ArrayRef<Tensor>, ArrayRef<Tensor>, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramCall.constructor<poplar::HostFunction, ArrayRef<poplar::Tensor>, ArrayRef<poplar::Tensor>>();
-JLProgramCall.constructor<poplar::HostFunction, ArrayRef<poplar::Tensor>, ArrayRef<poplar::Tensor>, std::string>();
+JLProgramCall.constructor<HostFunction, jlcxx::ArrayRef<Tensor>, jlcxx::ArrayRef<Tensor>>();
+JLProgramCall.constructor<HostFunction, jlcxx::ArrayRef<Tensor>, jlcxx::ArrayRef<Tensor>, const DebugContext &>();
 }
-// poplar::program::PrintTensor::PrintTensor(poplar::Tensor, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::PrintTensor::PrintTensor(Tensor, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramPrintTensor.constructor<poplar::Tensor>();
-JLProgramPrintTensor.constructor<poplar::Tensor, std::string>();
+JLProgramPrintTensor.constructor<Tensor>();
+JLProgramPrintTensor.constructor<Tensor, const DebugContext &>();
 }
-// poplar::program::PrintTensor::PrintTensor(std::string, poplar::Tensor, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::PrintTensor::PrintTensor(StringRef, Tensor, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramPrintTensor.constructor<std::string, poplar::Tensor>();
-JLProgramPrintTensor.constructor<std::string, poplar::Tensor, std::string>();
+JLProgramPrintTensor.constructor<StringRef, Tensor>();
+JLProgramPrintTensor.constructor<StringRef, Tensor, const DebugContext &>();
 }
-// poplar::program::ErrorProgram::ErrorProgram(std::string, poplar::Tensor, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::ErrorProgram::ErrorProgram(StringRef, Tensor, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramErrorProgram.constructor<std::string, poplar::Tensor>();
-JLProgramErrorProgram.constructor<std::string, poplar::Tensor, std::string>();
+JLProgramErrorProgram.constructor<StringRef, Tensor>();
+JLProgramErrorProgram.constructor<StringRef, Tensor, const DebugContext &>();
 }
-// poplar::program::Abort::Abort(const poplar::DebugContext &)__CXXConstructor
+// poplar::program::Abort::Abort(const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramAbort.constructor<std::string>();
+JLProgramAbort.constructor<const DebugContext &>();
 }
-// poplar::program::Abort::Abort(const std::string &, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::Abort::Abort(const std::string &, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
 JLProgramAbort.constructor<const std::string &>();
-JLProgramAbort.constructor<const std::string &, std::string>();
+JLProgramAbort.constructor<const std::string &, const DebugContext &>();
 }
-// poplar::program::AbortOnCondition::AbortOnCondition(poplar::Tensor, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::AbortOnCondition::AbortOnCondition(Tensor, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramAbortOnCondition.constructor<poplar::Tensor>();
-JLProgramAbortOnCondition.constructor<poplar::Tensor, std::string>();
+JLProgramAbortOnCondition.constructor<Tensor>();
+JLProgramAbortOnCondition.constructor<Tensor, const DebugContext &>();
 }
-// poplar::program::AbortOnCondition::AbortOnCondition(poplar::Tensor, const std::string &, const poplar::DebugContext &)__CXXConstructor
+// poplar::program::AbortOnCondition::AbortOnCondition(Tensor, const std::string &, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
-JLProgramAbortOnCondition.constructor<poplar::Tensor, const std::string &>();
-JLProgramAbortOnCondition.constructor<poplar::Tensor, const std::string &, std::string>();
+JLProgramAbortOnCondition.constructor<Tensor, const std::string &>();
+JLProgramAbortOnCondition.constructor<Tensor, const std::string &, const DebugContext &>();
 }
 // poplar::TensorCloneMethod::PRESERVE_ORDER_AND_ALIASES__EnumConstantDecl
 mod.set_const("PoplarTensorCloneMethodPoplarPRESERVE_ORDER_AND_ALIASES", poplar::TensorCloneMethod::PRESERVE_ORDER_AND_ALIASES);
@@ -1879,25 +1886,25 @@ mod.set_const("PoplarTensorCloneMethodPoplarGATHER_AND_PRESERVE_TILE_ORDER_AND_A
 mod.set_const("PoplarTensorCloneDuplicationMethodPoplarDUPLICATE_BY_OUTER_DIMENSION", poplar::TensorCloneDuplicationMethod::DUPLICATE_BY_OUTER_DIMENSION);
 // poplar::TensorCloneDuplicationMethod::DUPLICATE_BY_TILE_CONTIGUOUS_REGION__EnumConstantDecl
 mod.set_const("PoplarTensorCloneDuplicationMethodPoplarDUPLICATE_BY_TILE_CONTIGUOUS_REGION", poplar::TensorCloneDuplicationMethod::DUPLICATE_BY_TILE_CONTIGUOUS_REGION);
-// poplar::TensorRearranger::TensorRearranger(const poplar::TensorRearranger &)__CXXConstructor
+// poplar::TensorRearranger::TensorRearranger(const TensorRearranger &)__CXXConstructor
 { using namespace poplar;
-JLTensorRearranger.constructor<const poplar::TensorRearranger &>();
+JLTensorRearranger.constructor<const TensorRearranger &>();
 }
-// poplar::TensorRearranger::rearrange(const poplar::Tensor &)__CXXMethod
+// poplar::TensorRearranger::rearrange(const Tensor &)__CXXMethod
 { using namespace poplar;
-JLTensorRearranger.method("TensorRearrangerRearrange", [](poplar::TensorRearranger& cl, const poplar::Tensor & a) {return cl.rearrange(a);});
+JLTensorRearranger.method("TensorRearrangerRearrange", [](poplar::TensorRearranger& cl, const Tensor & a) {return cl.rearrange(a);});
 }
-// poplar::TensorRearranger::undoRearrangement(const poplar::Tensor &)__CXXMethod
+// poplar::TensorRearranger::undoRearrangement(const Tensor &)__CXXMethod
 { using namespace poplar;
-JLTensorRearranger.method("TensorRearrangerUndoRearrangement", [](poplar::TensorRearranger& cl, const poplar::Tensor & a) {return cl.undoRearrangement(a);});
+JLTensorRearranger.method("TensorRearrangerUndoRearrangement", [](poplar::TensorRearranger& cl, const Tensor & a) {return cl.undoRearrangement(a);});
 }
-// poplar::TensorRearranger::rearrange(ArrayRef<poplar::Interval>)__CXXMethod
+// poplar::TensorRearranger::rearrange(ArrayRef<Interval>)__CXXMethod
 { using namespace poplar;
-JLTensorRearranger.method("TensorRearrangerRearrange", [](poplar::TensorRearranger& cl, ArrayRef<poplar::Interval> a) {return cl.rearrange(a);});
+JLTensorRearranger.method("TensorRearrangerRearrange", [](poplar::TensorRearranger& cl, jlcxx::ArrayRef<Interval> a) {return cl.rearrange(jlcxxToPoplar(a));});
 }
-// poplar::TensorRearranger::undoRearrangement(ArrayRef<poplar::Interval>)__CXXMethod
+// poplar::TensorRearranger::undoRearrangement(ArrayRef<Interval>)__CXXMethod
 { using namespace poplar;
-JLTensorRearranger.method("TensorRearrangerUndoRearrangement", [](poplar::TensorRearranger& cl, ArrayRef<poplar::Interval> a) {return cl.undoRearrangement(a);});
+JLTensorRearranger.method("TensorRearrangerUndoRearrangement", [](poplar::TensorRearranger& cl, jlcxx::ArrayRef<Interval> a) {return cl.undoRearrangement(jlcxxToPoplar(a));});
 }
 // poplar::TensorRearranger::valid()__CXXMethod
 { using namespace poplar;
@@ -1911,21 +1918,21 @@ mod.set_const("PoplarVariableMappingMethodPoplarLINEAR", poplar::VariableMapping
 { using namespace poplar;
 JLVariableRef.constructor<unsigned int>();
 }
-// poplar::VariableRef::VariableRef(const poplar::VariableRef &)__CXXConstructor
+// poplar::VariableRef::VariableRef(const VariableRef &)__CXXConstructor
 { using namespace poplar;
-JLVariableRef.constructor<const poplar::VariableRef &>();
+JLVariableRef.constructor<const VariableRef &>();
 }
 // poplar::VariableRef::hash()__CXXMethod
 { using namespace poplar;
 JLVariableRef.method("VariableRefHash", [](poplar::VariableRef& cl) {return cl.hash();});
 }
-// poplar::VariableInterval::VariableInterval(poplar::VariableRef, poplar::Interval)__CXXConstructor
+// poplar::VariableInterval::VariableInterval(VariableRef, Interval)__CXXConstructor
 { using namespace poplar;
-JLVariableInterval.constructor<poplar::VariableRef, poplar::Interval>();
+JLVariableInterval.constructor<VariableRef, Interval>();
 }
-// poplar::VariableInterval::VariableInterval(const poplar::VariableInterval &)__CXXConstructor
+// poplar::VariableInterval::VariableInterval(const VariableInterval &)__CXXConstructor
 { using namespace poplar;
-JLVariableInterval.constructor<const poplar::VariableInterval &>();
+JLVariableInterval.constructor<const VariableInterval &>();
 }
 // poplar::FieldData::rank()__CXXMethod
 { using namespace poplar;
@@ -1961,378 +1968,378 @@ mod.method("PoplarVersionString", []() {return poplar::versionString();} ); }
 // poplar::packageHash()__FunctionDecl
 { using namespace poplar;
 mod.method("PoplarPackageHash", []() {return poplar::packageHash();} ); }
-// poplar::Graph::Graph(const poplar::Target &, poplar::replication_factor)__CXXConstructor
+// poplar::Graph::Graph(const Target &, replication_factor)__CXXConstructor
 { using namespace poplar;
-JLGraph.constructor<const poplar::Target &>();
-JLGraph.constructor<const poplar::Target &, poplar::replication_factor>();
+JLGraph.constructor<const Target &>();
+JLGraph.constructor<const Target &, replication_factor>();
 }
-// poplar::Graph::Graph(const poplar::Device &, poplar::replication_factor)__CXXConstructor
+// poplar::Graph::Graph(const Device &, replication_factor)__CXXConstructor
 { using namespace poplar;
-JLGraph.constructor<const poplar::Device &>();
-JLGraph.constructor<const poplar::Device &, poplar::replication_factor>();
+JLGraph.constructor<const Device &>();
+JLGraph.constructor<const Device &, replication_factor>();
 }
 // poplar::Graph::getTarget()__CXXMethod
 { using namespace poplar;
 JLGraph.method("GraphGetTarget", [](poplar::Graph& cl) {return cl.getTarget();});
 }
-// poplar::Graph::addCodelets(std::string, poplar::CodeletFileType, std::string, std::string)__CXXMethod
+// poplar::Graph::addCodelets(StringRef, CodeletFileType, StringRef, StringRef)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphAddCodelets", [](poplar::Graph& cl, std::string a) {return cl.addCodelets(a);});
-JLGraph.method("GraphAddCodelets", [](poplar::Graph& cl, std::string a, poplar::CodeletFileType b) {return cl.addCodelets(a, b);});
-JLGraph.method("GraphAddCodelets", [](poplar::Graph& cl, std::string a, poplar::CodeletFileType b, std::string c) {return cl.addCodelets(a, b, c);});
-JLGraph.method("GraphAddCodelets", [](poplar::Graph& cl, std::string a, poplar::CodeletFileType b, std::string c, std::string d) {return cl.addCodelets(a, b, c, d);});
+JLGraph.method("GraphAddCodelets", [](poplar::Graph& cl, StringRef a) {return cl.addCodelets(a);});
+JLGraph.method("GraphAddCodelets", [](poplar::Graph& cl, StringRef a, CodeletFileType b) {return cl.addCodelets(a, b);});
+JLGraph.method("GraphAddCodelets", [](poplar::Graph& cl, StringRef a, CodeletFileType b, StringRef c) {return cl.addCodelets(a, b, c);});
+JLGraph.method("GraphAddCodelets", [](poplar::Graph& cl, StringRef a, CodeletFileType b, StringRef c, StringRef d) {return cl.addCodelets(a, b, c, d);});
 }
-// poplar::Graph::addCodelets(ArrayRef<std::string>, std::string, std::string)__CXXMethod
+// poplar::Graph::addCodelets(ArrayRef<std::string>, StringRef, StringRef)__CXXMethod
 { using namespace poplar;
 JLGraph.method("GraphAddCodelets", [](poplar::Graph& cl, ArrayRef<std::string> a) {return cl.addCodelets(a);});
-JLGraph.method("GraphAddCodelets", [](poplar::Graph& cl, ArrayRef<std::string> a, std::string b) {return cl.addCodelets(a, b);});
-JLGraph.method("GraphAddCodelets", [](poplar::Graph& cl, ArrayRef<std::string> a, std::string b, std::string c) {return cl.addCodelets(a, b, c);});
+JLGraph.method("GraphAddCodelets", [](poplar::Graph& cl, ArrayRef<std::string> a, StringRef b) {return cl.addCodelets(a, b);});
+JLGraph.method("GraphAddCodelets", [](poplar::Graph& cl, ArrayRef<std::string> a, StringRef b, StringRef c) {return cl.addCodelets(a, b, c);});
 }
-// poplar::Graph::addCodelets(std::stringstream &, std::string, poplar::CodeletFileType, std::string)__CXXMethod
+// poplar::Graph::addCodelets(std::stringstream &, StringRef, CodeletFileType, StringRef)__CXXMethod
 { using namespace poplar;
 JLGraph.method("GraphAddCodelets", [](poplar::Graph& cl, std::stringstream & a) {return cl.addCodelets(a);});
-JLGraph.method("GraphAddCodelets", [](poplar::Graph& cl, std::stringstream & a, std::string b) {return cl.addCodelets(a, b);});
-JLGraph.method("GraphAddCodelets", [](poplar::Graph& cl, std::stringstream & a, std::string b, poplar::CodeletFileType c) {return cl.addCodelets(a, b, c);});
-JLGraph.method("GraphAddCodelets", [](poplar::Graph& cl, std::stringstream & a, std::string b, poplar::CodeletFileType c, std::string d) {return cl.addCodelets(a, b, c, d);});
+JLGraph.method("GraphAddCodelets", [](poplar::Graph& cl, std::stringstream & a, StringRef b) {return cl.addCodelets(a, b);});
+JLGraph.method("GraphAddCodelets", [](poplar::Graph& cl, std::stringstream & a, StringRef b, CodeletFileType c) {return cl.addCodelets(a, b, c);});
+JLGraph.method("GraphAddCodelets", [](poplar::Graph& cl, std::stringstream & a, StringRef b, CodeletFileType c, StringRef d) {return cl.addCodelets(a, b, c, d);});
 }
-// poplar::Graph::ConnectionDesc::ConnectionDesc(std::string, poplar::Tensor)__CXXConstructor
+// poplar::Graph::ConnectionDesc::ConnectionDesc(StringRef, Tensor)__CXXConstructor
 { using namespace poplar;
-JLGraphConnectionDesc.constructor<std::string, poplar::Tensor>();
+JLGraphConnectionDesc.constructor<StringRef, Tensor>();
 }
-// poplar::Graph::ConnectionDesc::ConnectionDesc(std::string, ArrayRef<poplar::Tensor>)__CXXConstructor
+// poplar::Graph::ConnectionDesc::ConnectionDesc(StringRef, ArrayRef<Tensor>)__CXXConstructor
 { using namespace poplar;
-JLGraphConnectionDesc.constructor<std::string, ArrayRef<poplar::Tensor>>();
+JLGraphConnectionDesc.constructor<StringRef, jlcxx::ArrayRef<Tensor>>();
 }
-// poplar::Graph::addVertex(poplar::ComputeSet, std::string)__CXXMethod
+// poplar::Graph::addVertex(ComputeSet, StringRef)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphAddVertex", [](poplar::Graph& cl, poplar::ComputeSet a, std::string b) {return cl.addVertex(a, b);});
+JLGraph.method("GraphAddVertex", [](poplar::Graph& cl, ComputeSet a, StringRef b) {return cl.addVertex(a, b);});
 }
-// poplar::Graph::addVertex(poplar::ComputeSet, std::string, ArrayRef<poplar::Graph::ConnectionDesc>)__CXXMethod
+// poplar::Graph::addVertex(ComputeSet, StringRef, ArrayRef<ConnectionDesc>)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphAddVertex", [](poplar::Graph& cl, poplar::ComputeSet a, std::string b, ArrayRef<poplar::Graph::ConnectionDesc> c) {return cl.addVertex(a, b, c);});
+JLGraph.method("GraphAddVertex", [](poplar::Graph& cl, ComputeSet a, StringRef b, jlcxx::ArrayRef<ConnectionDesc> c) {return cl.addVertex(a, b, jlcxxToPoplar(c));});
 }
-// poplar::Graph::addExternalExchangeVertex(poplar::ComputeSet, std::string, unsigned int, bool, bool)__CXXMethod
+// poplar::Graph::addExternalExchangeVertex(ComputeSet, StringRef, unsigned int, bool, bool)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphAddExternalExchangeVertex", [](poplar::Graph& cl, poplar::ComputeSet a, std::string b, unsigned int c, bool d, bool e) {return cl.addExternalExchangeVertex(a, b, c, d, e);});
+JLGraph.method("GraphAddExternalExchangeVertex", [](poplar::Graph& cl, ComputeSet a, StringRef b, unsigned int c, bool d, bool e) {return cl.addExternalExchangeVertex(a, b, c, d, e);});
 }
-// poplar::Graph::addVariable(const poplar::Type &, ArrayRef<std::size_t>, const poplar::DebugContext &)__CXXMethod
+// poplar::Graph::addVariable(const Type &, ArrayRef<std::size_t>, const DebugContext &)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphAddVariable", [](poplar::Graph& cl, const poplar::Type & a, jlcxx::ArrayRef<std::size_t> b) {return cl.addVariable(a, jlcxxToPoplar(b));});
-JLGraph.method("GraphAddVariable", [](poplar::Graph& cl, const poplar::Type & a, jlcxx::ArrayRef<std::size_t> b, std::string c) {return cl.addVariable(a, jlcxxToPoplar(b), c);});
+JLGraph.method("GraphAddVariable", [](poplar::Graph& cl, const Type & a, jlcxx::ArrayRef<std::size_t> b) {return cl.addVariable(a, jlcxxToPoplar(b));});
+JLGraph.method("GraphAddVariable", [](poplar::Graph& cl, const Type & a, jlcxx::ArrayRef<std::size_t> b, const DebugContext & c) {return cl.addVariable(a, jlcxxToPoplar(b), c);});
 }
-// poplar::Graph::addVariable(const poplar::Type &, const poplar::Tensor &, ArrayRef<std::size_t>, const poplar::DebugContext &)__CXXMethod
+// poplar::Graph::addVariable(const Type &, const Tensor &, ArrayRef<std::size_t>, const DebugContext &)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphAddVariable", [](poplar::Graph& cl, const poplar::Type & a, const poplar::Tensor & b, jlcxx::ArrayRef<std::size_t> c) {return cl.addVariable(a, b, jlcxxToPoplar(c));});
-JLGraph.method("GraphAddVariable", [](poplar::Graph& cl, const poplar::Type & a, const poplar::Tensor & b, jlcxx::ArrayRef<std::size_t> c, std::string d) {return cl.addVariable(a, b, jlcxxToPoplar(c), d);});
+JLGraph.method("GraphAddVariable", [](poplar::Graph& cl, const Type & a, const Tensor & b, jlcxx::ArrayRef<std::size_t> c) {return cl.addVariable(a, b, jlcxxToPoplar(c));});
+JLGraph.method("GraphAddVariable", [](poplar::Graph& cl, const Type & a, const Tensor & b, jlcxx::ArrayRef<std::size_t> c, const DebugContext & d) {return cl.addVariable(a, b, jlcxxToPoplar(c), d);});
 }
-// poplar::Graph::addVariable(const poplar::Type &, ArrayRef<std::size_t>, poplar::VariableMappingMethod, const poplar::DebugContext &)__CXXMethod
+// poplar::Graph::addVariable(const Type &, ArrayRef<std::size_t>, VariableMappingMethod, const DebugContext &)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphAddVariable", [](poplar::Graph& cl, const poplar::Type & a, jlcxx::ArrayRef<std::size_t> b, poplar::VariableMappingMethod c) {return cl.addVariable(a, jlcxxToPoplar(b), c);});
-JLGraph.method("GraphAddVariable", [](poplar::Graph& cl, const poplar::Type & a, jlcxx::ArrayRef<std::size_t> b, poplar::VariableMappingMethod c, std::string d) {return cl.addVariable(a, jlcxxToPoplar(b), c, d);});
+JLGraph.method("GraphAddVariable", [](poplar::Graph& cl, const Type & a, jlcxx::ArrayRef<std::size_t> b, VariableMappingMethod c) {return cl.addVariable(a, jlcxxToPoplar(b), c);});
+JLGraph.method("GraphAddVariable", [](poplar::Graph& cl, const Type & a, jlcxx::ArrayRef<std::size_t> b, VariableMappingMethod c, const DebugContext & d) {return cl.addVariable(a, jlcxxToPoplar(b), c, d);});
 }
-// poplar::Graph::addVariable(const poplar::Type &, const poplar::Tensor &, ArrayRef<std::size_t>, poplar::VariableMappingMethod, const poplar::DebugContext &)__CXXMethod
+// poplar::Graph::addVariable(const Type &, const Tensor &, ArrayRef<std::size_t>, VariableMappingMethod, const DebugContext &)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphAddVariable", [](poplar::Graph& cl, const poplar::Type & a, const poplar::Tensor & b, jlcxx::ArrayRef<std::size_t> c, poplar::VariableMappingMethod d) {return cl.addVariable(a, b, jlcxxToPoplar(c), d);});
-JLGraph.method("GraphAddVariable", [](poplar::Graph& cl, const poplar::Type & a, const poplar::Tensor & b, jlcxx::ArrayRef<std::size_t> c, poplar::VariableMappingMethod d, std::string e) {return cl.addVariable(a, b, jlcxxToPoplar(c), d, e);});
+JLGraph.method("GraphAddVariable", [](poplar::Graph& cl, const Type & a, const Tensor & b, jlcxx::ArrayRef<std::size_t> c, VariableMappingMethod d) {return cl.addVariable(a, b, jlcxxToPoplar(c), d);});
+JLGraph.method("GraphAddVariable", [](poplar::Graph& cl, const Type & a, const Tensor & b, jlcxx::ArrayRef<std::size_t> c, VariableMappingMethod d, const DebugContext & e) {return cl.addVariable(a, b, jlcxxToPoplar(c), d, e);});
 }
-// poplar::Graph::addExternalVariable(const poplar::Type &, ArrayRef<std::size_t>, std::string, const poplar::DebugContext &)__CXXMethod
+// poplar::Graph::addExternalVariable(const Type &, ArrayRef<std::size_t>, StringRef, const DebugContext &)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphAddExternalVariable", [](poplar::Graph& cl, const poplar::Type & a, jlcxx::ArrayRef<std::size_t> b, std::string c) {return cl.addExternalVariable(a, jlcxxToPoplar(b), c);});
-JLGraph.method("GraphAddExternalVariable", [](poplar::Graph& cl, const poplar::Type & a, jlcxx::ArrayRef<std::size_t> b, std::string c, std::string d) {return cl.addExternalVariable(a, jlcxxToPoplar(b), c, d);});
+JLGraph.method("GraphAddExternalVariable", [](poplar::Graph& cl, const Type & a, jlcxx::ArrayRef<std::size_t> b, StringRef c) {return cl.addExternalVariable(a, jlcxxToPoplar(b), c);});
+JLGraph.method("GraphAddExternalVariable", [](poplar::Graph& cl, const Type & a, jlcxx::ArrayRef<std::size_t> b, StringRef c, const DebugContext & d) {return cl.addExternalVariable(a, jlcxxToPoplar(b), c, d);});
 }
-// poplar::Graph::addConstant(const poplar::Type &, const poplar::Tensor &, ArrayRef<std::size_t>, ArrayRef<T>, const poplar::DebugContext &)__FunctionTemplate
+// poplar::Graph::addConstant(const Type &, const Tensor &, ArrayRef<std::size_t>, ArrayRef<T>, const DebugContext &)__FunctionTemplate
 { using namespace poplar;
-JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const poplar::Type & a, const poplar::Tensor & b, jlcxx::ArrayRef<std::size_t> c, jlcxx::ArrayRef<unsigned int> d) {return cl.addConstant(a, b, jlcxxToPoplar(c), jlcxxToPoplar(d));});
-JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const poplar::Type & a, const poplar::Tensor & b, jlcxx::ArrayRef<std::size_t> c, jlcxx::ArrayRef<unsigned int> d, std::string e) {return cl.addConstant(a, b, jlcxxToPoplar(c), jlcxxToPoplar(d), e);});
+JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const Type & a, const Tensor & b, jlcxx::ArrayRef<std::size_t> c, jlcxx::ArrayRef<unsigned int> d) {return cl.addConstant(a, b, jlcxxToPoplar(c), jlcxxToPoplar(d));});
+JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const Type & a, const Tensor & b, jlcxx::ArrayRef<std::size_t> c, jlcxx::ArrayRef<unsigned int> d, const DebugContext & e) {return cl.addConstant(a, b, jlcxxToPoplar(c), jlcxxToPoplar(d), e);});
 }{ using namespace poplar;
-JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const poplar::Type & a, const poplar::Tensor & b, jlcxx::ArrayRef<std::size_t> c, jlcxx::ArrayRef<int> d) {return cl.addConstant(a, b, jlcxxToPoplar(c), jlcxxToPoplar(d));});
-JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const poplar::Type & a, const poplar::Tensor & b, jlcxx::ArrayRef<std::size_t> c, jlcxx::ArrayRef<int> d, std::string e) {return cl.addConstant(a, b, jlcxxToPoplar(c), jlcxxToPoplar(d), e);});
+JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const Type & a, const Tensor & b, jlcxx::ArrayRef<std::size_t> c, jlcxx::ArrayRef<int> d) {return cl.addConstant(a, b, jlcxxToPoplar(c), jlcxxToPoplar(d));});
+JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const Type & a, const Tensor & b, jlcxx::ArrayRef<std::size_t> c, jlcxx::ArrayRef<int> d, const DebugContext & e) {return cl.addConstant(a, b, jlcxxToPoplar(c), jlcxxToPoplar(d), e);});
 }{ using namespace poplar;
-JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const poplar::Type & a, const poplar::Tensor & b, jlcxx::ArrayRef<std::size_t> c, jlcxx::ArrayRef<long> d) {return cl.addConstant(a, b, jlcxxToPoplar(c), jlcxxToPoplar(d));});
-JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const poplar::Type & a, const poplar::Tensor & b, jlcxx::ArrayRef<std::size_t> c, jlcxx::ArrayRef<long> d, std::string e) {return cl.addConstant(a, b, jlcxxToPoplar(c), jlcxxToPoplar(d), e);});
+JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const Type & a, const Tensor & b, jlcxx::ArrayRef<std::size_t> c, jlcxx::ArrayRef<long> d) {return cl.addConstant(a, b, jlcxxToPoplar(c), jlcxxToPoplar(d));});
+JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const Type & a, const Tensor & b, jlcxx::ArrayRef<std::size_t> c, jlcxx::ArrayRef<long> d, const DebugContext & e) {return cl.addConstant(a, b, jlcxxToPoplar(c), jlcxxToPoplar(d), e);});
 }{ using namespace poplar;
-JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const poplar::Type & a, const poplar::Tensor & b, jlcxx::ArrayRef<std::size_t> c, jlcxx::ArrayRef<float> d) {return cl.addConstant(a, b, jlcxxToPoplar(c), jlcxxToPoplar(d));});
-JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const poplar::Type & a, const poplar::Tensor & b, jlcxx::ArrayRef<std::size_t> c, jlcxx::ArrayRef<float> d, std::string e) {return cl.addConstant(a, b, jlcxxToPoplar(c), jlcxxToPoplar(d), e);});
+JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const Type & a, const Tensor & b, jlcxx::ArrayRef<std::size_t> c, jlcxx::ArrayRef<float> d) {return cl.addConstant(a, b, jlcxxToPoplar(c), jlcxxToPoplar(d));});
+JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const Type & a, const Tensor & b, jlcxx::ArrayRef<std::size_t> c, jlcxx::ArrayRef<float> d, const DebugContext & e) {return cl.addConstant(a, b, jlcxxToPoplar(c), jlcxxToPoplar(d), e);});
 }{ using namespace poplar;
-JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const poplar::Type & a, const poplar::Tensor & b, jlcxx::ArrayRef<std::size_t> c, jlcxx::ArrayRef<double> d) {return cl.addConstant(a, b, jlcxxToPoplar(c), jlcxxToPoplar(d));});
-JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const poplar::Type & a, const poplar::Tensor & b, jlcxx::ArrayRef<std::size_t> c, jlcxx::ArrayRef<double> d, std::string e) {return cl.addConstant(a, b, jlcxxToPoplar(c), jlcxxToPoplar(d), e);});
+JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const Type & a, const Tensor & b, jlcxx::ArrayRef<std::size_t> c, jlcxx::ArrayRef<double> d) {return cl.addConstant(a, b, jlcxxToPoplar(c), jlcxxToPoplar(d));});
+JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const Type & a, const Tensor & b, jlcxx::ArrayRef<std::size_t> c, jlcxx::ArrayRef<double> d, const DebugContext & e) {return cl.addConstant(a, b, jlcxxToPoplar(c), jlcxxToPoplar(d), e);});
 }
-// poplar::Graph::addConstant(const poplar::Type &, ArrayRef<std::size_t>, ArrayRef<T>, const poplar::DebugContext &)__FunctionTemplate
+// poplar::Graph::addConstant(const Type &, ArrayRef<std::size_t>, ArrayRef<T>, const DebugContext &)__FunctionTemplate
 { using namespace poplar;
-JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const poplar::Type & a, jlcxx::ArrayRef<std::size_t> b, jlcxx::ArrayRef<unsigned int> c) {return cl.addConstant(a, jlcxxToPoplar(b), jlcxxToPoplar(c));});
-JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const poplar::Type & a, jlcxx::ArrayRef<std::size_t> b, jlcxx::ArrayRef<unsigned int> c, std::string d) {return cl.addConstant(a, jlcxxToPoplar(b), jlcxxToPoplar(c), d);});
+JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const Type & a, jlcxx::ArrayRef<std::size_t> b, jlcxx::ArrayRef<unsigned int> c) {return cl.addConstant(a, jlcxxToPoplar(b), jlcxxToPoplar(c));});
+JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const Type & a, jlcxx::ArrayRef<std::size_t> b, jlcxx::ArrayRef<unsigned int> c, const DebugContext & d) {return cl.addConstant(a, jlcxxToPoplar(b), jlcxxToPoplar(c), d);});
 }{ using namespace poplar;
-JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const poplar::Type & a, jlcxx::ArrayRef<std::size_t> b, jlcxx::ArrayRef<int> c) {return cl.addConstant(a, jlcxxToPoplar(b), jlcxxToPoplar(c));});
-JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const poplar::Type & a, jlcxx::ArrayRef<std::size_t> b, jlcxx::ArrayRef<int> c, std::string d) {return cl.addConstant(a, jlcxxToPoplar(b), jlcxxToPoplar(c), d);});
+JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const Type & a, jlcxx::ArrayRef<std::size_t> b, jlcxx::ArrayRef<int> c) {return cl.addConstant(a, jlcxxToPoplar(b), jlcxxToPoplar(c));});
+JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const Type & a, jlcxx::ArrayRef<std::size_t> b, jlcxx::ArrayRef<int> c, const DebugContext & d) {return cl.addConstant(a, jlcxxToPoplar(b), jlcxxToPoplar(c), d);});
 }{ using namespace poplar;
-JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const poplar::Type & a, jlcxx::ArrayRef<std::size_t> b, jlcxx::ArrayRef<long> c) {return cl.addConstant(a, jlcxxToPoplar(b), jlcxxToPoplar(c));});
-JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const poplar::Type & a, jlcxx::ArrayRef<std::size_t> b, jlcxx::ArrayRef<long> c, std::string d) {return cl.addConstant(a, jlcxxToPoplar(b), jlcxxToPoplar(c), d);});
+JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const Type & a, jlcxx::ArrayRef<std::size_t> b, jlcxx::ArrayRef<long> c) {return cl.addConstant(a, jlcxxToPoplar(b), jlcxxToPoplar(c));});
+JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const Type & a, jlcxx::ArrayRef<std::size_t> b, jlcxx::ArrayRef<long> c, const DebugContext & d) {return cl.addConstant(a, jlcxxToPoplar(b), jlcxxToPoplar(c), d);});
 }{ using namespace poplar;
-JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const poplar::Type & a, jlcxx::ArrayRef<std::size_t> b, jlcxx::ArrayRef<float> c) {return cl.addConstant(a, jlcxxToPoplar(b), jlcxxToPoplar(c));});
-JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const poplar::Type & a, jlcxx::ArrayRef<std::size_t> b, jlcxx::ArrayRef<float> c, std::string d) {return cl.addConstant(a, jlcxxToPoplar(b), jlcxxToPoplar(c), d);});
+JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const Type & a, jlcxx::ArrayRef<std::size_t> b, jlcxx::ArrayRef<float> c) {return cl.addConstant(a, jlcxxToPoplar(b), jlcxxToPoplar(c));});
+JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const Type & a, jlcxx::ArrayRef<std::size_t> b, jlcxx::ArrayRef<float> c, const DebugContext & d) {return cl.addConstant(a, jlcxxToPoplar(b), jlcxxToPoplar(c), d);});
 }{ using namespace poplar;
-JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const poplar::Type & a, jlcxx::ArrayRef<std::size_t> b, jlcxx::ArrayRef<double> c) {return cl.addConstant(a, jlcxxToPoplar(b), jlcxxToPoplar(c));});
-JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const poplar::Type & a, jlcxx::ArrayRef<std::size_t> b, jlcxx::ArrayRef<double> c, std::string d) {return cl.addConstant(a, jlcxxToPoplar(b), jlcxxToPoplar(c), d);});
+JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const Type & a, jlcxx::ArrayRef<std::size_t> b, jlcxx::ArrayRef<double> c) {return cl.addConstant(a, jlcxxToPoplar(b), jlcxxToPoplar(c));});
+JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const Type & a, jlcxx::ArrayRef<std::size_t> b, jlcxx::ArrayRef<double> c, const DebugContext & d) {return cl.addConstant(a, jlcxxToPoplar(b), jlcxxToPoplar(c), d);});
 }
-// poplar::Graph::addConstant(const poplar::Type &, ArrayRef<std::size_t>, const void *, const poplar::TypeTraits &, bool, const poplar::DebugContext &)__CXXMethod
+// poplar::Graph::addConstant(const Type &, ArrayRef<std::size_t>, const void *, const TypeTraits &, bool, const DebugContext &)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const poplar::Type & a, jlcxx::ArrayRef<std::size_t> b, const void * c, const poplar::TypeTraits & d, bool e) {return cl.addConstant(a, jlcxxToPoplar(b), c, d, e);});
-JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const poplar::Type & a, jlcxx::ArrayRef<std::size_t> b, const void * c, const poplar::TypeTraits & d, bool e, std::string f) {return cl.addConstant(a, jlcxxToPoplar(b), c, d, e, f);});
+JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const Type & a, jlcxx::ArrayRef<std::size_t> b, const void * c, const TypeTraits & d, bool e) {return cl.addConstant(a, jlcxxToPoplar(b), c, d, e);});
+JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const Type & a, jlcxx::ArrayRef<std::size_t> b, const void * c, const TypeTraits & d, bool e, const DebugContext & f) {return cl.addConstant(a, jlcxxToPoplar(b), c, d, e, f);});
 }
-// poplar::Graph::addConstant(const poplar::Type &, const poplar::Tensor &, ArrayRef<std::size_t>, const void *, const poplar::TypeTraits &, bool, const poplar::DebugContext &)__CXXMethod
+// poplar::Graph::addConstant(const Type &, const Tensor &, ArrayRef<std::size_t>, const void *, const TypeTraits &, bool, const DebugContext &)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const poplar::Type & a, const poplar::Tensor & b, jlcxx::ArrayRef<std::size_t> c, const void * d, const poplar::TypeTraits & e, bool f) {return cl.addConstant(a, b, jlcxxToPoplar(c), d, e, f);});
-JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const poplar::Type & a, const poplar::Tensor & b, jlcxx::ArrayRef<std::size_t> c, const void * d, const poplar::TypeTraits & e, bool f, std::string g) {return cl.addConstant(a, b, jlcxxToPoplar(c), d, e, f, g);});
+JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const Type & a, const Tensor & b, jlcxx::ArrayRef<std::size_t> c, const void * d, const TypeTraits & e, bool f) {return cl.addConstant(a, b, jlcxxToPoplar(c), d, e, f);});
+JLGraph.method("GraphAddConstant", [](poplar::Graph& cl, const Type & a, const Tensor & b, jlcxx::ArrayRef<std::size_t> c, const void * d, const TypeTraits & e, bool f, const DebugContext & g) {return cl.addConstant(a, b, jlcxxToPoplar(c), d, e, f, g);});
 }
-// poplar::Graph::addConstantHalf(const poplar::Type &, ArrayRef<std::size_t>, uint16_t, const poplar::DebugContext &)__CXXMethod
+// poplar::Graph::addConstantHalf(const Type &, ArrayRef<std::size_t>, uint16_t, const DebugContext &)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphAddConstantHalf", [](poplar::Graph& cl, const poplar::Type & a, jlcxx::ArrayRef<std::size_t> b, uint16_t c) {return cl.addConstantHalf(a, jlcxxToPoplar(b), c);});
-JLGraph.method("GraphAddConstantHalf", [](poplar::Graph& cl, const poplar::Type & a, jlcxx::ArrayRef<std::size_t> b, uint16_t c, std::string d) {return cl.addConstantHalf(a, jlcxxToPoplar(b), c, d);});
+JLGraph.method("GraphAddConstantHalf", [](poplar::Graph& cl, const Type & a, jlcxx::ArrayRef<std::size_t> b, uint16_t c) {return cl.addConstantHalf(a, jlcxxToPoplar(b), c);});
+JLGraph.method("GraphAddConstantHalf", [](poplar::Graph& cl, const Type & a, jlcxx::ArrayRef<std::size_t> b, uint16_t c, const DebugContext & d) {return cl.addConstantHalf(a, jlcxxToPoplar(b), c, d);});
 }
-// poplar::Graph::addConstantHalf(const poplar::Type &, ArrayRef<std::size_t>, const uint16_t *, const poplar::DebugContext &)__CXXMethod
+// poplar::Graph::addConstantHalf(const Type &, ArrayRef<std::size_t>, const uint16_t *, const DebugContext &)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphAddConstantHalf", [](poplar::Graph& cl, const poplar::Type & a, jlcxx::ArrayRef<std::size_t> b, const uint16_t * c) {return cl.addConstantHalf(a, jlcxxToPoplar(b), c);});
-JLGraph.method("GraphAddConstantHalf", [](poplar::Graph& cl, const poplar::Type & a, jlcxx::ArrayRef<std::size_t> b, const uint16_t * c, std::string d) {return cl.addConstantHalf(a, jlcxxToPoplar(b), c, d);});
+JLGraph.method("GraphAddConstantHalf", [](poplar::Graph& cl, const Type & a, jlcxx::ArrayRef<std::size_t> b, const uint16_t * c) {return cl.addConstantHalf(a, jlcxxToPoplar(b), c);});
+JLGraph.method("GraphAddConstantHalf", [](poplar::Graph& cl, const Type & a, jlcxx::ArrayRef<std::size_t> b, const uint16_t * c, const DebugContext & d) {return cl.addConstantHalf(a, jlcxxToPoplar(b), c, d);});
 }
-// poplar::Graph::clone(const poplar::Type &, const poplar::Tensor &, const poplar::DebugContext &, poplar::TensorCloneMethod)__CXXMethod
+// poplar::Graph::clone(const Type &, const Tensor &, const DebugContext &, TensorCloneMethod)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphClone", [](poplar::Graph& cl, const poplar::Type & a, const poplar::Tensor & b) {return cl.clone(a, b);});
-JLGraph.method("GraphClone", [](poplar::Graph& cl, const poplar::Type & a, const poplar::Tensor & b, std::string c) {return cl.clone(a, b, c);});
-JLGraph.method("GraphClone", [](poplar::Graph& cl, const poplar::Type & a, const poplar::Tensor & b, std::string c, poplar::TensorCloneMethod d) {return cl.clone(a, b, c, d);});
+JLGraph.method("GraphClone", [](poplar::Graph& cl, const Type & a, const Tensor & b) {return cl.clone(a, b);});
+JLGraph.method("GraphClone", [](poplar::Graph& cl, const Type & a, const Tensor & b, const DebugContext & c) {return cl.clone(a, b, c);});
+JLGraph.method("GraphClone", [](poplar::Graph& cl, const Type & a, const Tensor & b, const DebugContext & c, TensorCloneMethod d) {return cl.clone(a, b, c, d);});
 }
-// poplar::Graph::clone(const poplar::Type &, const poplar::Tensor &, const poplar::Tensor &, const poplar::DebugContext &, poplar::TensorCloneMethod)__CXXMethod
+// poplar::Graph::clone(const Type &, const Tensor &, const Tensor &, const DebugContext &, TensorCloneMethod)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphClone", [](poplar::Graph& cl, const poplar::Type & a, const poplar::Tensor & b, const poplar::Tensor & c) {return cl.clone(a, b, c);});
-JLGraph.method("GraphClone", [](poplar::Graph& cl, const poplar::Type & a, const poplar::Tensor & b, const poplar::Tensor & c, std::string d) {return cl.clone(a, b, c, d);});
-JLGraph.method("GraphClone", [](poplar::Graph& cl, const poplar::Type & a, const poplar::Tensor & b, const poplar::Tensor & c, std::string d, poplar::TensorCloneMethod e) {return cl.clone(a, b, c, d, e);});
+JLGraph.method("GraphClone", [](poplar::Graph& cl, const Type & a, const Tensor & b, const Tensor & c) {return cl.clone(a, b, c);});
+JLGraph.method("GraphClone", [](poplar::Graph& cl, const Type & a, const Tensor & b, const Tensor & c, const DebugContext & d) {return cl.clone(a, b, c, d);});
+JLGraph.method("GraphClone", [](poplar::Graph& cl, const Type & a, const Tensor & b, const Tensor & c, const DebugContext & d, TensorCloneMethod e) {return cl.clone(a, b, c, d, e);});
 }
-// poplar::Graph::cloneN(const poplar::Type &, const poplar::Tensor &, std::size_t, const poplar::DebugContext &, poplar::TensorCloneMethod, poplar::TensorCloneDuplicationMethod)__CXXMethod
+// poplar::Graph::cloneN(const Type &, const Tensor &, std::size_t, const DebugContext &, TensorCloneMethod, TensorCloneDuplicationMethod)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const poplar::Type & a, const poplar::Tensor & b, std::size_t c) {return cl.cloneN(a, b, c);});
-JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const poplar::Type & a, const poplar::Tensor & b, std::size_t c, std::string d) {return cl.cloneN(a, b, c, d);});
-JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const poplar::Type & a, const poplar::Tensor & b, std::size_t c, std::string d, poplar::TensorCloneMethod e) {return cl.cloneN(a, b, c, d, e);});
-JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const poplar::Type & a, const poplar::Tensor & b, std::size_t c, std::string d, poplar::TensorCloneMethod e, poplar::TensorCloneDuplicationMethod f) {return cl.cloneN(a, b, c, d, e, f);});
+JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const Type & a, const Tensor & b, std::size_t c) {return cl.cloneN(a, b, c);});
+JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const Type & a, const Tensor & b, std::size_t c, const DebugContext & d) {return cl.cloneN(a, b, c, d);});
+JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const Type & a, const Tensor & b, std::size_t c, const DebugContext & d, TensorCloneMethod e) {return cl.cloneN(a, b, c, d, e);});
+JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const Type & a, const Tensor & b, std::size_t c, const DebugContext & d, TensorCloneMethod e, TensorCloneDuplicationMethod f) {return cl.cloneN(a, b, c, d, e, f);});
 }
-// poplar::Graph::cloneN(const poplar::Type &, const poplar::Tensor &, const poplar::Tensor &, std::size_t, const poplar::DebugContext &, poplar::TensorCloneMethod, poplar::TensorCloneDuplicationMethod)__CXXMethod
+// poplar::Graph::cloneN(const Type &, const Tensor &, const Tensor &, std::size_t, const DebugContext &, TensorCloneMethod, TensorCloneDuplicationMethod)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const poplar::Type & a, const poplar::Tensor & b, const poplar::Tensor & c, std::size_t d) {return cl.cloneN(a, b, c, d);});
-JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const poplar::Type & a, const poplar::Tensor & b, const poplar::Tensor & c, std::size_t d, std::string e) {return cl.cloneN(a, b, c, d, e);});
-JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const poplar::Type & a, const poplar::Tensor & b, const poplar::Tensor & c, std::size_t d, std::string e, poplar::TensorCloneMethod f) {return cl.cloneN(a, b, c, d, e, f);});
-JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const poplar::Type & a, const poplar::Tensor & b, const poplar::Tensor & c, std::size_t d, std::string e, poplar::TensorCloneMethod f, poplar::TensorCloneDuplicationMethod g) {return cl.cloneN(a, b, c, d, e, f, g);});
+JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const Type & a, const Tensor & b, const Tensor & c, std::size_t d) {return cl.cloneN(a, b, c, d);});
+JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const Type & a, const Tensor & b, const Tensor & c, std::size_t d, const DebugContext & e) {return cl.cloneN(a, b, c, d, e);});
+JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const Type & a, const Tensor & b, const Tensor & c, std::size_t d, const DebugContext & e, TensorCloneMethod f) {return cl.cloneN(a, b, c, d, e, f);});
+JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const Type & a, const Tensor & b, const Tensor & c, std::size_t d, const DebugContext & e, TensorCloneMethod f, TensorCloneDuplicationMethod g) {return cl.cloneN(a, b, c, d, e, f, g);});
 }
-// poplar::Graph::clone(const poplar::Tensor &, const poplar::DebugContext &, poplar::TensorCloneMethod)__CXXMethod
+// poplar::Graph::clone(const Tensor &, const DebugContext &, TensorCloneMethod)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphClone", [](poplar::Graph& cl, const poplar::Tensor & a) {return cl.clone(a);});
-JLGraph.method("GraphClone", [](poplar::Graph& cl, const poplar::Tensor & a, std::string b) {return cl.clone(a, b);});
-JLGraph.method("GraphClone", [](poplar::Graph& cl, const poplar::Tensor & a, std::string b, poplar::TensorCloneMethod c) {return cl.clone(a, b, c);});
+JLGraph.method("GraphClone", [](poplar::Graph& cl, const Tensor & a) {return cl.clone(a);});
+JLGraph.method("GraphClone", [](poplar::Graph& cl, const Tensor & a, const DebugContext & b) {return cl.clone(a, b);});
+JLGraph.method("GraphClone", [](poplar::Graph& cl, const Tensor & a, const DebugContext & b, TensorCloneMethod c) {return cl.clone(a, b, c);});
 }
-// poplar::Graph::clone(const poplar::Tensor &, const poplar::Tensor &, const poplar::DebugContext &, poplar::TensorCloneMethod)__CXXMethod
+// poplar::Graph::clone(const Tensor &, const Tensor &, const DebugContext &, TensorCloneMethod)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphClone", [](poplar::Graph& cl, const poplar::Tensor & a, const poplar::Tensor & b) {return cl.clone(a, b);});
-JLGraph.method("GraphClone", [](poplar::Graph& cl, const poplar::Tensor & a, const poplar::Tensor & b, std::string c) {return cl.clone(a, b, c);});
-JLGraph.method("GraphClone", [](poplar::Graph& cl, const poplar::Tensor & a, const poplar::Tensor & b, std::string c, poplar::TensorCloneMethod d) {return cl.clone(a, b, c, d);});
+JLGraph.method("GraphClone", [](poplar::Graph& cl, const Tensor & a, const Tensor & b) {return cl.clone(a, b);});
+JLGraph.method("GraphClone", [](poplar::Graph& cl, const Tensor & a, const Tensor & b, const DebugContext & c) {return cl.clone(a, b, c);});
+JLGraph.method("GraphClone", [](poplar::Graph& cl, const Tensor & a, const Tensor & b, const DebugContext & c, TensorCloneMethod d) {return cl.clone(a, b, c, d);});
 }
-// poplar::Graph::cloneN(const poplar::Tensor &, std::size_t, const poplar::DebugContext &, poplar::TensorCloneMethod, poplar::TensorCloneDuplicationMethod)__CXXMethod
+// poplar::Graph::cloneN(const Tensor &, std::size_t, const DebugContext &, TensorCloneMethod, TensorCloneDuplicationMethod)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const poplar::Tensor & a, std::size_t b) {return cl.cloneN(a, b);});
-JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const poplar::Tensor & a, std::size_t b, std::string c) {return cl.cloneN(a, b, c);});
-JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const poplar::Tensor & a, std::size_t b, std::string c, poplar::TensorCloneMethod d) {return cl.cloneN(a, b, c, d);});
-JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const poplar::Tensor & a, std::size_t b, std::string c, poplar::TensorCloneMethod d, poplar::TensorCloneDuplicationMethod e) {return cl.cloneN(a, b, c, d, e);});
+JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const Tensor & a, std::size_t b) {return cl.cloneN(a, b);});
+JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const Tensor & a, std::size_t b, const DebugContext & c) {return cl.cloneN(a, b, c);});
+JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const Tensor & a, std::size_t b, const DebugContext & c, TensorCloneMethod d) {return cl.cloneN(a, b, c, d);});
+JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const Tensor & a, std::size_t b, const DebugContext & c, TensorCloneMethod d, TensorCloneDuplicationMethod e) {return cl.cloneN(a, b, c, d, e);});
 }
-// poplar::Graph::cloneN(const poplar::Tensor &, const poplar::Tensor &, std::size_t, const poplar::DebugContext &, poplar::TensorCloneMethod, poplar::TensorCloneDuplicationMethod)__CXXMethod
+// poplar::Graph::cloneN(const Tensor &, const Tensor &, std::size_t, const DebugContext &, TensorCloneMethod, TensorCloneDuplicationMethod)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const poplar::Tensor & a, const poplar::Tensor & b, std::size_t c) {return cl.cloneN(a, b, c);});
-JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const poplar::Tensor & a, const poplar::Tensor & b, std::size_t c, std::string d) {return cl.cloneN(a, b, c, d);});
-JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const poplar::Tensor & a, const poplar::Tensor & b, std::size_t c, std::string d, poplar::TensorCloneMethod e) {return cl.cloneN(a, b, c, d, e);});
-JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const poplar::Tensor & a, const poplar::Tensor & b, std::size_t c, std::string d, poplar::TensorCloneMethod e, poplar::TensorCloneDuplicationMethod f) {return cl.cloneN(a, b, c, d, e, f);});
+JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const Tensor & a, const Tensor & b, std::size_t c) {return cl.cloneN(a, b, c);});
+JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const Tensor & a, const Tensor & b, std::size_t c, const DebugContext & d) {return cl.cloneN(a, b, c, d);});
+JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const Tensor & a, const Tensor & b, std::size_t c, const DebugContext & d, TensorCloneMethod e) {return cl.cloneN(a, b, c, d, e);});
+JLGraph.method("GraphCloneN", [](poplar::Graph& cl, const Tensor & a, const Tensor & b, std::size_t c, const DebugContext & d, TensorCloneMethod e, TensorCloneDuplicationMethod f) {return cl.cloneN(a, b, c, d, e, f);});
 }
-// poplar::Graph::connect(poplar::FieldRef, const poplar::Tensor &)__CXXMethod
+// poplar::Graph::connect(FieldRef, const Tensor &)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphConnect", [](poplar::Graph& cl, poplar::FieldRef a, const poplar::Tensor & b) {return cl.connect(a, b);});
+JLGraph.method("GraphConnect", [](poplar::Graph& cl, FieldRef a, const Tensor & b) {return cl.connect(a, b);});
 }
-// poplar::Graph::connect(poplar::FieldRef, T, typename std::enable_if<TypeTraits::isSimpleType<T>()>::type *)__FunctionTemplate
+// poplar::Graph::connect(FieldRef, T, typename std::enable_if<TypeTraits::isSimpleType<T>()>::type *)__FunctionTemplate
 { using namespace poplar;
-JLGraph.method("GraphConnect", [](poplar::Graph& cl, poplar::FieldRef a, jlcxx::StrictlyTypedNumber<unsigned int> b) {return cl.connect(a, b.value);});
+JLGraph.method("GraphConnect", [](poplar::Graph& cl, FieldRef a, jlcxx::StrictlyTypedNumber<unsigned int> b) {return cl.connect(a, b.value);});
 }{ using namespace poplar;
-JLGraph.method("GraphConnect", [](poplar::Graph& cl, poplar::FieldRef a, jlcxx::StrictlyTypedNumber<int> b) {return cl.connect(a, b.value);});
+JLGraph.method("GraphConnect", [](poplar::Graph& cl, FieldRef a, jlcxx::StrictlyTypedNumber<int> b) {return cl.connect(a, b.value);});
 }{ using namespace poplar;
-JLGraph.method("GraphConnect", [](poplar::Graph& cl, poplar::FieldRef a, jlcxx::StrictlyTypedNumber<long> b) {return cl.connect(a, b.value);});
+JLGraph.method("GraphConnect", [](poplar::Graph& cl, FieldRef a, jlcxx::StrictlyTypedNumber<long> b) {return cl.connect(a, b.value);});
 }{ using namespace poplar;
-JLGraph.method("GraphConnect", [](poplar::Graph& cl, poplar::FieldRef a, jlcxx::StrictlyTypedNumber<float> b) {return cl.connect(a, b.value);});
+JLGraph.method("GraphConnect", [](poplar::Graph& cl, FieldRef a, jlcxx::StrictlyTypedNumber<float> b) {return cl.connect(a, b.value);});
 }{ using namespace poplar;
-JLGraph.method("GraphConnect", [](poplar::Graph& cl, poplar::FieldRef a, jlcxx::StrictlyTypedNumber<double> b) {return cl.connect(a, b.value);});
+JLGraph.method("GraphConnect", [](poplar::Graph& cl, FieldRef a, jlcxx::StrictlyTypedNumber<double> b) {return cl.connect(a, b.value);});
 }
-// poplar::Graph::connect(poplar::FieldRef, ArrayRef<poplar::Tensor>)__CXXMethod
+// poplar::Graph::connect(FieldRef, ArrayRef<Tensor>)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphConnect", [](poplar::Graph& cl, poplar::FieldRef a, ArrayRef<poplar::Tensor> b) {return cl.connect(a, b);});
+JLGraph.method("GraphConnect", [](poplar::Graph& cl, FieldRef a, jlcxx::ArrayRef<Tensor> b) {return cl.connect(a, jlcxxToPoplar(b));});
 }
-// poplar::Graph::setPerfEstimate(const poplar::VertexRef &, std::uint64_t, std::uint64_t)__CXXMethod
+// poplar::Graph::setPerfEstimate(const VertexRef &, std::uint64_t, std::uint64_t)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphSetPerfEstimate", [](poplar::Graph& cl, const poplar::VertexRef & a, std::uint64_t b) {return cl.setPerfEstimate(a, b);});
-JLGraph.method("GraphSetPerfEstimate", [](poplar::Graph& cl, const poplar::VertexRef & a, std::uint64_t b, std::uint64_t c) {return cl.setPerfEstimate(a, b, c);});
+JLGraph.method("GraphSetPerfEstimate", [](poplar::Graph& cl, const VertexRef & a, std::uint64_t b) {return cl.setPerfEstimate(a, b);});
+JLGraph.method("GraphSetPerfEstimate", [](poplar::Graph& cl, const VertexRef & a, std::uint64_t b, std::uint64_t c) {return cl.setPerfEstimate(a, b, c);});
 }
-// poplar::Graph::setPerfEstimate(const poplar::VertexRef &, const poplar::VertexPerfEstimate &)__CXXMethod
+// poplar::Graph::setPerfEstimate(const VertexRef &, const VertexPerfEstimate &)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphSetPerfEstimate", [](poplar::Graph& cl, const poplar::VertexRef & a, const poplar::VertexPerfEstimate & b) {return cl.setPerfEstimate(a, b);});
+JLGraph.method("GraphSetPerfEstimate", [](poplar::Graph& cl, const VertexRef & a, const VertexPerfEstimate & b) {return cl.setPerfEstimate(a, b);});
 }
-// poplar::Graph::getPerfEstimate(const poplar::VertexRef &)__CXXMethod
+// poplar::Graph::getPerfEstimate(const VertexRef &)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphGetPerfEstimate", [](poplar::Graph& cl, const poplar::VertexRef & a) {return cl.getPerfEstimate(a);});
+JLGraph.method("GraphGetPerfEstimate", [](poplar::Graph& cl, const VertexRef & a) {return cl.getPerfEstimate(a);});
 }
-// poplar::Graph::registerPerfEstimator(std::string, poplar::PerfEstimateFunc)__CXXMethod
+// poplar::Graph::registerPerfEstimator(StringRef, PerfEstimateFunc)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphRegisterPerfEstimator", [](poplar::Graph& cl, std::string a, poplar::PerfEstimateFunc b) {return cl.registerPerfEstimator(a, b);});
+JLGraph.method("GraphRegisterPerfEstimator", [](poplar::Graph& cl, StringRef a, PerfEstimateFunc b) {return cl.registerPerfEstimator(a, b);});
 }
 // poplar::Graph::getNumVertices()__CXXMethod
 { using namespace poplar;
 JLGraph.method("GraphGetNumVertices", [](poplar::Graph& cl) {return cl.getNumVertices();});
 }
-// poplar::Graph::addComputeSet(const poplar::DebugContext &)__CXXMethod
+// poplar::Graph::addComputeSet(const DebugContext &)__CXXMethod
 { using namespace poplar;
 JLGraph.method("GraphAddComputeSet", [](poplar::Graph& cl) {return cl.addComputeSet();});
-JLGraph.method("GraphAddComputeSet", [](poplar::Graph& cl, std::string a) {return cl.addComputeSet(a);});
+JLGraph.method("GraphAddComputeSet", [](poplar::Graph& cl, const DebugContext & a) {return cl.addComputeSet(a);});
 }
-// poplar::Graph::setFieldSize(poplar::FieldRef, std::size_t)__CXXMethod
+// poplar::Graph::setFieldSize(FieldRef, std::size_t)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphSetFieldSize", [](poplar::Graph& cl, poplar::FieldRef a, std::size_t b) {return cl.setFieldSize(a, b);});
+JLGraph.method("GraphSetFieldSize", [](poplar::Graph& cl, FieldRef a, std::size_t b) {return cl.setFieldSize(a, b);});
 }
-// poplar::Graph::getFieldSize(poplar::FieldRef)__CXXMethod
+// poplar::Graph::getFieldSize(FieldRef)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphGetFieldSize", [](poplar::Graph& cl, poplar::FieldRef a) {return cl.getFieldSize(a);});
+JLGraph.method("GraphGetFieldSize", [](poplar::Graph& cl, FieldRef a) {return cl.getFieldSize(a);});
 }
-// poplar::Graph::getMaxFieldDim(std::string, std::string, unsigned int)__CXXMethod
+// poplar::Graph::getMaxFieldDim(StringRef, StringRef, unsigned int)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphGetMaxFieldDim", [](poplar::Graph& cl, std::string a, std::string b, unsigned int c) {return cl.getMaxFieldDim(a, b, c);});
+JLGraph.method("GraphGetMaxFieldDim", [](poplar::Graph& cl, StringRef a, StringRef b, unsigned int c) {return cl.getMaxFieldDim(a, b, c);});
 }
-// poplar::Graph::getMaxVertexFieldValue(std::string, std::string)__CXXMethod
+// poplar::Graph::getMaxVertexFieldValue(StringRef, StringRef)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphGetMaxVertexFieldValue", [](poplar::Graph& cl, std::string a, std::string b) {return cl.getMaxVertexFieldValue(a, b);});
+JLGraph.method("GraphGetMaxVertexFieldValue", [](poplar::Graph& cl, StringRef a, StringRef b) {return cl.getMaxVertexFieldValue(a, b);});
 }
-// poplar::Graph::setInitialValueHalf(poplar::FieldRef, uint16_t)__CXXMethod
+// poplar::Graph::setInitialValueHalf(FieldRef, uint16_t)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphSetInitialValueHalf", [](poplar::Graph& cl, poplar::FieldRef a, uint16_t b) {return cl.setInitialValueHalf(a, b);});
+JLGraph.method("GraphSetInitialValueHalf", [](poplar::Graph& cl, FieldRef a, uint16_t b) {return cl.setInitialValueHalf(a, b);});
 }
-// poplar::Graph::setInitialValue(poplar::FieldRef, ArrayRef<T>)__FunctionTemplate
+// poplar::Graph::setInitialValue(FieldRef, ArrayRef<T>)__FunctionTemplate
 { using namespace poplar;
-JLGraph.method("GraphSetInitialValue", [](poplar::Graph& cl, poplar::FieldRef a, jlcxx::ArrayRef<unsigned int> b) {return cl.setInitialValue(a, jlcxxToPoplar(b));});
+JLGraph.method("GraphSetInitialValue", [](poplar::Graph& cl, FieldRef a, jlcxx::ArrayRef<unsigned int> b) {return cl.setInitialValue(a, jlcxxToPoplar(b));});
 }{ using namespace poplar;
-JLGraph.method("GraphSetInitialValue", [](poplar::Graph& cl, poplar::FieldRef a, jlcxx::ArrayRef<int> b) {return cl.setInitialValue(a, jlcxxToPoplar(b));});
+JLGraph.method("GraphSetInitialValue", [](poplar::Graph& cl, FieldRef a, jlcxx::ArrayRef<int> b) {return cl.setInitialValue(a, jlcxxToPoplar(b));});
 }{ using namespace poplar;
-JLGraph.method("GraphSetInitialValue", [](poplar::Graph& cl, poplar::FieldRef a, jlcxx::ArrayRef<long> b) {return cl.setInitialValue(a, jlcxxToPoplar(b));});
+JLGraph.method("GraphSetInitialValue", [](poplar::Graph& cl, FieldRef a, jlcxx::ArrayRef<long> b) {return cl.setInitialValue(a, jlcxxToPoplar(b));});
 }{ using namespace poplar;
-JLGraph.method("GraphSetInitialValue", [](poplar::Graph& cl, poplar::FieldRef a, jlcxx::ArrayRef<float> b) {return cl.setInitialValue(a, jlcxxToPoplar(b));});
+JLGraph.method("GraphSetInitialValue", [](poplar::Graph& cl, FieldRef a, jlcxx::ArrayRef<float> b) {return cl.setInitialValue(a, jlcxxToPoplar(b));});
 }{ using namespace poplar;
-JLGraph.method("GraphSetInitialValue", [](poplar::Graph& cl, poplar::FieldRef a, jlcxx::ArrayRef<double> b) {return cl.setInitialValue(a, jlcxxToPoplar(b));});
+JLGraph.method("GraphSetInitialValue", [](poplar::Graph& cl, FieldRef a, jlcxx::ArrayRef<double> b) {return cl.setInitialValue(a, jlcxxToPoplar(b));});
 }
-// poplar::Graph::setInitialValueHalf(poplar::FieldRef, ArrayRef<uint16_t>)__CXXMethod
+// poplar::Graph::setInitialValueHalf(FieldRef, ArrayRef<uint16_t>)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphSetInitialValueHalf", [](poplar::Graph& cl, poplar::FieldRef a, jlcxx::ArrayRef<uint16_t> b) {return cl.setInitialValueHalf(a, jlcxxToPoplar(b));});
+JLGraph.method("GraphSetInitialValueHalf", [](poplar::Graph& cl, FieldRef a, jlcxx::ArrayRef<uint16_t> b) {return cl.setInitialValueHalf(a, jlcxxToPoplar(b));});
 }
-// poplar::Graph::setInitialValue(const poplar::Tensor &, const std::map<unsigned int, unsigned int> &)__CXXMethod
+// poplar::Graph::setInitialValue(const Tensor &, const std::map<unsigned int, unsigned int> &)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphSetInitialValue", [](poplar::Graph& cl, const poplar::Tensor & a, const std::map<unsigned int, unsigned int> & b) {return cl.setInitialValue(a, b);});
+JLGraph.method("GraphSetInitialValue", [](poplar::Graph& cl, const Tensor & a, const std::map<unsigned int, unsigned int> & b) {return cl.setInitialValue(a, b);});
 }
-// poplar::Graph::setInitialValue(const poplar::Tensor &, ArrayRef<T>)__FunctionTemplate
+// poplar::Graph::setInitialValue(const Tensor &, ArrayRef<T>)__FunctionTemplate
 { using namespace poplar;
-JLGraph.method("GraphSetInitialValue", [](poplar::Graph& cl, const poplar::Tensor & a, jlcxx::ArrayRef<unsigned int> b) {return cl.setInitialValue(a, jlcxxToPoplar(b));});
+JLGraph.method("GraphSetInitialValue", [](poplar::Graph& cl, const Tensor & a, jlcxx::ArrayRef<unsigned int> b) {return cl.setInitialValue(a, jlcxxToPoplar(b));});
 }{ using namespace poplar;
-JLGraph.method("GraphSetInitialValue", [](poplar::Graph& cl, const poplar::Tensor & a, jlcxx::ArrayRef<int> b) {return cl.setInitialValue(a, jlcxxToPoplar(b));});
+JLGraph.method("GraphSetInitialValue", [](poplar::Graph& cl, const Tensor & a, jlcxx::ArrayRef<int> b) {return cl.setInitialValue(a, jlcxxToPoplar(b));});
 }{ using namespace poplar;
-JLGraph.method("GraphSetInitialValue", [](poplar::Graph& cl, const poplar::Tensor & a, jlcxx::ArrayRef<long> b) {return cl.setInitialValue(a, jlcxxToPoplar(b));});
+JLGraph.method("GraphSetInitialValue", [](poplar::Graph& cl, const Tensor & a, jlcxx::ArrayRef<long> b) {return cl.setInitialValue(a, jlcxxToPoplar(b));});
 }{ using namespace poplar;
-JLGraph.method("GraphSetInitialValue", [](poplar::Graph& cl, const poplar::Tensor & a, jlcxx::ArrayRef<float> b) {return cl.setInitialValue(a, jlcxxToPoplar(b));});
+JLGraph.method("GraphSetInitialValue", [](poplar::Graph& cl, const Tensor & a, jlcxx::ArrayRef<float> b) {return cl.setInitialValue(a, jlcxxToPoplar(b));});
 }{ using namespace poplar;
-JLGraph.method("GraphSetInitialValue", [](poplar::Graph& cl, const poplar::Tensor & a, jlcxx::ArrayRef<double> b) {return cl.setInitialValue(a, jlcxxToPoplar(b));});
+JLGraph.method("GraphSetInitialValue", [](poplar::Graph& cl, const Tensor & a, jlcxx::ArrayRef<double> b) {return cl.setInitialValue(a, jlcxxToPoplar(b));});
 }
-// poplar::Graph::setInitialValueHalf(const poplar::Tensor &, uint16_t)__CXXMethod
+// poplar::Graph::setInitialValueHalf(const Tensor &, uint16_t)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphSetInitialValueHalf", [](poplar::Graph& cl, const poplar::Tensor & a, uint16_t b) {return cl.setInitialValueHalf(a, b);});
+JLGraph.method("GraphSetInitialValueHalf", [](poplar::Graph& cl, const Tensor & a, uint16_t b) {return cl.setInitialValueHalf(a, b);});
 }
-// poplar::Graph::setInitialValueHalf(const poplar::Tensor &, ArrayRef<uint16_t>)__CXXMethod
+// poplar::Graph::setInitialValueHalf(const Tensor &, ArrayRef<uint16_t>)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphSetInitialValueHalf", [](poplar::Graph& cl, const poplar::Tensor & a, jlcxx::ArrayRef<uint16_t> b) {return cl.setInitialValueHalf(a, jlcxxToPoplar(b));});
+JLGraph.method("GraphSetInitialValueHalf", [](poplar::Graph& cl, const Tensor & a, jlcxx::ArrayRef<uint16_t> b) {return cl.setInitialValueHalf(a, jlcxxToPoplar(b));});
 }
-// poplar::Graph::createHostWrite(std::string, const poplar::Tensor &, bool)__CXXMethod
+// poplar::Graph::createHostWrite(StringRef, const Tensor &, bool)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphCreateHostWrite", [](poplar::Graph& cl, std::string a, const poplar::Tensor & b) {return cl.createHostWrite(a, b);});
-JLGraph.method("GraphCreateHostWrite", [](poplar::Graph& cl, std::string a, const poplar::Tensor & b, bool c) {return cl.createHostWrite(a, b, c);});
+JLGraph.method("GraphCreateHostWrite", [](poplar::Graph& cl, StringRef a, const Tensor & b) {return cl.createHostWrite(a, b);});
+JLGraph.method("GraphCreateHostWrite", [](poplar::Graph& cl, StringRef a, const Tensor & b, bool c) {return cl.createHostWrite(a, b, c);});
 }
-// poplar::Graph::createHostRead(std::string, const poplar::Tensor &, bool)__CXXMethod
+// poplar::Graph::createHostRead(StringRef, const Tensor &, bool)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphCreateHostRead", [](poplar::Graph& cl, std::string a, const poplar::Tensor & b) {return cl.createHostRead(a, b);});
-JLGraph.method("GraphCreateHostRead", [](poplar::Graph& cl, std::string a, const poplar::Tensor & b, bool c) {return cl.createHostRead(a, b, c);});
+JLGraph.method("GraphCreateHostRead", [](poplar::Graph& cl, StringRef a, const Tensor & b) {return cl.createHostRead(a, b);});
+JLGraph.method("GraphCreateHostRead", [](poplar::Graph& cl, StringRef a, const Tensor & b, bool c) {return cl.createHostRead(a, b, c);});
 }
-// poplar::Graph::addHostToDeviceFIFO(std::string, const poplar::Type &, std::size_t, poplar::ReplicatedStreamMode, const poplar::OptionFlags &)__CXXMethod
+// poplar::Graph::addHostToDeviceFIFO(StringRef, const Type &, std::size_t, ReplicatedStreamMode, const OptionFlags &)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphAddHostToDeviceFIFO", [](poplar::Graph& cl, std::string a, const poplar::Type & b, std::size_t c) {return cl.addHostToDeviceFIFO(a, b, c);});
-JLGraph.method("GraphAddHostToDeviceFIFO", [](poplar::Graph& cl, std::string a, const poplar::Type & b, std::size_t c, poplar::ReplicatedStreamMode d) {return cl.addHostToDeviceFIFO(a, b, c, d);});
-JLGraph.method("GraphAddHostToDeviceFIFO", [](poplar::Graph& cl, std::string a, const poplar::Type & b, std::size_t c, poplar::ReplicatedStreamMode d, const poplar::OptionFlags & e) {return cl.addHostToDeviceFIFO(a, b, c, d, e);});
+JLGraph.method("GraphAddHostToDeviceFIFO", [](poplar::Graph& cl, StringRef a, const Type & b, std::size_t c) {return cl.addHostToDeviceFIFO(a, b, c);});
+JLGraph.method("GraphAddHostToDeviceFIFO", [](poplar::Graph& cl, StringRef a, const Type & b, std::size_t c, ReplicatedStreamMode d) {return cl.addHostToDeviceFIFO(a, b, c, d);});
+JLGraph.method("GraphAddHostToDeviceFIFO", [](poplar::Graph& cl, StringRef a, const Type & b, std::size_t c, ReplicatedStreamMode d, const OptionFlags & e) {return cl.addHostToDeviceFIFO(a, b, c, d, e);});
 }
-// poplar::Graph::addDeviceToHostFIFO(std::string, const poplar::Type &, std::size_t, const poplar::OptionFlags &)__CXXMethod
+// poplar::Graph::addDeviceToHostFIFO(StringRef, const Type &, std::size_t, const OptionFlags &)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphAddDeviceToHostFIFO", [](poplar::Graph& cl, std::string a, const poplar::Type & b, std::size_t c) {return cl.addDeviceToHostFIFO(a, b, c);});
-JLGraph.method("GraphAddDeviceToHostFIFO", [](poplar::Graph& cl, std::string a, const poplar::Type & b, std::size_t c, const poplar::OptionFlags & d) {return cl.addDeviceToHostFIFO(a, b, c, d);});
+JLGraph.method("GraphAddDeviceToHostFIFO", [](poplar::Graph& cl, StringRef a, const Type & b, std::size_t c) {return cl.addDeviceToHostFIFO(a, b, c);});
+JLGraph.method("GraphAddDeviceToHostFIFO", [](poplar::Graph& cl, StringRef a, const Type & b, std::size_t c, const OptionFlags & d) {return cl.addDeviceToHostFIFO(a, b, c, d);});
 }
-// poplar::Graph::addRemoteBuffer(std::string, const poplar::Type &, std::size_t, std::size_t, bool, bool)__CXXMethod
+// poplar::Graph::addRemoteBuffer(StringRef, const Type &, std::size_t, std::size_t, bool, bool)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphAddRemoteBuffer", [](poplar::Graph& cl, std::string a, const poplar::Type & b, std::size_t c) {return cl.addRemoteBuffer(a, b, c);});
-JLGraph.method("GraphAddRemoteBuffer", [](poplar::Graph& cl, std::string a, const poplar::Type & b, std::size_t c, std::size_t d) {return cl.addRemoteBuffer(a, b, c, d);});
-JLGraph.method("GraphAddRemoteBuffer", [](poplar::Graph& cl, std::string a, const poplar::Type & b, std::size_t c, std::size_t d, bool e) {return cl.addRemoteBuffer(a, b, c, d, e);});
-JLGraph.method("GraphAddRemoteBuffer", [](poplar::Graph& cl, std::string a, const poplar::Type & b, std::size_t c, std::size_t d, bool e, bool f) {return cl.addRemoteBuffer(a, b, c, d, e, f);});
+JLGraph.method("GraphAddRemoteBuffer", [](poplar::Graph& cl, StringRef a, const Type & b, std::size_t c) {return cl.addRemoteBuffer(a, b, c);});
+JLGraph.method("GraphAddRemoteBuffer", [](poplar::Graph& cl, StringRef a, const Type & b, std::size_t c, std::size_t d) {return cl.addRemoteBuffer(a, b, c, d);});
+JLGraph.method("GraphAddRemoteBuffer", [](poplar::Graph& cl, StringRef a, const Type & b, std::size_t c, std::size_t d, bool e) {return cl.addRemoteBuffer(a, b, c, d, e);});
+JLGraph.method("GraphAddRemoteBuffer", [](poplar::Graph& cl, StringRef a, const Type & b, std::size_t c, std::size_t d, bool e, bool f) {return cl.addRemoteBuffer(a, b, c, d, e, f);});
 }
-// poplar::Graph::setTileMapping(poplar::VertexRef, unsigned int)__CXXMethod
+// poplar::Graph::setTileMapping(VertexRef, unsigned int)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphSetTileMapping", [](poplar::Graph& cl, poplar::VertexRef a, unsigned int b) {return cl.setTileMapping(a, b);});
+JLGraph.method("GraphSetTileMapping", [](poplar::Graph& cl, VertexRef a, unsigned int b) {return cl.setTileMapping(a, b);});
 }
-// poplar::Graph::setTileMapping(const poplar::Tensor &, unsigned int)__CXXMethod
+// poplar::Graph::setTileMapping(const Tensor &, unsigned int)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphSetTileMapping", [](poplar::Graph& cl, const poplar::Tensor & a, unsigned int b) {return cl.setTileMapping(a, b);});
+JLGraph.method("GraphSetTileMapping", [](poplar::Graph& cl, const Tensor & a, unsigned int b) {return cl.setTileMapping(a, b);});
 }
-// poplar::Graph::getTileMapping(const poplar::Tensor &, bool, bool)__CXXMethod
+// poplar::Graph::getTileMapping(const Tensor &, bool, bool)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphGetTileMapping", [](poplar::Graph& cl, const poplar::Tensor & a) {return cl.getTileMapping(a);});
-JLGraph.method("GraphGetTileMapping", [](poplar::Graph& cl, const poplar::Tensor & a, bool b) {return cl.getTileMapping(a, b);});
-JLGraph.method("GraphGetTileMapping", [](poplar::Graph& cl, const poplar::Tensor & a, bool b, bool c) {return cl.getTileMapping(a, b, c);});
+JLGraph.method("GraphGetTileMapping", [](poplar::Graph& cl, const Tensor & a) {return cl.getTileMapping(a);});
+JLGraph.method("GraphGetTileMapping", [](poplar::Graph& cl, const Tensor & a, bool b) {return cl.getTileMapping(a, b);});
+JLGraph.method("GraphGetTileMapping", [](poplar::Graph& cl, const Tensor & a, bool b, bool c) {return cl.getTileMapping(a, b, c);});
 }
-// poplar::Graph::getTileMapping(const poplar::Tensor &, bool *, bool)__CXXMethod
+// poplar::Graph::getTileMapping(const Tensor &, bool *, bool)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphGetTileMapping", [](poplar::Graph& cl, const poplar::Tensor & a, bool * b) {return cl.getTileMapping(a, b);});
-JLGraph.method("GraphGetTileMapping", [](poplar::Graph& cl, const poplar::Tensor & a, bool * b, bool c) {return cl.getTileMapping(a, b, c);});
+JLGraph.method("GraphGetTileMapping", [](poplar::Graph& cl, const Tensor & a, bool * b) {return cl.getTileMapping(a, b);});
+JLGraph.method("GraphGetTileMapping", [](poplar::Graph& cl, const Tensor & a, bool * b, bool c) {return cl.getTileMapping(a, b, c);});
 }
-// poplar::Graph::getVariableTileMapping(const poplar::Tensor &)__CXXMethod
+// poplar::Graph::getVariableTileMapping(const Tensor &)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphGetVariableTileMapping", [](poplar::Graph& cl, const poplar::Tensor & a) {return cl.getVariableTileMapping(a);});
+JLGraph.method("GraphGetVariableTileMapping", [](poplar::Graph& cl, const Tensor & a) {return cl.getVariableTileMapping(a);});
 }
-// poplar::Graph::setTileMapping(const poplar::Tensor &, const poplar::Graph::TileToTensorMapping &)__CXXMethod
+// poplar::Graph::setTileMapping(const Tensor &, const TileToTensorMapping &)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphSetTileMapping", [](poplar::Graph& cl, const poplar::Tensor & a, const poplar::Graph::TileToTensorMapping & b) {return cl.setTileMapping(a, b);});
+JLGraph.method("GraphSetTileMapping", [](poplar::Graph& cl, const Tensor & a, const TileToTensorMapping & b) {return cl.setTileMapping(a, b);});
 }
-// poplar::Graph::getVariable(poplar::VariableRef)__CXXMethod
+// poplar::Graph::getVariable(VariableRef)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphGetVariable", [](poplar::Graph& cl, poplar::VariableRef a) {return cl.getVariable(a);});
+JLGraph.method("GraphGetVariable", [](poplar::Graph& cl, VariableRef a) {return cl.getVariable(a);});
 }
-// poplar::Graph::isConstant(poplar::VariableRef)__CXXMethod
+// poplar::Graph::isConstant(VariableRef)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphIsConstant", [](poplar::Graph& cl, poplar::VariableRef a) {return cl.isConstant(a);});
+JLGraph.method("GraphIsConstant", [](poplar::Graph& cl, VariableRef a) {return cl.isConstant(a);});
 }
-// poplar::Graph::getSortedContiguousRegions(const poplar::Tensor &, ArrayRef<poplar::Interval>, bool, std::vector<std::size_t> *)__CXXMethod
+// poplar::Graph::getSortedContiguousRegions(const Tensor &, ArrayRef<Interval>, bool, std::vector<std::size_t> *)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphGetSortedContiguousRegions", [](poplar::Graph& cl, const poplar::Tensor & a, ArrayRef<poplar::Interval> b) {return cl.getSortedContiguousRegions(a, b);});
-JLGraph.method("GraphGetSortedContiguousRegions", [](poplar::Graph& cl, const poplar::Tensor & a, ArrayRef<poplar::Interval> b, bool c) {return cl.getSortedContiguousRegions(a, b, c);});
-JLGraph.method("GraphGetSortedContiguousRegions", [](poplar::Graph& cl, const poplar::Tensor & a, ArrayRef<poplar::Interval> b, bool c, std::vector<std::size_t> * d) {return cl.getSortedContiguousRegions(a, b, c, d);});
+JLGraph.method("GraphGetSortedContiguousRegions", [](poplar::Graph& cl, const Tensor & a, jlcxx::ArrayRef<Interval> b) {return cl.getSortedContiguousRegions(a, jlcxxToPoplar(b));});
+JLGraph.method("GraphGetSortedContiguousRegions", [](poplar::Graph& cl, const Tensor & a, jlcxx::ArrayRef<Interval> b, bool c) {return cl.getSortedContiguousRegions(a, jlcxxToPoplar(b), c);});
+JLGraph.method("GraphGetSortedContiguousRegions", [](poplar::Graph& cl, const Tensor & a, jlcxx::ArrayRef<Interval> b, bool c, std::vector<std::size_t> * d) {return cl.getSortedContiguousRegions(a, jlcxxToPoplar(b), c, d);});
 }
-// poplar::Graph::reorderToSimplify(poplar::Tensor *, ArrayRef<poplar::Tensor *>, bool)__CXXMethod
+// poplar::Graph::reorderToSimplify(Tensor *, ArrayRef<Tensor *>, bool)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphReorderToSimplify", [](poplar::Graph& cl, poplar::Tensor * a, ArrayRef<poplar::Tensor *> b) {return cl.reorderToSimplify(a, b);});
-JLGraph.method("GraphReorderToSimplify", [](poplar::Graph& cl, poplar::Tensor * a, ArrayRef<poplar::Tensor *> b, bool c) {return cl.reorderToSimplify(a, b, c);});
+JLGraph.method("GraphReorderToSimplify", [](poplar::Graph& cl, Tensor * a, jlcxx::ArrayRef<Tensor *> b) {return cl.reorderToSimplify(a, jlcxxToPoplar(b));});
+JLGraph.method("GraphReorderToSimplify", [](poplar::Graph& cl, Tensor * a, jlcxx::ArrayRef<Tensor *> b, bool c) {return cl.reorderToSimplify(a, jlcxxToPoplar(b), c);});
 }
-// poplar::Graph::getSimplifyingRearranger(const poplar::Tensor &)__CXXMethod
+// poplar::Graph::getSimplifyingRearranger(const Tensor &)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphGetSimplifyingRearranger", [](poplar::Graph& cl, const poplar::Tensor & a) {return cl.getSimplifyingRearranger(a);});
+JLGraph.method("GraphGetSimplifyingRearranger", [](poplar::Graph& cl, const Tensor & a) {return cl.getSimplifyingRearranger(a);});
 }
-// poplar::Graph::findUnbroadcastTensor(const poplar::Tensor &)__CXXMethod
+// poplar::Graph::findUnbroadcastTensor(const Tensor &)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphFindUnbroadcastTensor", [](poplar::Graph& cl, const poplar::Tensor & a) {return cl.findUnbroadcastTensor(a);});
+JLGraph.method("GraphFindUnbroadcastTensor", [](poplar::Graph& cl, const Tensor & a) {return cl.findUnbroadcastTensor(a);});
 }
 // poplar::Graph::createVirtualGraph(unsigned int)__CXXMethod
 { using namespace poplar;
@@ -2354,22 +2361,22 @@ JLGraph.method("GraphGetTopLevelGraph", [](poplar::Graph& cl) {return cl.getTopL
 { using namespace poplar;
 JLGraph.method("GraphGetReplicationFactor", [](poplar::Graph& cl) {return cl.getReplicationFactor();});
 }
-// poplar::Graph::addReplicationIndexConstant(const poplar::DebugContext &)__CXXMethod
+// poplar::Graph::addReplicationIndexConstant(const DebugContext &)__CXXMethod
 { using namespace poplar;
 JLGraph.method("GraphAddReplicationIndexConstant", [](poplar::Graph& cl) {return cl.addReplicationIndexConstant();});
-JLGraph.method("GraphAddReplicationIndexConstant", [](poplar::Graph& cl, std::string a) {return cl.addReplicationIndexConstant(a);});
+JLGraph.method("GraphAddReplicationIndexConstant", [](poplar::Graph& cl, const DebugContext & a) {return cl.addReplicationIndexConstant(a);});
 }
 // poplar::Graph::addFunction(const program::Program &)__CXXMethod
 { using namespace poplar;
 JLGraph.method("GraphAddFunction", [](poplar::Graph& cl, const program::Program & a) {return cl.addFunction(a);});
 }
-// poplar::Graph::addFunctionBuffer(const poplar::Function &, poplar::FunctionBufferMappingType)__CXXMethod
+// poplar::Graph::addFunctionBuffer(const Function &, FunctionBufferMappingType)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphAddFunctionBuffer", [](poplar::Graph& cl, const poplar::Function & a, poplar::FunctionBufferMappingType b) {return cl.addFunctionBuffer(a, b);});
+JLGraph.method("GraphAddFunctionBuffer", [](poplar::Graph& cl, const Function & a, FunctionBufferMappingType b) {return cl.addFunctionBuffer(a, b);});
 }
-// poplar::Graph::addHostFunction(std::string, ArrayRef<poplar::Graph::HostFunctionArgument>, ArrayRef<poplar::Graph::HostFunctionArgument>)__CXXMethod
+// poplar::Graph::addHostFunction(StringRef, ArrayRef<HostFunctionArgument>, ArrayRef<HostFunctionArgument>)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphAddHostFunction", [](poplar::Graph& cl, std::string a, ArrayRef<poplar::Graph::HostFunctionArgument> b, ArrayRef<poplar::Graph::HostFunctionArgument> c) {return cl.addHostFunction(a, b, c);});
+JLGraph.method("GraphAddHostFunction", [](poplar::Graph& cl, StringRef a, jlcxx::ArrayRef<HostFunctionArgument> b, jlcxx::ArrayRef<HostFunctionArgument> c) {return cl.addHostFunction(a, jlcxxToPoplar(b), jlcxxToPoplar(c));});
 }
 // poplar::Graph::convertTileToTopLevelGraphTile(unsigned int)__CXXMethod
 { using namespace poplar;
@@ -2391,17 +2398,17 @@ JLGraph.method("GraphConvertPhysicalTileToVirtualTile", [](poplar::Graph& cl, un
 { using namespace poplar;
 JLGraph.method("GraphConvertPhysicalTileToVirtualTile", [](poplar::Graph& cl, unsigned int a, unsigned int b) {return cl.convertPhysicalTileToVirtualTile(a, b);});
 }
-// poplar::Graph::hasCodelet(std::string)__CXXMethod
+// poplar::Graph::hasCodelet(StringRef)__CXXMethod
 { using namespace poplar;
-JLGraph.method("GraphHasCodelet", [](poplar::Graph& cl, std::string a) {return cl.hasCodelet(a);});
+JLGraph.method("GraphHasCodelet", [](poplar::Graph& cl, StringRef a) {return cl.hasCodelet(a);});
 }
-// poplar::RuntimeOptions::RuntimeOptions(const poplar::OptionFlags &)__CXXConstructor
+// poplar::RuntimeOptions::RuntimeOptions(const OptionFlags &)__CXXConstructor
 { using namespace poplar;
-JLRuntimeOptions.constructor<const poplar::OptionFlags &>();
+JLRuntimeOptions.constructor<const OptionFlags &>();
 }
-// poplar::RuntimeOptions::RuntimeOptions(const poplar::RuntimeOptions &)__CXXConstructor
+// poplar::RuntimeOptions::RuntimeOptions(const RuntimeOptions &)__CXXConstructor
 { using namespace poplar;
-JLRuntimeOptions.constructor<const poplar::RuntimeOptions &>();
+JLRuntimeOptions.constructor<const RuntimeOptions &>();
 }
 // poplar::StreamCallbackBase::Result::Success__EnumConstantDecl
 mod.set_const("StreamCallbackBaseResultStreamCallbackBaseSuccess", poplar::StreamCallbackBase::Result::Success);
@@ -2447,35 +2454,35 @@ JLLegacyStreamCallback.method("LegacyStreamCallbackInvalidatePrefetched", [](pop
 { using namespace poplar;
 JLLegacyStreamCallback.method("LegacyStreamCallbackComplete", [](poplar::LegacyStreamCallback& cl) {return cl.complete();});
 }
-// poplar::Engine::Engine(const poplar::Graph &, ArrayRef<program::Program>, const poplar::OptionFlags &, poplar::Engine::ProgressFunc, const poplar::DebugContext &)__CXXConstructor
+// poplar::Engine::Engine(const Graph &, ArrayRef<program::Program>, const OptionFlags &, ProgressFunc, const DebugContext &)__CXXConstructor
 { using namespace poplar;
-JLEngine.constructor<const poplar::Graph &, ArrayRef<program::Program>>();
-JLEngine.constructor<const poplar::Graph &, ArrayRef<program::Program>, const poplar::OptionFlags &>();
-JLEngine.constructor<const poplar::Graph &, ArrayRef<program::Program>, const poplar::OptionFlags &, poplar::Engine::ProgressFunc>();
-JLEngine.constructor<const poplar::Graph &, ArrayRef<program::Program>, const poplar::OptionFlags &, poplar::Engine::ProgressFunc, std::string>();
+JLEngine.constructor<const Graph &, ArrayRef<program::Program>>();
+JLEngine.constructor<const Graph &, ArrayRef<program::Program>, const OptionFlags &>();
+JLEngine.constructor<const Graph &, ArrayRef<program::Program>, const OptionFlags &, ProgressFunc>();
+JLEngine.constructor<const Graph &, ArrayRef<program::Program>, const OptionFlags &, ProgressFunc, const DebugContext &>();
 }
-// poplar::Engine::Engine(const poplar::Graph &, program::Program, const poplar::OptionFlags &, poplar::Engine::ProgressFunc, const poplar::DebugContext &)__CXXConstructor
+// poplar::Engine::Engine(const Graph &, program::Program, const OptionFlags &, ProgressFunc, const DebugContext &)__CXXConstructor
 { using namespace poplar;
-JLEngine.constructor<const poplar::Graph &, program::Program>();
-JLEngine.constructor<const poplar::Graph &, program::Program, const poplar::OptionFlags &>();
-JLEngine.constructor<const poplar::Graph &, program::Program, const poplar::OptionFlags &, poplar::Engine::ProgressFunc>();
-JLEngine.constructor<const poplar::Graph &, program::Program, const poplar::OptionFlags &, poplar::Engine::ProgressFunc, std::string>();
+JLEngine.constructor<const Graph &, program::Program>();
+JLEngine.constructor<const Graph &, program::Program, const OptionFlags &>();
+JLEngine.constructor<const Graph &, program::Program, const OptionFlags &, ProgressFunc>();
+JLEngine.constructor<const Graph &, program::Program, const OptionFlags &, ProgressFunc, const DebugContext &>();
 }
-// poplar::Engine::prepare(const poplar::Device &)__CXXMethod
+// poplar::Engine::prepare(const Device &)__CXXMethod
 { using namespace poplar;
-JLEngine.method("EnginePrepare", [](poplar::Engine& cl, const poplar::Device & a) {return cl.prepare(a);});
+JLEngine.method("EnginePrepare", [](poplar::Engine& cl, const Device & a) {return cl.prepare(a);});
 }
-// poplar::Engine::prepare(const poplar::Device &, const poplar::RuntimeOptions &)__CXXMethod
+// poplar::Engine::prepare(const Device &, const RuntimeOptions &)__CXXMethod
 { using namespace poplar;
-JLEngine.method("EnginePrepare", [](poplar::Engine& cl, const poplar::Device & a, const poplar::RuntimeOptions & b) {return cl.prepare(a, b);});
+JLEngine.method("EnginePrepare", [](poplar::Engine& cl, const Device & a, const RuntimeOptions & b) {return cl.prepare(a, b);});
 }
 // poplar::Engine::deploy()__CXXMethod
 { using namespace poplar;
 JLEngine.method("EngineDeploy", [](poplar::Engine& cl) {return cl.deploy();});
 }
-// poplar::Engine::load(const poplar::Device &)__CXXMethod
+// poplar::Engine::load(const Device &)__CXXMethod
 { using namespace poplar;
-JLEngine.method("EngineLoad", [](poplar::Engine& cl, const poplar::Device & a) {return cl.load(a);});
+JLEngine.method("EngineLoad", [](poplar::Engine& cl, const Device & a) {return cl.load(a);});
 }
 // poplar::Engine::run(unsigned int, const std::string &)__CXXMethod
 { using namespace poplar;
@@ -2487,22 +2494,22 @@ JLEngine.method("EngineRun", [](poplar::Engine& cl, unsigned int a, const std::s
 { using namespace poplar;
 JLEngine.method("EngineStop", [](poplar::Engine& cl) {return cl.stop();});
 }
-// poplar::Engine::run(unsigned int, const std::string &, const poplar::RuntimeOptions &)__CXXMethod
+// poplar::Engine::run(unsigned int, const std::string &, const RuntimeOptions &)__CXXMethod
 { using namespace poplar;
-JLEngine.method("EngineRun", [](poplar::Engine& cl, unsigned int a, const std::string & b, const poplar::RuntimeOptions & c) {return cl.run(a, b, c);});
+JLEngine.method("EngineRun", [](poplar::Engine& cl, unsigned int a, const std::string & b, const RuntimeOptions & c) {return cl.run(a, b, c);});
 }
-// poplar::Engine::loadAndRun(const poplar::Device &, unsigned int)__CXXMethod
+// poplar::Engine::loadAndRun(const Device &, unsigned int)__CXXMethod
 { using namespace poplar;
-JLEngine.method("EngineLoadAndRun", [](poplar::Engine& cl, const poplar::Device & a) {return cl.loadAndRun(a);});
-JLEngine.method("EngineLoadAndRun", [](poplar::Engine& cl, const poplar::Device & a, unsigned int b) {return cl.loadAndRun(a, b);});
+JLEngine.method("EngineLoadAndRun", [](poplar::Engine& cl, const Device & a) {return cl.loadAndRun(a);});
+JLEngine.method("EngineLoadAndRun", [](poplar::Engine& cl, const Device & a, unsigned int b) {return cl.loadAndRun(a, b);});
 }
 // poplar::Engine::getTimeStamp()__CXXMethod
 { using namespace poplar;
 JLEngine.method("EngineGetTimeStamp", [](poplar::Engine& cl) {return cl.getTimeStamp();});
 }
-// poplar::Engine::reportTiming(const poplar::Engine::TimerTimePoint &, const poplar::Engine::TimerTimePoint &)__CXXMethod
+// poplar::Engine::reportTiming(const TimerTimePoint &, const TimerTimePoint &)__CXXMethod
 { using namespace poplar;
-JLEngine.method("EngineReportTiming", [](poplar::Engine& cl, const poplar::Engine::TimerTimePoint & a, const poplar::Engine::TimerTimePoint & b) {return cl.reportTiming(a, b);});
+JLEngine.method("EngineReportTiming", [](poplar::Engine& cl, const TimerTimePoint & a, const TimerTimePoint & b) {return cl.reportTiming(a, b);});
 }
 // poplar::Engine::resetExecutionProfile()__CXXMethod
 { using namespace poplar;
@@ -2516,75 +2523,92 @@ JLEngine.method("EngineDisableExecutionProfiling", [](poplar::Engine& cl) {retur
 { using namespace poplar;
 JLEngine.method("EngineEnableExecutionProfiling", [](poplar::Engine& cl) {return cl.enableExecutionProfiling();});
 }
-// poplar::Engine::readTensor(std::string, void *, void *)__CXXMethod
+// poplar::Engine::readTensor(StringRef, void *, void *)__CXXMethod
 { using namespace poplar;
-JLEngine.method("EngineReadTensor", [](poplar::Engine& cl, std::string a, void * b, void * c) {return cl.readTensor(a, b, c);});
+JLEngine.method("EngineReadTensor", [](poplar::Engine& cl, StringRef a, void * b, void * c) {return cl.readTensor(a, b, c);});
 }
-// poplar::Engine::readTensor(std::string, gccs::ArrayRef<T>)__FunctionTemplate
+// poplar::Engine::readTensor(StringRef, gccs::ArrayRef<T>)__FunctionTemplate
 { using namespace poplar;
-JLEngine.method("EngineReadTensor", [](poplar::Engine& cl, std::string a, gccs::ArrayRef<unsigned int> b) {return cl.readTensor(a, b);});
+JLEngine.method("EngineReadTensor", [](poplar::Engine& cl, StringRef a, gccs::ArrayRef<unsigned int> b) {return cl.readTensor(a, b);});
 }{ using namespace poplar;
-JLEngine.method("EngineReadTensor", [](poplar::Engine& cl, std::string a, gccs::ArrayRef<int> b) {return cl.readTensor(a, b);});
+JLEngine.method("EngineReadTensor", [](poplar::Engine& cl, StringRef a, gccs::ArrayRef<int> b) {return cl.readTensor(a, b);});
 }{ using namespace poplar;
-JLEngine.method("EngineReadTensor", [](poplar::Engine& cl, std::string a, gccs::ArrayRef<long> b) {return cl.readTensor(a, b);});
+JLEngine.method("EngineReadTensor", [](poplar::Engine& cl, StringRef a, gccs::ArrayRef<long> b) {return cl.readTensor(a, b);});
 }{ using namespace poplar;
-JLEngine.method("EngineReadTensor", [](poplar::Engine& cl, std::string a, gccs::ArrayRef<float> b) {return cl.readTensor(a, b);});
+JLEngine.method("EngineReadTensor", [](poplar::Engine& cl, StringRef a, gccs::ArrayRef<float> b) {return cl.readTensor(a, b);});
 }
-// poplar::Engine::writeTensor(std::string, const void *, const void *)__CXXMethod
+// poplar::Engine::writeTensor(StringRef, const void *, const void *)__CXXMethod
 { using namespace poplar;
-JLEngine.method("EngineWriteTensor", [](poplar::Engine& cl, std::string a, const void * b, const void * c) {return cl.writeTensor(a, b, c);});
+JLEngine.method("EngineWriteTensor", [](poplar::Engine& cl, StringRef a, const void * b, const void * c) {return cl.writeTensor(a, b, c);});
 }
-// poplar::Engine::writeTensor(std::string, ArrayRef<T>)__FunctionTemplate
+// poplar::Engine::writeTensor(StringRef, ArrayRef<T>)__FunctionTemplate
 { using namespace poplar;
-JLEngine.method("EngineWriteTensor", [](poplar::Engine& cl, std::string a, jlcxx::ArrayRef<unsigned int> b) {return cl.writeTensor(a, jlcxxToPoplar(b));});
+JLEngine.method("EngineWriteTensor", [](poplar::Engine& cl, StringRef a, jlcxx::ArrayRef<unsigned int> b) {return cl.writeTensor(a, jlcxxToPoplar(b));});
 }{ using namespace poplar;
-JLEngine.method("EngineWriteTensor", [](poplar::Engine& cl, std::string a, jlcxx::ArrayRef<int> b) {return cl.writeTensor(a, jlcxxToPoplar(b));});
+JLEngine.method("EngineWriteTensor", [](poplar::Engine& cl, StringRef a, jlcxx::ArrayRef<int> b) {return cl.writeTensor(a, jlcxxToPoplar(b));});
 }{ using namespace poplar;
-JLEngine.method("EngineWriteTensor", [](poplar::Engine& cl, std::string a, jlcxx::ArrayRef<long> b) {return cl.writeTensor(a, jlcxxToPoplar(b));});
+JLEngine.method("EngineWriteTensor", [](poplar::Engine& cl, StringRef a, jlcxx::ArrayRef<long> b) {return cl.writeTensor(a, jlcxxToPoplar(b));});
 }{ using namespace poplar;
-JLEngine.method("EngineWriteTensor", [](poplar::Engine& cl, std::string a, jlcxx::ArrayRef<float> b) {return cl.writeTensor(a, jlcxxToPoplar(b));});
+JLEngine.method("EngineWriteTensor", [](poplar::Engine& cl, StringRef a, jlcxx::ArrayRef<float> b) {return cl.writeTensor(a, jlcxxToPoplar(b));});
 }
-// poplar::Engine::connectStream(std::string, void *, void *)__CXXMethod
+// poplar::Engine::connectStream(StringRef, void *, void *)__CXXMethod
 { using namespace poplar;
-JLEngine.method("EngineConnectStream", [](poplar::Engine& cl, std::string a, void * b, void * c) {return cl.connectStream(a, b, c);});
+JLEngine.method("EngineConnectStream", [](poplar::Engine& cl, StringRef a, void * b, void * c) {return cl.connectStream(a, b, c);});
 }
-// poplar::Engine::connectStream(std::string, const gccs::ArrayRef<T> &)__FunctionTemplate
+// poplar::Engine::connectStream(StringRef, const gccs::ArrayRef<T> &)__FunctionTemplate
 { using namespace poplar;
-JLEngine.method("EngineConnectStream", [](poplar::Engine& cl, std::string a, const gccs::ArrayRef<unsigned int> & b) {return cl.connectStream(a, b);});
+JLEngine.method("EngineConnectStream", [](poplar::Engine& cl, StringRef a, const gccs::ArrayRef<unsigned int> & b) {return cl.connectStream(a, b);});
 }{ using namespace poplar;
-JLEngine.method("EngineConnectStream", [](poplar::Engine& cl, std::string a, const gccs::ArrayRef<int> & b) {return cl.connectStream(a, b);});
+JLEngine.method("EngineConnectStream", [](poplar::Engine& cl, StringRef a, const gccs::ArrayRef<int> & b) {return cl.connectStream(a, b);});
 }{ using namespace poplar;
-JLEngine.method("EngineConnectStream", [](poplar::Engine& cl, std::string a, const gccs::ArrayRef<long> & b) {return cl.connectStream(a, b);});
+JLEngine.method("EngineConnectStream", [](poplar::Engine& cl, StringRef a, const gccs::ArrayRef<long> & b) {return cl.connectStream(a, b);});
 }{ using namespace poplar;
-JLEngine.method("EngineConnectStream", [](poplar::Engine& cl, std::string a, const gccs::ArrayRef<float> & b) {return cl.connectStream(a, b);});
+JLEngine.method("EngineConnectStream", [](poplar::Engine& cl, StringRef a, const gccs::ArrayRef<float> & b) {return cl.connectStream(a, b);});
 }
-// poplar::Engine::connectStream(std::string, void *)__CXXMethod
+// poplar::Engine::connectStream(StringRef, void *)__CXXMethod
 { using namespace poplar;
-JLEngine.method("EngineConnectStream", [](poplar::Engine& cl, std::string a, void * b) {return cl.connectStream(a, b);});
+JLEngine.method("EngineConnectStream", [](poplar::Engine& cl, StringRef a, void * b) {return cl.connectStream(a, b);});
 }
-// poplar::Engine::copyFromRemoteBuffer(std::string, void *, uint64_t, unsigned int)__CXXMethod
+// poplar::Engine::copyFromRemoteBuffer(StringRef, void *, uint64_t, unsigned int)__CXXMethod
 { using namespace poplar;
-JLEngine.method("EngineCopyFromRemoteBuffer", [](poplar::Engine& cl, std::string a, void * b, uint64_t c) {return cl.copyFromRemoteBuffer(a, b, c);});
-JLEngine.method("EngineCopyFromRemoteBuffer", [](poplar::Engine& cl, std::string a, void * b, uint64_t c, unsigned int d) {return cl.copyFromRemoteBuffer(a, b, c, d);});
+JLEngine.method("EngineCopyFromRemoteBuffer", [](poplar::Engine& cl, StringRef a, void * b, uint64_t c) {return cl.copyFromRemoteBuffer(a, b, c);});
+JLEngine.method("EngineCopyFromRemoteBuffer", [](poplar::Engine& cl, StringRef a, void * b, uint64_t c, unsigned int d) {return cl.copyFromRemoteBuffer(a, b, c, d);});
 }
-// poplar::Engine::copyFromRemoteBuffer(std::string, gccs::ArrayRef<T>, uint64_t, unsigned int)__FunctionTemplate
+// poplar::Engine::copyFromRemoteBuffer(StringRef, gccs::ArrayRef<T>, uint64_t, unsigned int)__FunctionTemplate
 { using namespace poplar;
-JLEngine.method("EngineCopyFromRemoteBuffer", [](poplar::Engine& cl, std::string a, gccs::ArrayRef<unsigned int> b, uint64_t c) {return cl.copyFromRemoteBuffer(a, b, c);});
-JLEngine.method("EngineCopyFromRemoteBuffer", [](poplar::Engine& cl, std::string a, gccs::ArrayRef<unsigned int> b, uint64_t c, unsigned int d) {return cl.copyFromRemoteBuffer(a, b, c, d);});
+JLEngine.method("EngineCopyFromRemoteBuffer", [](poplar::Engine& cl, StringRef a, gccs::ArrayRef<unsigned int> b, uint64_t c) {return cl.copyFromRemoteBuffer(a, b, c);});
+JLEngine.method("EngineCopyFromRemoteBuffer", [](poplar::Engine& cl, StringRef a, gccs::ArrayRef<unsigned int> b, uint64_t c, unsigned int d) {return cl.copyFromRemoteBuffer(a, b, c, d);});
 }{ using namespace poplar;
-JLEngine.method("EngineCopyFromRemoteBuffer", [](poplar::Engine& cl, std::string a, gccs::ArrayRef<int> b, uint64_t c) {return cl.copyFromRemoteBuffer(a, b, c);});
-JLEngine.method("EngineCopyFromRemoteBuffer", [](poplar::Engine& cl, std::string a, gccs::ArrayRef<int> b, uint64_t c, unsigned int d) {return cl.copyFromRemoteBuffer(a, b, c, d);});
+JLEngine.method("EngineCopyFromRemoteBuffer", [](poplar::Engine& cl, StringRef a, gccs::ArrayRef<int> b, uint64_t c) {return cl.copyFromRemoteBuffer(a, b, c);});
+JLEngine.method("EngineCopyFromRemoteBuffer", [](poplar::Engine& cl, StringRef a, gccs::ArrayRef<int> b, uint64_t c, unsigned int d) {return cl.copyFromRemoteBuffer(a, b, c, d);});
 }{ using namespace poplar;
-JLEngine.method("EngineCopyFromRemoteBuffer", [](poplar::Engine& cl, std::string a, gccs::ArrayRef<long> b, uint64_t c) {return cl.copyFromRemoteBuffer(a, b, c);});
-JLEngine.method("EngineCopyFromRemoteBuffer", [](poplar::Engine& cl, std::string a, gccs::ArrayRef<long> b, uint64_t c, unsigned int d) {return cl.copyFromRemoteBuffer(a, b, c, d);});
+JLEngine.method("EngineCopyFromRemoteBuffer", [](poplar::Engine& cl, StringRef a, gccs::ArrayRef<long> b, uint64_t c) {return cl.copyFromRemoteBuffer(a, b, c);});
+JLEngine.method("EngineCopyFromRemoteBuffer", [](poplar::Engine& cl, StringRef a, gccs::ArrayRef<long> b, uint64_t c, unsigned int d) {return cl.copyFromRemoteBuffer(a, b, c, d);});
 }{ using namespace poplar;
-JLEngine.method("EngineCopyFromRemoteBuffer", [](poplar::Engine& cl, std::string a, gccs::ArrayRef<float> b, uint64_t c) {return cl.copyFromRemoteBuffer(a, b, c);});
-JLEngine.method("EngineCopyFromRemoteBuffer", [](poplar::Engine& cl, std::string a, gccs::ArrayRef<float> b, uint64_t c, unsigned int d) {return cl.copyFromRemoteBuffer(a, b, c, d);});
+JLEngine.method("EngineCopyFromRemoteBuffer", [](poplar::Engine& cl, StringRef a, gccs::ArrayRef<float> b, uint64_t c) {return cl.copyFromRemoteBuffer(a, b, c);});
+JLEngine.method("EngineCopyFromRemoteBuffer", [](poplar::Engine& cl, StringRef a, gccs::ArrayRef<float> b, uint64_t c, unsigned int d) {return cl.copyFromRemoteBuffer(a, b, c, d);});
 }
-// poplar::Engine::copyToRemoteBuffer(void *, std::string, uint64_t, unsigned int)__CXXMethod
+// poplar::Engine::copyToRemoteBuffer(void *, StringRef, uint64_t, unsigned int)__CXXMethod
 { using namespace poplar;
-JLEngine.method("EngineCopyToRemoteBuffer", [](poplar::Engine& cl, void * a, std::string b, uint64_t c) {return cl.copyToRemoteBuffer(a, b, c);});
-JLEngine.method("EngineCopyToRemoteBuffer", [](poplar::Engine& cl, void * a, std::string b, uint64_t c, unsigned int d) {return cl.copyToRemoteBuffer(a, b, c, d);});
+JLEngine.method("EngineCopyToRemoteBuffer", [](poplar::Engine& cl, void * a, StringRef b, uint64_t c) {return cl.copyToRemoteBuffer(a, b, c);});
+JLEngine.method("EngineCopyToRemoteBuffer", [](poplar::Engine& cl, void * a, StringRef b, uint64_t c, unsigned int d) {return cl.copyToRemoteBuffer(a, b, c, d);});
+}
+// poplar::Engine::copyToRemoteBuffer(ArrayRef<T>, StringRef, uint64_t, unsigned int)__FunctionTemplate
+{ using namespace poplar;
+JLEngine.method("EngineCopyToRemoteBuffer", [](poplar::Engine& cl, jlcxx::ArrayRef<unsigned int> a, StringRef b, uint64_t c) {return cl.copyToRemoteBuffer(jlcxxToPoplar(a), b, c);});
+JLEngine.method("EngineCopyToRemoteBuffer", [](poplar::Engine& cl, jlcxx::ArrayRef<unsigned int> a, StringRef b, uint64_t c, unsigned int d) {return cl.copyToRemoteBuffer(jlcxxToPoplar(a), b, c, d);});
+}{ using namespace poplar;
+JLEngine.method("EngineCopyToRemoteBuffer", [](poplar::Engine& cl, jlcxx::ArrayRef<int> a, StringRef b, uint64_t c) {return cl.copyToRemoteBuffer(jlcxxToPoplar(a), b, c);});
+JLEngine.method("EngineCopyToRemoteBuffer", [](poplar::Engine& cl, jlcxx::ArrayRef<int> a, StringRef b, uint64_t c, unsigned int d) {return cl.copyToRemoteBuffer(jlcxxToPoplar(a), b, c, d);});
+}{ using namespace poplar;
+JLEngine.method("EngineCopyToRemoteBuffer", [](poplar::Engine& cl, jlcxx::ArrayRef<long> a, StringRef b, uint64_t c) {return cl.copyToRemoteBuffer(jlcxxToPoplar(a), b, c);});
+JLEngine.method("EngineCopyToRemoteBuffer", [](poplar::Engine& cl, jlcxx::ArrayRef<long> a, StringRef b, uint64_t c, unsigned int d) {return cl.copyToRemoteBuffer(jlcxxToPoplar(a), b, c, d);});
+}{ using namespace poplar;
+JLEngine.method("EngineCopyToRemoteBuffer", [](poplar::Engine& cl, jlcxx::ArrayRef<float> a, StringRef b, uint64_t c) {return cl.copyToRemoteBuffer(jlcxxToPoplar(a), b, c);});
+JLEngine.method("EngineCopyToRemoteBuffer", [](poplar::Engine& cl, jlcxx::ArrayRef<float> a, StringRef b, uint64_t c, unsigned int d) {return cl.copyToRemoteBuffer(jlcxxToPoplar(a), b, c, d);});
+}{ using namespace poplar;
+JLEngine.method("EngineCopyToRemoteBuffer", [](poplar::Engine& cl, jlcxx::ArrayRef<double> a, StringRef b, uint64_t c) {return cl.copyToRemoteBuffer(jlcxxToPoplar(a), b, c);});
+JLEngine.method("EngineCopyToRemoteBuffer", [](poplar::Engine& cl, jlcxx::ArrayRef<double> a, StringRef b, uint64_t c, unsigned int d) {return cl.copyToRemoteBuffer(jlcxxToPoplar(a), b, c, d);});
 }
 // poplar::Engine::listStreams()__CXXMethod
 { using namespace poplar;
@@ -2594,13 +2618,13 @@ JLEngine.method("EngineListStreams", [](poplar::Engine& cl) {return cl.listStrea
 { using namespace poplar;
 JLEngine.method("EngineGetEngineOptions", [](poplar::Engine& cl) {return cl.getEngineOptions();});
 }
-// poplar::Engine::insertSimulatedError(poplar::ErrorCode, const poplar::ErrorLocation &)__CXXMethod
+// poplar::Engine::insertSimulatedError(ErrorCode, const ErrorLocation &)__CXXMethod
 { using namespace poplar;
-JLEngine.method("EngineInsertSimulatedError", [](poplar::Engine& cl, poplar::ErrorCode a, const poplar::ErrorLocation & b) {return cl.insertSimulatedError(a, b);});
+JLEngine.method("EngineInsertSimulatedError", [](poplar::Engine& cl, ErrorCode a, const ErrorLocation & b) {return cl.insertSimulatedError(a, b);});
 }
-// poplar::Engine::eraseSimulatedError(const poplar::ErrorLocation &)__CXXMethod
+// poplar::Engine::eraseSimulatedError(const ErrorLocation &)__CXXMethod
 { using namespace poplar;
-JLEngine.method("EngineEraseSimulatedError", [](poplar::Engine& cl, const poplar::ErrorLocation & a) {return cl.eraseSimulatedError(a);});
+JLEngine.method("EngineEraseSimulatedError", [](poplar::Engine& cl, const ErrorLocation & a) {return cl.eraseSimulatedError(a);});
 }
 // poplar::Engine::clearSimulatedErrors()__CXXMethod
 { using namespace poplar;
@@ -2611,33 +2635,39 @@ JLEngine.method("EngineClearSimulatedErrors", [](poplar::Engine& cl) {return cl.
 JLEngine.method("EngineGetSimulatedErrorLocations", [](poplar::Engine& cl, unsigned int a) {return cl.getSimulatedErrorLocations(a);});
 JLEngine.method("EngineGetSimulatedErrorLocations", [](poplar::Engine& cl, unsigned int a, unsigned int b) {return cl.getSimulatedErrorLocations(a, b);});
 }
-// poplar::Engine::getSimulatedErrorLocations(std::string, unsigned int)__CXXMethod
+// poplar::Engine::getSimulatedErrorLocations(StringRef, unsigned int)__CXXMethod
 { using namespace poplar;
-JLEngine.method("EngineGetSimulatedErrorLocations", [](poplar::Engine& cl, std::string a) {return cl.getSimulatedErrorLocations(a);});
-JLEngine.method("EngineGetSimulatedErrorLocations", [](poplar::Engine& cl, std::string a, unsigned int b) {return cl.getSimulatedErrorLocations(a, b);});
+JLEngine.method("EngineGetSimulatedErrorLocations", [](poplar::Engine& cl, StringRef a) {return cl.getSimulatedErrorLocations(a);});
+JLEngine.method("EngineGetSimulatedErrorLocations", [](poplar::Engine& cl, StringRef a, unsigned int b) {return cl.getSimulatedErrorLocations(a, b);});
 }
-// poplar::compileGraph(const poplar::Graph &, ArrayRef<program::Program>, const poplar::OptionFlags &, poplar::ProgressFunc, const poplar::DebugContext &)__FunctionDecl
+// poplar::compileGraph(const Graph &, ArrayRef<program::Program>, const OptionFlags &, ProgressFunc, const DebugContext &)__FunctionDecl
 { using namespace poplar;
-mod.method("PoplarCompileGraph", [](const poplar::Graph & a, ArrayRef<program::Program> b, const poplar::OptionFlags & c, poplar::ProgressFunc d, std::string e) {return poplar::compileGraph(a, b, c, d, e);} ); }
-// poplar::compileModule(const poplar::Graph &, program::Program, const poplar::OptionFlags &, poplar::ProgressFunc, const poplar::DebugContext &)__FunctionDecl
+mod.method("PoplarCompileGraph", [](const Graph & a, ArrayRef<program::Program> b, const OptionFlags & c, ProgressFunc d, const DebugContext & e) {return poplar::compileGraph(a, b, c, d, e);} ); }
+// poplar::compileModule(const Graph &, program::Program, const OptionFlags &, ProgressFunc, const DebugContext &)__FunctionDecl
 { using namespace poplar;
-mod.method("PoplarCompileModule", [](const poplar::Graph & a, program::Program b, const poplar::OptionFlags & c, poplar::ProgressFunc d, std::string e) {return poplar::compileModule(a, b, c, d, e);} ); }
+mod.method("PoplarCompileModule", [](const Graph & a, program::Program b, const OptionFlags & c, ProgressFunc d, const DebugContext & e) {return poplar::compileModule(a, b, c, d, e);} ); }
+// poplar::compileModule(const Graph &, program::Program, const Preallocations &, const OptionFlags &, ProgressFunc, const DebugContext &)__FunctionDecl
+{ using namespace poplar;
+mod.method("PoplarCompileModule", [](const Graph & a, program::Program b, const Preallocations & c, const OptionFlags & d, ProgressFunc e, const DebugContext & f) {return poplar::compileModule(a, b, c, d, e, f);} ); }
+// poplar::compileGraph(const Graph &, ArrayRef<program::Program>, const Preallocations &, const OptionFlags &, ProgressFunc, const DebugContext &)__FunctionDecl
+{ using namespace poplar;
+mod.method("PoplarCompileGraph", [](const Graph & a, ArrayRef<program::Program> b, const Preallocations & c, const OptionFlags & d, ProgressFunc e, const DebugContext & f) {return poplar::compileGraph(a, b, c, d, e, f);} ); }
 // poplar::FloatingPointBehaviour::FloatingPointBehaviour(bool, bool, bool, bool, bool)__CXXConstructor
 { using namespace poplar;
 JLFloatingPointBehaviour.constructor<bool, bool, bool, bool, bool>();
 }
-// poplar::setFloatingPointBehaviour(poplar::Graph &, poplar::program::Sequence &, const poplar::FloatingPointBehaviour &, const poplar::DebugContext &)__FunctionDecl
+// poplar::setFloatingPointBehaviour(poplar::Graph &, poplar::program::Sequence &, const FloatingPointBehaviour &, const DebugContext &)__FunctionDecl
 { using namespace poplar;
-mod.method("PoplarSetFloatingPointBehaviour", [](poplar::Graph & a, poplar::program::Sequence & b, const poplar::FloatingPointBehaviour & c, std::string d) {return poplar::setFloatingPointBehaviour(a, b, c, d);} ); }
-// poplar::setFloatingPointBehaviour(poplar::Graph &, poplar::program::Sequence &, const poplar::Tensor &, const poplar::DebugContext &)__FunctionDecl
+mod.method("PoplarSetFloatingPointBehaviour", [](poplar::Graph & a, poplar::program::Sequence & b, const FloatingPointBehaviour & c, const DebugContext & d) {return poplar::setFloatingPointBehaviour(a, b, c, d);} ); }
+// poplar::setFloatingPointBehaviour(poplar::Graph &, poplar::program::Sequence &, const poplar::Tensor &, const DebugContext &)__FunctionDecl
 { using namespace poplar;
-mod.method("PoplarSetFloatingPointBehaviour", [](poplar::Graph & a, poplar::program::Sequence & b, const poplar::Tensor & c, std::string d) {return poplar::setFloatingPointBehaviour(a, b, c, d);} ); }
-// poplar::setStochasticRounding(poplar::Graph &, poplar::program::Sequence &, bool, const poplar::DebugContext &)__FunctionDecl
+mod.method("PoplarSetFloatingPointBehaviour", [](poplar::Graph & a, poplar::program::Sequence & b, const poplar::Tensor & c, const DebugContext & d) {return poplar::setFloatingPointBehaviour(a, b, c, d);} ); }
+// poplar::setStochasticRounding(poplar::Graph &, poplar::program::Sequence &, bool, const DebugContext &)__FunctionDecl
 { using namespace poplar;
-mod.method("PoplarSetStochasticRounding", [](poplar::Graph & a, poplar::program::Sequence & b, bool c, std::string d) {return poplar::setStochasticRounding(a, b, c, d);} ); }
-// poplar::getAndModifyFloatingPointBehaviour(poplar::Graph &, poplar::program::Sequence &, const poplar::FloatingPointBehaviour &, const poplar::FloatingPointBehaviour &, const poplar::DebugContext &)__FunctionDecl
+mod.method("PoplarSetStochasticRounding", [](poplar::Graph & a, poplar::program::Sequence & b, bool c, const DebugContext & d) {return poplar::setStochasticRounding(a, b, c, d);} ); }
+// poplar::getAndModifyFloatingPointBehaviour(poplar::Graph &, poplar::program::Sequence &, const FloatingPointBehaviour &, const FloatingPointBehaviour &, const DebugContext &)__FunctionDecl
 { using namespace poplar;
-mod.method("PoplarGetAndModifyFloatingPointBehaviour", [](poplar::Graph & a, poplar::program::Sequence & b, const poplar::FloatingPointBehaviour & c, const poplar::FloatingPointBehaviour & d, std::string e) {return poplar::getAndModifyFloatingPointBehaviour(a, b, c, d, e);} ); }
+mod.method("PoplarGetAndModifyFloatingPointBehaviour", [](poplar::Graph & a, poplar::program::Sequence & b, const FloatingPointBehaviour & c, const FloatingPointBehaviour & d, const DebugContext & e) {return poplar::getAndModifyFloatingPointBehaviour(a, b, c, d, e);} ); }
 // poplar::IPUModel::IPUModel(const char *)__CXXConstructor
 { using namespace poplar;
 JLIPUModel.constructor<const char *>();
@@ -2646,12 +2676,12 @@ JLIPUModel.constructor<const char *>();
 mod.set_const("IPUModelRelativeSyncDelayTypeIPUModelAUTO", poplar::IPUModel::RelativeSyncDelayType::AUTO);
 // poplar::IPUModel::RelativeSyncDelayType::NO_DELAY__EnumConstantDecl
 mod.set_const("IPUModelRelativeSyncDelayTypeIPUModelNO_DELAY", poplar::IPUModel::RelativeSyncDelayType::NO_DELAY);
-// poplar::IPUModel::createDevice(poplar::OptionFlags, bool, unsigned int)__CXXMethod
+// poplar::IPUModel::createDevice(OptionFlags, bool, unsigned int)__CXXMethod
 { using namespace poplar;
 JLIPUModel.method("IPUModelCreateDevice", [](poplar::IPUModel& cl) {return cl.createDevice();});
-JLIPUModel.method("IPUModelCreateDevice", [](poplar::IPUModel& cl, poplar::OptionFlags a) {return cl.createDevice(a);});
-JLIPUModel.method("IPUModelCreateDevice", [](poplar::IPUModel& cl, poplar::OptionFlags a, bool b) {return cl.createDevice(a, b);});
-JLIPUModel.method("IPUModelCreateDevice", [](poplar::IPUModel& cl, poplar::OptionFlags a, bool b, unsigned int c) {return cl.createDevice(a, b, c);});
+JLIPUModel.method("IPUModelCreateDevice", [](poplar::IPUModel& cl, OptionFlags a) {return cl.createDevice(a);});
+JLIPUModel.method("IPUModelCreateDevice", [](poplar::IPUModel& cl, OptionFlags a, bool b) {return cl.createDevice(a, b);});
+JLIPUModel.method("IPUModelCreateDevice", [](poplar::IPUModel& cl, OptionFlags a, bool b, unsigned int c) {return cl.createDevice(a, b, c);});
 }
 // popops::varianceToInvStdDev(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::Type, const poplar::DebugContext &)__FunctionDecl
 { using namespace popops;
