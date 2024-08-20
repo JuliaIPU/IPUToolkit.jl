@@ -13,6 +13,7 @@ template<> struct SuperType<poplar::graph_cycle_error> { typedef poplar::poplar_
 template<> struct SuperType<poplar::graph_recursion_error> { typedef poplar::poplar_error type; };
 template<> struct SuperType<poplar::graph_replication_error> { typedef poplar::poplar_error type; };
 template<> struct SuperType<poplar::profiling_disabled> { typedef poplar::poplar_error type; };
+template<> struct SuperType<poplar::missing_profile_data> { typedef poplar::poplar_error type; };
 template<> struct SuperType<poplar::missing_graph_profile> { typedef poplar::poplar_error type; };
 template<> struct SuperType<poplar::missing_perf_estimate> { typedef poplar::poplar_error type; };
 template<> struct SuperType<poplar::invalid_tile_mapping> { typedef poplar::poplar_error type; };

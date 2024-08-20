@@ -106,6 +106,8 @@ auto JLGraph_recursion_error = mod.add_type<poplar::graph_recursion_error>("Grap
 auto JLGraph_replication_error = mod.add_type<poplar::graph_replication_error>("Graph_replication_error", jlcxx::julia_base_type<poplar::poplar_error>());
 // poplar::profiling_disabled__StructDecl
 auto JLProfiling_disabled = mod.add_type<poplar::profiling_disabled>("Profiling_disabled", jlcxx::julia_base_type<poplar::poplar_error>());
+// poplar::missing_profile_data__StructDecl
+auto JLMissing_profile_data = mod.add_type<poplar::missing_profile_data>("Missing_profile_data", jlcxx::julia_base_type<poplar::poplar_error>());
 // poplar::missing_graph_profile__StructDecl
 auto JLMissing_graph_profile = mod.add_type<poplar::missing_graph_profile>("Missing_graph_profile", jlcxx::julia_base_type<poplar::poplar_error>());
 // poplar::missing_perf_estimate__StructDecl
@@ -162,6 +164,10 @@ auto JLVertexEdgeInfo = mod.add_type<poplar::VertexEdgeInfo>("VertexEdgeInfo");
 auto JLVertexEdgeInfoStorageInfo = mod.add_type<poplar::VertexEdgeInfo::StorageInfo>("VertexEdgeInfoStorageInfo");
 // poplar::VertexPerfEstimate__StructDecl
 mod.map_type<poplar::VertexPerfEstimate>("VertexPerfEstimate");
+// poplar::PrintTensorFmt__ClassDecl
+auto JLPrintTensorFmt = mod.add_type<poplar::PrintTensorFmt>("PrintTensorFmt");
+// poplar::PrintTensorFmt::FloatFormat__EnumDecl
+mod.add_bits<poplar::PrintTensorFmt::FloatFormat>("PrintTensorFmtFloatFormat", jlcxx::julia_type("CppEnum"));
 // poplar::SyncType__EnumDecl
 mod.add_bits<poplar::SyncType>("PoplarSyncType", jlcxx::julia_type("CppEnum"));
 // poplar::TypeTraits__StructDecl
@@ -334,6 +340,14 @@ JLOptionFlags.method("OptionFlagsSet", [](poplar::OptionFlags& cl, StringRef a, 
 { using namespace poplar;
 JLOptionFlags.method("OptionFlagsAt", [](poplar::OptionFlags& cl, StringRef a) {return cl.at(a);});
 }
+// poplar::OptionFlags::find(const StringRef)__CXXMethod
+{ using namespace poplar;
+JLOptionFlags.method("OptionFlagsFind", [](poplar::OptionFlags& cl, const StringRef a) {return cl.find(a);});
+}
+// poplar::OptionFlags::size()__CXXMethod
+{ using namespace poplar;
+JLOptionFlags.method("OptionFlagsSize", [](poplar::OptionFlags& cl) {return cl.size();});
+}
 // poplar::OptionFlags::clear()__CXXMethod
 { using namespace poplar;
 JLOptionFlags.method("OptionFlagsClear", [](poplar::OptionFlags& cl) {return cl.clear();});
@@ -373,6 +387,8 @@ mod.set_const("PoplarIpuLinkConfigurationPoplarBarleyTwist", poplar::IpuLinkConf
 mod.set_const("PoplarIpuLinkTopologyPoplarMesh", poplar::IpuLinkTopology::Mesh);
 // poplar::IpuLinkTopology::Torus__EnumConstantDecl
 mod.set_const("PoplarIpuLinkTopologyPoplarTorus", poplar::IpuLinkTopology::Torus);
+// poplar::IpuLinkTopology::Line__EnumConstantDecl
+mod.set_const("PoplarIpuLinkTopologyPoplarLine", poplar::IpuLinkTopology::Line);
 // poplar::TargetType::IPU__EnumConstantDecl
 mod.set_const("PoplarTargetTypePoplarIPU", poplar::TargetType::IPU);
 // poplar::TargetType::IPU_MODEL__EnumConstantDecl
@@ -656,6 +672,14 @@ JLTarget.method("TargetCreateIPUTarget", [](poplar::Target& cl, unsigned int a, 
 JLTarget.method("TargetCreateIPUTarget", [](poplar::Target& cl, unsigned int a, unsigned int b, StringRef c) {return cl.createIPUTarget(a, b, c);});
 JLTarget.method("TargetCreateIPUTarget", [](poplar::Target& cl, unsigned int a, unsigned int b, StringRef c, const OptionFlags & d) {return cl.createIPUTarget(a, b, c, d);});
 }
+// poplar::Target::getTypeLimitsMaxAs<>(const Type &)__CXXMethod
+{ using namespace poplar;
+JLTarget.method("TargetGetTypeLimitsMaxAs<>", [](poplar::Target& cl, const Type & a) {return cl.getTypeLimitsMaxAs<>(a);});
+}
+// poplar::Target::getTypeLimitsLowestAs<>(const Type &)__CXXMethod
+{ using namespace poplar;
+JLTarget.method("TargetGetTypeLimitsLowestAs<>", [](poplar::Target& cl, const Type & a) {return cl.getTypeLimitsLowestAs<>(a);});
+}
 // poplar::copyDeviceHalfToFloat(const Target &, const void *, float *, std::size_t)__FunctionDecl
 { using namespace poplar;
 mod.method("PoplarCopyDeviceHalfToFloat", [](const Target & a, const void * b, float * c, std::size_t d) {return poplar::copyDeviceHalfToFloat(a, b, c, d);} ); }
@@ -679,6 +703,10 @@ JLDevice.method("DeviceGetTarget", [](poplar::Device& cl) {return cl.getTarget()
 // poplar::Device::attach()__CXXMethod
 { using namespace poplar;
 JLDevice.method("DeviceAttach", [](poplar::Device& cl) {return cl.attach();});
+}
+// poplar::Device::isAttached()__CXXMethod
+{ using namespace poplar;
+JLDevice.method("DeviceIsAttached", [](poplar::Device& cl) {return cl.isAttached();});
 }
 // poplar::Device::detach()__CXXMethod
 { using namespace poplar;
@@ -1416,6 +1444,8 @@ JLSystem_runtime_error.constructor<const char *>();
 }
 // poplar::RecoveryAction::IPU_RESET__EnumConstantDecl
 mod.set_const("PoplarRecoveryActionPoplarIPU_RESET", poplar::RecoveryAction::IPU_RESET);
+// poplar::RecoveryAction::LINK_RESET__EnumConstantDecl
+mod.set_const("PoplarRecoveryActionPoplarLINK_RESET", poplar::RecoveryAction::LINK_RESET);
 // poplar::RecoveryAction::PARTITION_RESET__EnumConstantDecl
 mod.set_const("PoplarRecoveryActionPoplarPARTITION_RESET", poplar::RecoveryAction::PARTITION_RESET);
 // poplar::RecoveryAction::FULL_RESET__EnumConstantDecl
@@ -1463,6 +1493,33 @@ JLParse_error.constructor<const std::string &>();
 // poplar::parse_error::parse_error(const char *)__CXXConstructor
 { using namespace poplar;
 JLParse_error.constructor<const char *>();
+}
+// poplar::PrintTensorFmt::FloatFormat::Auto__EnumConstantDecl
+mod.set_const("PrintTensorFmtFloatFormatPrintTensorFmtAuto", poplar::PrintTensorFmt::FloatFormat::Auto);
+// poplar::PrintTensorFmt::FloatFormat::Fixed__EnumConstantDecl
+mod.set_const("PrintTensorFmtFloatFormatPrintTensorFmtFixed", poplar::PrintTensorFmt::FloatFormat::Fixed);
+// poplar::PrintTensorFmt::FloatFormat::Scientific__EnumConstantDecl
+mod.set_const("PrintTensorFmtFloatFormatPrintTensorFmtScientific", poplar::PrintTensorFmt::FloatFormat::Scientific);
+// poplar::PrintTensorFmt::FloatFormat::None__EnumConstantDecl
+mod.set_const("PrintTensorFmtFloatFormatPrintTensorFmtNone", poplar::PrintTensorFmt::FloatFormat::None);
+// poplar::PrintTensorFmt::PrintTensorFmt(unsigned int, unsigned int, unsigned int, unsigned int, FloatFormat, char, char, char)__CXXConstructor
+{ using namespace poplar;
+JLPrintTensorFmt.constructor<unsigned int>();
+JLPrintTensorFmt.constructor<unsigned int, unsigned int>();
+JLPrintTensorFmt.constructor<unsigned int, unsigned int, unsigned int>();
+JLPrintTensorFmt.constructor<unsigned int, unsigned int, unsigned int, unsigned int>();
+JLPrintTensorFmt.constructor<unsigned int, unsigned int, unsigned int, unsigned int, FloatFormat>();
+JLPrintTensorFmt.constructor<unsigned int, unsigned int, unsigned int, unsigned int, FloatFormat, char>();
+JLPrintTensorFmt.constructor<unsigned int, unsigned int, unsigned int, unsigned int, FloatFormat, char, char>();
+JLPrintTensorFmt.constructor<unsigned int, unsigned int, unsigned int, unsigned int, FloatFormat, char, char, char>();
+}
+// poplar::PrintTensorFmt::disableFormatting()__CXXMethod
+{ using namespace poplar;
+JLPrintTensorFmt.method("PrintTensorFmtDisableFormatting", [](poplar::PrintTensorFmt& cl) {return cl.disableFormatting();});
+}
+// poplar::PrintTensorFmt::PrintTensorFmt(const PrintTensorFmt &)__CXXConstructor
+{ using namespace poplar;
+JLPrintTensorFmt.constructor<const PrintTensorFmt &>();
 }
 // poplar::SyncType::INTERNAL__EnumConstantDecl
 mod.set_const("PoplarSyncTypePoplarINTERNAL", poplar::SyncType::INTERNAL);
@@ -1839,6 +1896,16 @@ JLProgramCall.constructor<Function, const DebugContext &>();
 { using namespace poplar::program;
 JLProgramCall.constructor<HostFunction, jlcxx::ArrayRef<Tensor>, jlcxx::ArrayRef<Tensor>>();
 JLProgramCall.constructor<HostFunction, jlcxx::ArrayRef<Tensor>, jlcxx::ArrayRef<Tensor>, const DebugContext &>();
+}
+// poplar::program::PrintTensor::PrintTensor(Tensor, const PrintTensorFmt &, const DebugContext &)__CXXConstructor
+{ using namespace poplar::program;
+JLProgramPrintTensor.constructor<Tensor, const PrintTensorFmt &>();
+JLProgramPrintTensor.constructor<Tensor, const PrintTensorFmt &, const DebugContext &>();
+}
+// poplar::program::PrintTensor::PrintTensor(StringRef, Tensor, const PrintTensorFmt &, const DebugContext &)__CXXConstructor
+{ using namespace poplar::program;
+JLProgramPrintTensor.constructor<StringRef, Tensor, const PrintTensorFmt &>();
+JLProgramPrintTensor.constructor<StringRef, Tensor, const PrintTensorFmt &, const DebugContext &>();
 }
 // poplar::program::PrintTensor::PrintTensor(Tensor, const DebugContext &)__CXXConstructor
 { using namespace poplar::program;
@@ -2402,6 +2469,10 @@ JLGraph.method("GraphConvertPhysicalTileToVirtualTile", [](poplar::Graph& cl, un
 { using namespace poplar;
 JLGraph.method("GraphHasCodelet", [](poplar::Graph& cl, StringRef a) {return cl.hasCodelet(a);});
 }
+// poplar::Graph::getMaxVertexFieldValueAs<>(StringRef, StringRef)__CXXMethod
+{ using namespace poplar;
+JLGraph.method("GraphGetMaxVertexFieldValueAs<>", [](poplar::Graph& cl, StringRef a, StringRef b) {return cl.getMaxVertexFieldValueAs<>(a, b);});
+}
 // poplar::RuntimeOptions::RuntimeOptions(const OptionFlags &)__CXXConstructor
 { using namespace poplar;
 JLRuntimeOptions.constructor<const OptionFlags &>();
@@ -2467,6 +2538,11 @@ JLEngine.constructor<const Graph &, program::Program>();
 JLEngine.constructor<const Graph &, program::Program, const OptionFlags &>();
 JLEngine.constructor<const Graph &, program::Program, const OptionFlags &, ProgressFunc>();
 JLEngine.constructor<const Graph &, program::Program, const OptionFlags &, ProgressFunc, const DebugContext &>();
+}
+// poplar::Engine::Engine(const Executable &, const OptionFlags &)__CXXConstructor
+{ using namespace poplar;
+JLEngine.constructor<const Executable &>();
+JLEngine.constructor<const Executable &, const OptionFlags &>();
 }
 // poplar::Engine::prepare(const Device &)__CXXMethod
 { using namespace poplar;
@@ -2643,6 +2719,9 @@ JLEngine.method("EngineGetSimulatedErrorLocations", [](poplar::Engine& cl, Strin
 // poplar::compileGraph(const Graph &, ArrayRef<program::Program>, const OptionFlags &, ProgressFunc, const DebugContext &)__FunctionDecl
 { using namespace poplar;
 mod.method("PoplarCompileGraph", [](const Graph & a, ArrayRef<program::Program> b, const OptionFlags & c, ProgressFunc d, const DebugContext & e) {return poplar::compileGraph(a, b, c, d, e);} ); }
+// poplar::compileGraph(const Graph &, ArrayRef<program::Program>, bool, const OptionFlags &, ProgressFunc, const DebugContext &)__FunctionDecl
+{ using namespace poplar;
+mod.method("PoplarCompileGraph", [](const Graph & a, ArrayRef<program::Program> b, bool c, const OptionFlags & d, ProgressFunc e, const DebugContext & f) {return poplar::compileGraph(a, b, c, d, e, f);} ); }
 // poplar::compileModule(const Graph &, program::Program, const OptionFlags &, ProgressFunc, const DebugContext &)__FunctionDecl
 { using namespace poplar;
 mod.method("PoplarCompileModule", [](const Graph & a, program::Program b, const OptionFlags & c, ProgressFunc d, const DebugContext & e) {return poplar::compileModule(a, b, c, d, e);} ); }
@@ -2652,6 +2731,9 @@ mod.method("PoplarCompileModule", [](const Graph & a, program::Program b, const 
 // poplar::compileGraph(const Graph &, ArrayRef<program::Program>, const Preallocations &, const OptionFlags &, ProgressFunc, const DebugContext &)__FunctionDecl
 { using namespace poplar;
 mod.method("PoplarCompileGraph", [](const Graph & a, ArrayRef<program::Program> b, const Preallocations & c, const OptionFlags & d, ProgressFunc e, const DebugContext & f) {return poplar::compileGraph(a, b, c, d, e, f);} ); }
+// poplar::compileGraph(const Graph &, ArrayRef<program::Program>, const Preallocations &, bool, const OptionFlags &, ProgressFunc, const DebugContext &)__FunctionDecl
+{ using namespace poplar;
+mod.method("PoplarCompileGraph", [](const Graph & a, ArrayRef<program::Program> b, const Preallocations & c, bool d, const OptionFlags & e, ProgressFunc f, const DebugContext & g) {return poplar::compileGraph(a, b, c, d, e, f, g);} ); }
 // poplar::FloatingPointBehaviour::FloatingPointBehaviour(bool, bool, bool, bool, bool)__CXXConstructor
 { using namespace poplar;
 JLFloatingPointBehaviour.constructor<bool, bool, bool, bool, bool>();
@@ -2683,18 +2765,6 @@ JLIPUModel.method("IPUModelCreateDevice", [](poplar::IPUModel& cl, OptionFlags a
 JLIPUModel.method("IPUModelCreateDevice", [](poplar::IPUModel& cl, OptionFlags a, bool b) {return cl.createDevice(a, b);});
 JLIPUModel.method("IPUModelCreateDevice", [](poplar::IPUModel& cl, OptionFlags a, bool b, unsigned int c) {return cl.createDevice(a, b, c);});
 }
-// popops::varianceToInvStdDev(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::Type, const poplar::DebugContext &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsVarianceToInvStdDev", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, const poplar::Type e, std::string f) {return popops::varianceToInvStdDev(a, b, c, d, e, f);} ); }
-// popops::varianceToInvStdDev(poplar::Graph &, const poplar::Tensor &, const float, poplar::program::Sequence &, const poplar::Type, const poplar::DebugContext &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsVarianceToInvStdDev", [](poplar::Graph & a, const poplar::Tensor & b, const float c, poplar::program::Sequence & d, const poplar::Type e, std::string f) {return popops::varianceToInvStdDev(a, b, c, d, e, f);} ); }
-// popops::invStdDevToVariance(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::Type, const poplar::DebugContext &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsInvStdDevToVariance", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, const poplar::Type e, std::string f) {return popops::invStdDevToVariance(a, b, c, d, e, f);} ); }
-// popops::invStdDevToVariance(poplar::Graph &, const poplar::Tensor &, const float, poplar::program::Sequence &, const poplar::Type, const poplar::DebugContext &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsInvStdDevToVariance", [](poplar::Graph & a, const poplar::Tensor & b, const float c, poplar::program::Sequence & d, const poplar::Type e, std::string f) {return popops::invStdDevToVariance(a, b, c, d, e, f);} ); }
 // popops::abs(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
 { using namespace popops;
 mod.method("PopopsAbs", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::abs(a, b, c, d, e);} ); }
@@ -2704,105 +2774,6 @@ mod.method("PopopsAbsInPlace", [](poplar::Graph & a, const poplar::Tensor & b, p
 // popops::absWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
 { using namespace popops;
 mod.method("PopopsAbsWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::absWithOutput(a, b, c, d, e, f);} ); }
-// popops::asin(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsAsin", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::asin(a, b, c, d, e);} ); }
-// popops::asinInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsAsinInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::asinInPlace(a, b, c, d, e);} ); }
-// popops::asinWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsAsinWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::asinWithOutput(a, b, c, d, e, f);} ); }
-// popops::bitwiseNot(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsBitwiseNot", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::bitwiseNot(a, b, c, d, e);} ); }
-// popops::bitwiseNotInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsBitwiseNotInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::bitwiseNotInPlace(a, b, c, d, e);} ); }
-// popops::bitwiseNotWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsBitwiseNotWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::bitwiseNotWithOutput(a, b, c, d, e, f);} ); }
-// popops::cbrt(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsCbrt", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::cbrt(a, b, c, d, e);} ); }
-// popops::cbrtInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsCbrtInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::cbrtInPlace(a, b, c, d, e);} ); }
-// popops::cbrtWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsCbrtWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::cbrtWithOutput(a, b, c, d, e, f);} ); }
-// popops::geluErf(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsGeluErf", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::geluErf(a, b, c, d, e);} ); }
-// popops::geluErfInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsGeluErfInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::geluErfInPlace(a, b, c, d, e);} ); }
-// popops::geluErfWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsGeluErfWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::geluErfWithOutput(a, b, c, d, e, f);} ); }
-// popops::ceil(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsCeil", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::ceil(a, b, c, d, e);} ); }
-// popops::ceilInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsCeilInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::ceilInPlace(a, b, c, d, e);} ); }
-// popops::ceilWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsCeilWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::ceilWithOutput(a, b, c, d, e, f);} ); }
-// popops::countLeadingZeros(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsCountLeadingZeros", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::countLeadingZeros(a, b, c, d, e);} ); }
-// popops::countLeadingZerosInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsCountLeadingZerosInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::countLeadingZerosInPlace(a, b, c, d, e);} ); }
-// popops::countLeadingZerosWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsCountLeadingZerosWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::countLeadingZerosWithOutput(a, b, c, d, e, f);} ); }
-// popops::cos(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsCos", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::cos(a, b, c, d, e);} ); }
-// popops::cosInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsCosInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::cosInPlace(a, b, c, d, e);} ); }
-// popops::cosWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsCosWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::cosWithOutput(a, b, c, d, e, f);} ); }
-// popops::erf(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsErf", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::erf(a, b, c, d, e);} ); }
-// popops::erfInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsErfInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::erfInPlace(a, b, c, d, e);} ); }
-// popops::erfWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsErfWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::erfWithOutput(a, b, c, d, e, f);} ); }
-// popops::exp(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsExp", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::exp(a, b, c, d, e);} ); }
-// popops::expInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsExpInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::expInPlace(a, b, c, d, e);} ); }
-// popops::expWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsExpWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::expWithOutput(a, b, c, d, e, f);} ); }
-// popops::expm1(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsExpm1", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::expm1(a, b, c, d, e);} ); }
-// popops::expm1InPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsExpm1InPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::expm1InPlace(a, b, c, d, e);} ); }
-// popops::expm1WithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsExpm1WithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::expm1WithOutput(a, b, c, d, e, f);} ); }
-// popops::floor(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsFloor", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::floor(a, b, c, d, e);} ); }
-// popops::floorInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsFloorInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::floorInPlace(a, b, c, d, e);} ); }
-// popops::floorWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsFloorWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::floorWithOutput(a, b, c, d, e, f);} ); }
 // popops::inv(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
 { using namespace popops;
 mod.method("PopopsInv", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::inv(a, b, c, d, e);} ); }
@@ -2812,24 +2783,6 @@ mod.method("PopopsInvInPlace", [](poplar::Graph & a, const poplar::Tensor & b, p
 // popops::invWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
 { using namespace popops;
 mod.method("PopopsInvWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::invWithOutput(a, b, c, d, e, f);} ); }
-// popops::log(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsLog", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::log(a, b, c, d, e);} ); }
-// popops::logInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsLogInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::logInPlace(a, b, c, d, e);} ); }
-// popops::logWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsLogWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::logWithOutput(a, b, c, d, e, f);} ); }
-// popops::log1p(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsLog1P", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::log1p(a, b, c, d, e);} ); }
-// popops::log1pInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsLog1PInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::log1pInPlace(a, b, c, d, e);} ); }
-// popops::log1pWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsLog1PWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::log1pWithOutput(a, b, c, d, e, f);} ); }
 // popops::logicalNot(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
 { using namespace popops;
 mod.method("PopopsLogicalNot", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::logicalNot(a, b, c, d, e);} ); }
@@ -2848,15 +2801,6 @@ mod.method("PopopsNegInPlace", [](poplar::Graph & a, const poplar::Tensor & b, p
 // popops::negWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
 { using namespace popops;
 mod.method("PopopsNegWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::negWithOutput(a, b, c, d, e, f);} ); }
-// popops::popcount(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsPopcount", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::popcount(a, b, c, d, e);} ); }
-// popops::popcountInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsPopcountInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::popcountInPlace(a, b, c, d, e);} ); }
-// popops::popcountWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsPopcountWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::popcountWithOutput(a, b, c, d, e, f);} ); }
 // popops::signum(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
 { using namespace popops;
 mod.method("PopopsSignum", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::signum(a, b, c, d, e);} ); }
@@ -2866,6 +2810,189 @@ mod.method("PopopsSignumInPlace", [](poplar::Graph & a, const poplar::Tensor & b
 // popops::signumWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
 { using namespace popops;
 mod.method("PopopsSignumWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::signumWithOutput(a, b, c, d, e, f);} ); }
+// popops::isFinite(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsIsFinite", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::isFinite(a, b, c, d, e);} ); }
+// popops::isFiniteWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsIsFiniteWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::isFiniteWithOutput(a, b, c, d, e, f);} ); }
+// popops::checkTypes<>(poplar::Type, float)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsCheckTypes<>", [](poplar::Type a, float b) {return popops::checkTypes<>(a, b);} ); }
+// popops::checkTypes<>(poplar::Type, double)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsCheckTypes<>", [](poplar::Type a, double b) {return popops::checkTypes<>(a, b);} ); }
+// popops::bitwiseNot(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsBitwiseNot", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::bitwiseNot(a, b, c, d, e);} ); }
+// popops::bitwiseNotInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsBitwiseNotInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::bitwiseNotInPlace(a, b, c, d, e);} ); }
+// popops::bitwiseNotWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsBitwiseNotWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::bitwiseNotWithOutput(a, b, c, d, e, f);} ); }
+// popops::countLeadingZeros(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsCountLeadingZeros", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::countLeadingZeros(a, b, c, d, e);} ); }
+// popops::countLeadingZerosInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsCountLeadingZerosInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::countLeadingZerosInPlace(a, b, c, d, e);} ); }
+// popops::countLeadingZerosWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsCountLeadingZerosWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::countLeadingZerosWithOutput(a, b, c, d, e, f);} ); }
+// popops::popcount(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsPopcount", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::popcount(a, b, c, d, e);} ); }
+// popops::popcountInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsPopcountInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::popcountInPlace(a, b, c, d, e);} ); }
+// popops::popcountWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsPopcountWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::popcountWithOutput(a, b, c, d, e, f);} ); }
+// popops::ceil(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsCeil", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::ceil(a, b, c, d, e);} ); }
+// popops::ceilInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsCeilInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::ceilInPlace(a, b, c, d, e);} ); }
+// popops::ceilWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsCeilWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::ceilWithOutput(a, b, c, d, e, f);} ); }
+// popops::floor(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsFloor", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::floor(a, b, c, d, e);} ); }
+// popops::floorInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsFloorInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::floorInPlace(a, b, c, d, e);} ); }
+// popops::floorWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsFloorWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::floorWithOutput(a, b, c, d, e, f);} ); }
+// popops::round(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsRound", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::round(a, b, c, d, e);} ); }
+// popops::roundInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsRoundInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::roundInPlace(a, b, c, d, e);} ); }
+// popops::roundWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsRoundWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::roundWithOutput(a, b, c, d, e, f);} ); }
+// popops::nearbyint(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsNearbyint", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::nearbyint(a, b, c, d, e);} ); }
+// popops::nearbyintInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsNearbyintInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::nearbyintInPlace(a, b, c, d, e);} ); }
+// popops::nearbyintWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsNearbyintWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::nearbyintWithOutput(a, b, c, d, e, f);} ); }
+// popops::cbrt(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsCbrt", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::cbrt(a, b, c, d, e);} ); }
+// popops::cbrtInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsCbrtInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::cbrtInPlace(a, b, c, d, e);} ); }
+// popops::cbrtWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsCbrtWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::cbrtWithOutput(a, b, c, d, e, f);} ); }
+// popops::exp(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsExp", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::exp(a, b, c, d, e);} ); }
+// popops::expInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsExpInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::expInPlace(a, b, c, d, e);} ); }
+// popops::expWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsExpWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::expWithOutput(a, b, c, d, e, f);} ); }
+// popops::exp2(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsExp2", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::exp2(a, b, c, d, e);} ); }
+// popops::exp2InPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsExp2InPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::exp2InPlace(a, b, c, d, e);} ); }
+// popops::exp2WithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsExp2WithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::exp2WithOutput(a, b, c, d, e, f);} ); }
+// popops::expm1(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsExpm1", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::expm1(a, b, c, d, e);} ); }
+// popops::expm1InPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsExpm1InPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::expm1InPlace(a, b, c, d, e);} ); }
+// popops::expm1WithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsExpm1WithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::expm1WithOutput(a, b, c, d, e, f);} ); }
+// popops::log(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsLog", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::log(a, b, c, d, e);} ); }
+// popops::logInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsLogInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::logInPlace(a, b, c, d, e);} ); }
+// popops::logWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsLogWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::logWithOutput(a, b, c, d, e, f);} ); }
+// popops::log1p(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsLog1P", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::log1p(a, b, c, d, e);} ); }
+// popops::log1pInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsLog1PInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::log1pInPlace(a, b, c, d, e);} ); }
+// popops::log1pWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsLog1PWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::log1pWithOutput(a, b, c, d, e, f);} ); }
+// popops::sqrt(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsSqrt", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::sqrt(a, b, c, d, e);} ); }
+// popops::sqrtInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsSqrtInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::sqrtInPlace(a, b, c, d, e);} ); }
+// popops::sqrtWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsSqrtWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::sqrtWithOutput(a, b, c, d, e, f);} ); }
+// popops::square(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsSquare", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::square(a, b, c, d, e);} ); }
+// popops::squareInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsSquareInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::squareInPlace(a, b, c, d, e);} ); }
+// popops::squareWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsSquareWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::squareWithOutput(a, b, c, d, e, f);} ); }
+// popops::rsqrt(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsRsqrt", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::rsqrt(a, b, c, d, e);} ); }
+// popops::rsqrtInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsRsqrtInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::rsqrtInPlace(a, b, c, d, e);} ); }
+// popops::rsqrtWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsRsqrtWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::rsqrtWithOutput(a, b, c, d, e, f);} ); }
+// popops::sigmoid(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsSigmoid", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::sigmoid(a, b, c, d, e);} ); }
+// popops::sigmoidInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsSigmoidInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::sigmoidInPlace(a, b, c, d, e);} ); }
+// popops::sigmoidWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsSigmoidWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::sigmoidWithOutput(a, b, c, d, e, f);} ); }
+// popops::asin(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsAsin", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::asin(a, b, c, d, e);} ); }
+// popops::asinInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsAsinInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::asinInPlace(a, b, c, d, e);} ); }
+// popops::asinWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsAsinWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::asinWithOutput(a, b, c, d, e, f);} ); }
+// popops::cos(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsCos", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::cos(a, b, c, d, e);} ); }
+// popops::cosInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsCosInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::cosInPlace(a, b, c, d, e);} ); }
+// popops::cosWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsCosWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::cosWithOutput(a, b, c, d, e, f);} ); }
 // popops::sin(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
 { using namespace popops;
 mod.method("PopopsSin", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::sin(a, b, c, d, e);} ); }
@@ -2893,63 +3020,36 @@ mod.method("PopopsTanhInPlace", [](poplar::Graph & a, const poplar::Tensor & b, 
 // popops::tanhWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
 { using namespace popops;
 mod.method("PopopsTanhWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::tanhWithOutput(a, b, c, d, e, f);} ); }
-// popops::round(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+// popops::varianceToInvStdDev(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::Type, const poplar::DebugContext &)__FunctionDecl
 { using namespace popops;
-mod.method("PopopsRound", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::round(a, b, c, d, e);} ); }
-// popops::roundInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+mod.method("PopopsVarianceToInvStdDev", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, const poplar::Type e, std::string f) {return popops::varianceToInvStdDev(a, b, c, d, e, f);} ); }
+// popops::varianceToInvStdDev(poplar::Graph &, const poplar::Tensor &, const float, poplar::program::Sequence &, const poplar::Type, const poplar::DebugContext &)__FunctionDecl
 { using namespace popops;
-mod.method("PopopsRoundInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::roundInPlace(a, b, c, d, e);} ); }
-// popops::roundWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+mod.method("PopopsVarianceToInvStdDev", [](poplar::Graph & a, const poplar::Tensor & b, const float c, poplar::program::Sequence & d, const poplar::Type e, std::string f) {return popops::varianceToInvStdDev(a, b, c, d, e, f);} ); }
+// popops::invStdDevToVariance(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::Type, const poplar::DebugContext &)__FunctionDecl
 { using namespace popops;
-mod.method("PopopsRoundWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::roundWithOutput(a, b, c, d, e, f);} ); }
-// popops::sqrt(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+mod.method("PopopsInvStdDevToVariance", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, const poplar::Type e, std::string f) {return popops::invStdDevToVariance(a, b, c, d, e, f);} ); }
+// popops::invStdDevToVariance(poplar::Graph &, const poplar::Tensor &, const float, poplar::program::Sequence &, const poplar::Type, const poplar::DebugContext &)__FunctionDecl
 { using namespace popops;
-mod.method("PopopsSqrt", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::sqrt(a, b, c, d, e);} ); }
-// popops::sqrtInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+mod.method("PopopsInvStdDevToVariance", [](poplar::Graph & a, const poplar::Tensor & b, const float c, poplar::program::Sequence & d, const poplar::Type e, std::string f) {return popops::invStdDevToVariance(a, b, c, d, e, f);} ); }
+// popops::geluErf(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
 { using namespace popops;
-mod.method("PopopsSqrtInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::sqrtInPlace(a, b, c, d, e);} ); }
-// popops::sqrtWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+mod.method("PopopsGeluErf", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::geluErf(a, b, c, d, e);} ); }
+// popops::geluErfInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
 { using namespace popops;
-mod.method("PopopsSqrtWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::sqrtWithOutput(a, b, c, d, e, f);} ); }
-// popops::square(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+mod.method("PopopsGeluErfInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::geluErfInPlace(a, b, c, d, e);} ); }
+// popops::geluErfWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
 { using namespace popops;
-mod.method("PopopsSquare", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::square(a, b, c, d, e);} ); }
-// popops::squareInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+mod.method("PopopsGeluErfWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::geluErfWithOutput(a, b, c, d, e, f);} ); }
+// popops::erf(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
 { using namespace popops;
-mod.method("PopopsSquareInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::squareInPlace(a, b, c, d, e);} ); }
-// popops::squareWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+mod.method("PopopsErf", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::erf(a, b, c, d, e);} ); }
+// popops::erfInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
 { using namespace popops;
-mod.method("PopopsSquareWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::squareWithOutput(a, b, c, d, e, f);} ); }
-// popops::sigmoid(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+mod.method("PopopsErfInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::erfInPlace(a, b, c, d, e);} ); }
+// popops::erfWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
 { using namespace popops;
-mod.method("PopopsSigmoid", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::sigmoid(a, b, c, d, e);} ); }
-// popops::sigmoidInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsSigmoidInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::sigmoidInPlace(a, b, c, d, e);} ); }
-// popops::sigmoidWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsSigmoidWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::sigmoidWithOutput(a, b, c, d, e, f);} ); }
-// popops::rsqrt(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsRsqrt", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::rsqrt(a, b, c, d, e);} ); }
-// popops::rsqrtInPlace(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsRsqrtInPlace", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::rsqrtInPlace(a, b, c, d, e);} ); }
-// popops::rsqrtWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsRsqrtWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::rsqrtWithOutput(a, b, c, d, e, f);} ); }
-// popops::isFinite(poplar::Graph &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsIsFinite", [](poplar::Graph & a, const poplar::Tensor & b, poplar::program::Sequence & c, std::string d, const poplar::OptionFlags & e) {return popops::isFinite(a, b, c, d, e);} ); }
-// popops::isFiniteWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsIsFiniteWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::isFiniteWithOutput(a, b, c, d, e, f);} ); }
-// popops::checkTypes<>(poplar::Type, float)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsCheckTypes<>", [](poplar::Type a, float b) {return popops::checkTypes<>(a, b);} ); }
-// popops::checkTypes<>(poplar::Type, double)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsCheckTypes<>", [](poplar::Type a, double b) {return popops::checkTypes<>(a, b);} ); }
+mod.method("PopopsErfWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::erfWithOutput(a, b, c, d, e, f);} ); }
 // popops::add(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
 { using namespace popops;
 mod.method("PopopsAdd", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::add(a, b, c, d, e, f);} ); }
@@ -2959,15 +3059,51 @@ mod.method("PopopsAddInPlace", [](poplar::Graph & a, const poplar::Tensor & b, c
 // popops::addWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
 { using namespace popops;
 mod.method("PopopsAddWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::addWithOutput(a, b, c, d, e, f, g);} ); }
-// popops::atan2(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+// popops::sub(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
 { using namespace popops;
-mod.method("PopopsAtan2", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::atan2(a, b, c, d, e, f);} ); }
-// popops::atan2InPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+mod.method("PopopsSub", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::sub(a, b, c, d, e, f);} ); }
+// popops::subInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
 { using namespace popops;
-mod.method("PopopsAtan2InPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::atan2InPlace(a, b, c, d, e, f);} ); }
-// popops::atan2WithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+mod.method("PopopsSubInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::subInPlace(a, b, c, d, e, f);} ); }
+// popops::subWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
 { using namespace popops;
-mod.method("PopopsAtan2WithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::atan2WithOutput(a, b, c, d, e, f, g);} ); }
+mod.method("PopopsSubWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::subWithOutput(a, b, c, d, e, f, g);} ); }
+// popops::mul(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsMul", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::mul(a, b, c, d, e, f);} ); }
+// popops::mulInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsMulInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::mulInPlace(a, b, c, d, e, f);} ); }
+// popops::mulWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsMulWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::mulWithOutput(a, b, c, d, e, f, g);} ); }
+// popops::div(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsDiv", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::div(a, b, c, d, e, f);} ); }
+// popops::divInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsDivInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::divInPlace(a, b, c, d, e, f);} ); }
+// popops::divWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsDivWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::divWithOutput(a, b, c, d, e, f, g);} ); }
+// popops::pow(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsPow", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::pow(a, b, c, d, e, f);} ); }
+// popops::powInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsPowInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::powInPlace(a, b, c, d, e, f);} ); }
+// popops::powWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsPowWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::powWithOutput(a, b, c, d, e, f, g);} ); }
+// popops::rem(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsRem", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::rem(a, b, c, d, e, f);} ); }
+// popops::remInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsRemInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::remInPlace(a, b, c, d, e, f);} ); }
+// popops::remWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsRemWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::remWithOutput(a, b, c, d, e, f, g);} ); }
 // popops::bitwiseAnd(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
 { using namespace popops;
 mod.method("PopopsBitwiseAnd", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::bitwiseAnd(a, b, c, d, e, f);} ); }
@@ -3004,141 +3140,6 @@ mod.method("PopopsBitwiseXnorInPlace", [](poplar::Graph & a, const poplar::Tenso
 // popops::bitwiseXnorWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
 { using namespace popops;
 mod.method("PopopsBitwiseXnorWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::bitwiseXnorWithOutput(a, b, c, d, e, f, g);} ); }
-// popops::div(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsDiv", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::div(a, b, c, d, e, f);} ); }
-// popops::divInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsDivInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::divInPlace(a, b, c, d, e, f);} ); }
-// popops::divWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsDivWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::divWithOutput(a, b, c, d, e, f, g);} ); }
-// popops::eq(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsEq", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::eq(a, b, c, d, e, f);} ); }
-// popops::eqInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsEqInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::eqInPlace(a, b, c, d, e, f);} ); }
-// popops::eqWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsEqWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::eqWithOutput(a, b, c, d, e, f, g);} ); }
-// popops::gteq(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsGteq", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::gteq(a, b, c, d, e, f);} ); }
-// popops::gteqInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsGteqInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::gteqInPlace(a, b, c, d, e, f);} ); }
-// popops::gteqWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsGteqWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::gteqWithOutput(a, b, c, d, e, f, g);} ); }
-// popops::gt(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsGt", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::gt(a, b, c, d, e, f);} ); }
-// popops::gtInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsGtInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::gtInPlace(a, b, c, d, e, f);} ); }
-// popops::gtWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsGtWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::gtWithOutput(a, b, c, d, e, f, g);} ); }
-// popops::invStdDevToVariance(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsInvStdDevToVariance", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::invStdDevToVariance(a, b, c, d, e, f);} ); }
-// popops::invStdDevToVarianceInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsInvStdDevToVarianceInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::invStdDevToVarianceInPlace(a, b, c, d, e, f);} ); }
-// popops::invStdDevToVarianceWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsInvStdDevToVarianceWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::invStdDevToVarianceWithOutput(a, b, c, d, e, f, g);} ); }
-// popops::lteq(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsLteq", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::lteq(a, b, c, d, e, f);} ); }
-// popops::lteqInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsLteqInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::lteqInPlace(a, b, c, d, e, f);} ); }
-// popops::lteqWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsLteqWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::lteqWithOutput(a, b, c, d, e, f, g);} ); }
-// popops::logicalAnd(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsLogicalAnd", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::logicalAnd(a, b, c, d, e, f);} ); }
-// popops::logicalAndInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsLogicalAndInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::logicalAndInPlace(a, b, c, d, e, f);} ); }
-// popops::logicalAndWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsLogicalAndWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::logicalAndWithOutput(a, b, c, d, e, f, g);} ); }
-// popops::logicalOr(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsLogicalOr", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::logicalOr(a, b, c, d, e, f);} ); }
-// popops::logicalOrInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsLogicalOrInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::logicalOrInPlace(a, b, c, d, e, f);} ); }
-// popops::logicalOrWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsLogicalOrWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::logicalOrWithOutput(a, b, c, d, e, f, g);} ); }
-// popops::lt(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsLt", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::lt(a, b, c, d, e, f);} ); }
-// popops::ltInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsLtInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::ltInPlace(a, b, c, d, e, f);} ); }
-// popops::ltWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsLtWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::ltWithOutput(a, b, c, d, e, f, g);} ); }
-// popops::max(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsMax", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::max(a, b, c, d, e, f);} ); }
-// popops::maxInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsMaxInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::maxInPlace(a, b, c, d, e, f);} ); }
-// popops::maxWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsMaxWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::maxWithOutput(a, b, c, d, e, f, g);} ); }
-// popops::min(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsMin", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::min(a, b, c, d, e, f);} ); }
-// popops::minInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsMinInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::minInPlace(a, b, c, d, e, f);} ); }
-// popops::minWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsMinWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::minWithOutput(a, b, c, d, e, f, g);} ); }
-// popops::mul(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsMul", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::mul(a, b, c, d, e, f);} ); }
-// popops::mulInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsMulInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::mulInPlace(a, b, c, d, e, f);} ); }
-// popops::mulWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsMulWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::mulWithOutput(a, b, c, d, e, f, g);} ); }
-// popops::neq(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsNeq", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::neq(a, b, c, d, e, f);} ); }
-// popops::neqInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsNeqInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::neqInPlace(a, b, c, d, e, f);} ); }
-// popops::neqWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsNeqWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::neqWithOutput(a, b, c, d, e, f, g);} ); }
-// popops::pow(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsPow", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::pow(a, b, c, d, e, f);} ); }
-// popops::powInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsPowInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::powInPlace(a, b, c, d, e, f);} ); }
-// popops::powWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsPowWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::powWithOutput(a, b, c, d, e, f, g);} ); }
-// popops::rem(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsRem", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::rem(a, b, c, d, e, f);} ); }
-// popops::remInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsRemInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::remInPlace(a, b, c, d, e, f);} ); }
-// popops::remWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
-{ using namespace popops;
-mod.method("PopopsRemWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::remWithOutput(a, b, c, d, e, f, g);} ); }
 // popops::shiftLeft(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
 { using namespace popops;
 mod.method("PopopsShiftLeft", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::shiftLeft(a, b, c, d, e, f);} ); }
@@ -3166,15 +3167,114 @@ mod.method("PopopsShiftRightSignExtendInPlace", [](poplar::Graph & a, const popl
 // popops::shiftRightSignExtendWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
 { using namespace popops;
 mod.method("PopopsShiftRightSignExtendWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::shiftRightSignExtendWithOutput(a, b, c, d, e, f, g);} ); }
-// popops::sub(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+// popops::logicalAnd(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
 { using namespace popops;
-mod.method("PopopsSub", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::sub(a, b, c, d, e, f);} ); }
-// popops::subInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+mod.method("PopopsLogicalAnd", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::logicalAnd(a, b, c, d, e, f);} ); }
+// popops::logicalAndInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
 { using namespace popops;
-mod.method("PopopsSubInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::subInPlace(a, b, c, d, e, f);} ); }
-// popops::subWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+mod.method("PopopsLogicalAndInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::logicalAndInPlace(a, b, c, d, e, f);} ); }
+// popops::logicalAndWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
 { using namespace popops;
-mod.method("PopopsSubWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::subWithOutput(a, b, c, d, e, f, g);} ); }
+mod.method("PopopsLogicalAndWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::logicalAndWithOutput(a, b, c, d, e, f, g);} ); }
+// popops::logicalOr(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsLogicalOr", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::logicalOr(a, b, c, d, e, f);} ); }
+// popops::logicalOrInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsLogicalOrInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::logicalOrInPlace(a, b, c, d, e, f);} ); }
+// popops::logicalOrWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsLogicalOrWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::logicalOrWithOutput(a, b, c, d, e, f, g);} ); }
+// popops::eq(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsEq", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::eq(a, b, c, d, e, f);} ); }
+// popops::eqInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsEqInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::eqInPlace(a, b, c, d, e, f);} ); }
+// popops::eqWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsEqWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::eqWithOutput(a, b, c, d, e, f, g);} ); }
+// popops::neq(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsNeq", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::neq(a, b, c, d, e, f);} ); }
+// popops::neqInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsNeqInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::neqInPlace(a, b, c, d, e, f);} ); }
+// popops::neqWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsNeqWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::neqWithOutput(a, b, c, d, e, f, g);} ); }
+// popops::gteq(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsGteq", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::gteq(a, b, c, d, e, f);} ); }
+// popops::gteqInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsGteqInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::gteqInPlace(a, b, c, d, e, f);} ); }
+// popops::gteqWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsGteqWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::gteqWithOutput(a, b, c, d, e, f, g);} ); }
+// popops::gt(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsGt", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::gt(a, b, c, d, e, f);} ); }
+// popops::gtInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsGtInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::gtInPlace(a, b, c, d, e, f);} ); }
+// popops::gtWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsGtWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::gtWithOutput(a, b, c, d, e, f, g);} ); }
+// popops::lteq(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsLteq", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::lteq(a, b, c, d, e, f);} ); }
+// popops::lteqInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsLteqInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::lteqInPlace(a, b, c, d, e, f);} ); }
+// popops::lteqWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsLteqWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::lteqWithOutput(a, b, c, d, e, f, g);} ); }
+// popops::lt(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsLt", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::lt(a, b, c, d, e, f);} ); }
+// popops::ltInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsLtInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::ltInPlace(a, b, c, d, e, f);} ); }
+// popops::ltWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsLtWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::ltWithOutput(a, b, c, d, e, f, g);} ); }
+// popops::max(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsMax", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::max(a, b, c, d, e, f);} ); }
+// popops::maxInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsMaxInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::maxInPlace(a, b, c, d, e, f);} ); }
+// popops::maxWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsMaxWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::maxWithOutput(a, b, c, d, e, f, g);} ); }
+// popops::min(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsMin", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::min(a, b, c, d, e, f);} ); }
+// popops::minInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsMinInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::minInPlace(a, b, c, d, e, f);} ); }
+// popops::minWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsMinWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::minWithOutput(a, b, c, d, e, f, g);} ); }
+// popops::atan2(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsAtan2", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::atan2(a, b, c, d, e, f);} ); }
+// popops::atan2InPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsAtan2InPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::atan2InPlace(a, b, c, d, e, f);} ); }
+// popops::atan2WithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsAtan2WithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::atan2WithOutput(a, b, c, d, e, f, g);} ); }
+// popops::invStdDevToVariance(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsInvStdDevToVariance", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::invStdDevToVariance(a, b, c, d, e, f);} ); }
+// popops::invStdDevToVarianceInPlace(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsInvStdDevToVarianceInPlace", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::invStdDevToVarianceInPlace(a, b, c, d, e, f);} ); }
+// popops::invStdDevToVarianceWithOutput(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
+{ using namespace popops;
+mod.method("PopopsInvStdDevToVarianceWithOutput", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, const poplar::Tensor & d, poplar::program::Sequence & e, std::string f, const poplar::OptionFlags & g) {return popops::invStdDevToVarianceWithOutput(a, b, c, d, e, f, g);} ); }
 // popops::varianceToInvStdDev(poplar::Graph &, const poplar::Tensor &, const poplar::Tensor &, poplar::program::Sequence &, const poplar::DebugContext &, const poplar::OptionFlags &)__FunctionDecl
 { using namespace popops;
 mod.method("PopopsVarianceToInvStdDev", [](poplar::Graph & a, const poplar::Tensor & b, const poplar::Tensor & c, poplar::program::Sequence & d, std::string e, const poplar::OptionFlags & f) {return popops::varianceToInvStdDev(a, b, c, d, e, f);} ); }
