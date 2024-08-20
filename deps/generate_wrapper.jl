@@ -231,6 +231,10 @@ function arg_list(method::CLCursor, types=true::Bool, cutoff=Inf, varnames=true:
         item = replace(item, "poplar::DebugContext" => "std::string")
         item = replace(item, "poplar::StringRef" => "std::string")
 
+        # item = replace(item, "const DebugContext &" => "std::string")
+        # item = replace(item, "DebugContext" => "std::string")
+        # item = replace(item, "StringRef" => "std::string")
+
         if types
             pre = ""
             if should_wrap(item)
@@ -467,6 +471,7 @@ function iterate_children(ctx::BindgenContext, childvec::Vector{CLCursor})
 
         child_id = get_full_name(child) * "__" * spelling(child_kind)
         child_id = replace(child_id, "poplar::StringRef" => "std::string")
+        # child_id = replace(child_id, "StringRef" => "std::string")
 
         # prevents duplicate codegen(+error), TODO: check if still necessary
         child_id == "poplar::FieldData::SizeT::size()__CXXMethod" && (valid = false; reason = "filedata_size_blacklist")
@@ -492,9 +497,11 @@ function iterate_children(ctx::BindgenContext, childvec::Vector{CLCursor})
 
         # This conversion `ArrayRef<std::string>` to `ArrayRef<poplar::StringRef>` isn't handled correctly
         contains(child_id, "poplar::Graph::trace(ArrayRef<std::string>") && (valid = false; reason = "arrayrefstring_blacklisted")
+        # contains(child_id, "trace(ArrayRef<std::string>") && (valid = false; reason = "arrayrefstring_blacklisted")
 
         # `DebugContext` constructors which cause ambiguous overload calls
         contains(child_id, r"^poplar::DebugContext::DebugContext.*__CXXConstructor$") && (valid = false; reason = "debugcontext_blacklisted")
+        # contains(child_id, r"^DebugContext.*__CXXConstructor$") && (valid = false; reason = "debugcontext_blacklisted")
 
         # This causes the error
         #    no matching function for call to ‘poplar::program::Sequence::add_many(std::__cxx11::basic_string<char>&)’
@@ -502,6 +509,7 @@ function iterate_children(ctx::BindgenContext, childvec::Vector{CLCursor})
 
         # Avoid duplicate definition during precompilation of the CxxWrap module
         contains(child_id, "poplar::layout::to_string(const poplar::layout::VectorList)__FunctionDecl") && (valid = false; reason = "duplicate_definition")
+        # contains(child_id, "poplar::layout::to_string(const VectorList)__FunctionDecl") && (valid = false; reason = "duplicate_definition")
 
         # Avoid duplicate definition during precompilation of the CxxWrap module.
         # Ref: <https://github.com/JuliaIPU/IPUToolkit.jl/issues/12>.
@@ -509,12 +517,15 @@ function iterate_children(ctx::BindgenContext, childvec::Vector{CLCursor})
 
         # error: invalid use of incomplete type ‘class pva::Report’
         contains(child_id, "poplar::Engine::getReport") && (valid = false; reason = "incomplete_type")
+        # contains(child_id, "Engine::getReport") && (valid = false; reason = "incomplete_type")
 
         # error: invalid application of ‘sizeof’ to incomplete type ‘poplar::core::VertexIntrospector’
         contains(child_id, "poplar::VertexIntrospector") && (valid = false; reason = "incomplete_type")
+        # contains(child_id, "VertexIntrospector") && (valid = false; reason = "incomplete_type")
 
         # error: invalid use of incomplete type ‘class poplar::Preallocations’
         contains(child_id, "poplar::Preallocations") && (valid = false; reason = "incomplete_type")
+        # contains(child_id, "Preallocations") && (valid = false; reason = "incomplete_type")
 
         # error: no matching function for call to ‘poplar::GlobalExchangeConstraint::GlobalExchangeConstraint()’
         contains(child_id, "poplar::Target::getGlobalExchangeConstraints()__CXXMethod") && (valid = false; reason = "getGlobalExchangeConstraints_blacklisted")
