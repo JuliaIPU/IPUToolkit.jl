@@ -1,6 +1,7 @@
 ##
 using Clang
 using Clang.LibClang
+using Clang.Generators
 using JSON
 ##
 
@@ -46,7 +47,7 @@ resolve_headers(headers::Vector{String}, include_paths::Vector{String})::Vector{
     resolve_header.(headers, Ref(include_paths))
 
 function get_full_name(cursor, funcargs::Bool=true, buf="")
-    parent = Clang.getCursorLexicalParent(cursor)
+    parent = Clang.getCursorSemanticParent(cursor)
     parent_kind = spelling(kind(parent))
     cursor_name = name(cursor)
     if !funcargs
@@ -66,14 +67,14 @@ end
 function get_namespace(cursor::CLCursor)
     tmpcursor = cursor
 
-    while spelling(kind(tmpcursor)) != "Namespace" && Clang.getCursorLexicalParent(tmpcursor) != tmpcursor
-        tmpcursor = Clang.getCursorLexicalParent(tmpcursor)
+    while spelling(kind(tmpcursor)) != "Namespace" && Clang.getCursorSemanticParent(tmpcursor) != tmpcursor
+        tmpcursor = Clang.getCursorSemanticParent(tmpcursor)
     end
 
     if get_full_name(tmpcursor) == ""
         tmpcursor = Clang.clang_getCursorDefinition(cursor)
-        while spelling(kind(tmpcursor)) != "Namespace" && Clang.getCursorLexicalParent(tmpcursor) != tmpcursor
-            tmpcursor = Clang.getCursorLexicalParent(tmpcursor)
+        while spelling(kind(tmpcursor)) != "Namespace" && Clang.getCursorSemanticParent(tmpcursor) != tmpcursor
+            tmpcursor = Clang.getCursorSemanticParent(tmpcursor)
         end
         return get_full_name(tmpcursor)
     end
@@ -83,8 +84,8 @@ end
 
 function get_class_name(cursor::CLCursor)
     tmpcursor = cursor
-    while spelling(kind(tmpcursor)) != "StructDecl" && spelling(kind(tmpcursor)) != "ClassDecl" && Clang.getCursorLexicalParent(tmpcursor) != tmpcursor
-        tmpcursor = Clang.getCursorLexicalParent(tmpcursor)
+    while spelling(kind(tmpcursor)) != "StructDecl" && spelling(kind(tmpcursor)) != "ClassDecl" && Clang.getCursorSemanticParent(tmpcursor) != tmpcursor
+        tmpcursor = Clang.getCursorSemanticParent(tmpcursor)
     end
     return get_full_name(tmpcursor)
 end
@@ -111,6 +112,36 @@ function get_julia_name(cursor::CLCursor)
     replace(vname, "::" => "")
 end
 
+nns(x::Clang.CLInvalidFile) = ""
+nns(x::Clang.CLTranslationUnit) = ""
+function nns(x::CLCursor)
+    pn = nns(Clang.getCursorSemanticParent(x))
+    if isempty(pn)
+        return spelling(x)
+    else
+        return pn * "::" * spelling(x)
+    end
+end
+get_qualified_name(x::CLCursor) = isempty(spelling(x)) ? "" : nns(x)
+
+get_qualified_basename(x::CLCursor) = ""
+function get_qualified_basename(x::CLTypeRef)
+    n = spelling(x)
+    startswith(n, "class ") && return split(n, "class ")[2]
+    startswith(n, "struct ") && return split(n, "struct ")[2]
+    startswith(n, "Union ") && return split(n, "Union ")[2]
+    return ""
+end
+get_qualified_basename(x::CLCXXBaseSpecifier) = get_qualified_basename(children(x)[1])
+function get_qualified_basename(x::Union{CLClassDecl,CLStructDecl,CLUnionDecl})
+    bn = get_qualified_basename(children(x)[1])
+    if isempty(bn)
+        return spelling(x)
+    else
+        return bn * "::" * spelling(x)
+    end
+end
+
 function object_decl_handler(ctx::BindgenContext, classdecl::CLCursor)::Tuple{Union{Nothing, String}, Union{Nothing, String}}
     full_name = get_full_name(classdecl)
     length(children(classdecl)) == 0 && return nothing, "skip_empty_classdecl"
@@ -123,10 +154,10 @@ function object_decl_handler(ctx::BindgenContext, classdecl::CLCursor)::Tuple{Un
     end
 
     # handle simple inheritance
-    if length(children(classdecl)) > 1 && kind(children(classdecl)[1]) == Clang.CXCursor_CXXBaseSpecifier
-
-        if startswith(get_full_name(children(classdecl)[1]), "class ")
-            base_class = split(get_full_name(children(classdecl)[1]), "class ")[2]
+    subnodes = children(classdecl)
+    if length(subnodes) > 1 && kind(subnodes[1]) == Clang.CXCursor_CXXBaseSpecifier
+        base_class = get_qualified_basename(subnodes[1])
+        if !isempty(base_class)
 
             ctx.outputSupertypes *= "template<> struct SuperType<$full_name> { typedef $base_class type; };\n"
 
@@ -158,7 +189,7 @@ end
 function arg_list(method::CLCursor, types=true::Bool, cutoff=Inf, varnames=true::Bool)
     Clang.getNumArguments(Clang.getCursorType(method)) == 0 && return ""
     cutoff == 0 && return ""
-    arglist = get_full_name(method)
+    arglist = get_full_name(method) # -> spelling(method)
     arglist = split(arglist, "(")[2]
     arglist = split(arglist, ")")[1]
     # TODO: this is **really** not a good way to do this
@@ -199,6 +230,10 @@ function arg_list(method::CLCursor, types=true::Bool, cutoff=Inf, varnames=true:
         item = replace(item, "const poplar::DebugContext &" => "std::string")
         item = replace(item, "poplar::DebugContext" => "std::string")
         item = replace(item, "poplar::StringRef" => "std::string")
+
+        # item = replace(item, "const DebugContext &" => "std::string")
+        # item = replace(item, "DebugContext" => "std::string")
+        # item = replace(item, "StringRef" => "std::string")
 
         if types
             pre = ""
@@ -389,7 +424,7 @@ function enum_const_handler(ctx::BindgenContext, decl::CLCursor)::Tuple{Union{No
 
     full_name = get_full_name(decl)
     julia_name = get_julia_name(decl)
-    parent_name = get_julia_name(Clang.getCursorLexicalParent(decl))
+    parent_name = get_julia_name(Clang.getCursorSemanticParent(decl))
     return "mod.set_const(\"$parent_name$julia_name\", $full_name);", nothing
 end
 
@@ -436,6 +471,7 @@ function iterate_children(ctx::BindgenContext, childvec::Vector{CLCursor})
 
         child_id = get_full_name(child) * "__" * spelling(child_kind)
         child_id = replace(child_id, "poplar::StringRef" => "std::string")
+        # child_id = replace(child_id, "StringRef" => "std::string")
 
         # prevents duplicate codegen(+error), TODO: check if still necessary
         child_id == "poplar::FieldData::SizeT::size()__CXXMethod" && (valid = false; reason = "filedata_size_blacklist")
@@ -461,9 +497,11 @@ function iterate_children(ctx::BindgenContext, childvec::Vector{CLCursor})
 
         # This conversion `ArrayRef<std::string>` to `ArrayRef<poplar::StringRef>` isn't handled correctly
         contains(child_id, "poplar::Graph::trace(ArrayRef<std::string>") && (valid = false; reason = "arrayrefstring_blacklisted")
+        # contains(child_id, "trace(ArrayRef<std::string>") && (valid = false; reason = "arrayrefstring_blacklisted")
 
         # `DebugContext` constructors which cause ambiguous overload calls
         contains(child_id, r"^poplar::DebugContext::DebugContext.*__CXXConstructor$") && (valid = false; reason = "debugcontext_blacklisted")
+        # contains(child_id, r"^DebugContext.*__CXXConstructor$") && (valid = false; reason = "debugcontext_blacklisted")
 
         # This causes the error
         #    no matching function for call to ‘poplar::program::Sequence::add_many(std::__cxx11::basic_string<char>&)’
@@ -471,6 +509,7 @@ function iterate_children(ctx::BindgenContext, childvec::Vector{CLCursor})
 
         # Avoid duplicate definition during precompilation of the CxxWrap module
         contains(child_id, "poplar::layout::to_string(const poplar::layout::VectorList)__FunctionDecl") && (valid = false; reason = "duplicate_definition")
+        # contains(child_id, "poplar::layout::to_string(const VectorList)__FunctionDecl") && (valid = false; reason = "duplicate_definition")
 
         # Avoid duplicate definition during precompilation of the CxxWrap module.
         # Ref: <https://github.com/JuliaIPU/IPUToolkit.jl/issues/12>.
@@ -478,12 +517,15 @@ function iterate_children(ctx::BindgenContext, childvec::Vector{CLCursor})
 
         # error: invalid use of incomplete type ‘class pva::Report’
         contains(child_id, "poplar::Engine::getReport") && (valid = false; reason = "incomplete_type")
+        # contains(child_id, "Engine::getReport") && (valid = false; reason = "incomplete_type")
 
         # error: invalid application of ‘sizeof’ to incomplete type ‘poplar::core::VertexIntrospector’
         contains(child_id, "poplar::VertexIntrospector") && (valid = false; reason = "incomplete_type")
+        # contains(child_id, "VertexIntrospector") && (valid = false; reason = "incomplete_type")
 
         # error: invalid use of incomplete type ‘class poplar::Preallocations’
         contains(child_id, "poplar::Preallocations") && (valid = false; reason = "incomplete_type")
+        # contains(child_id, "Preallocations") && (valid = false; reason = "incomplete_type")
 
         # error: no matching function for call to ‘poplar::GlobalExchangeConstraint::GlobalExchangeConstraint()’
         contains(child_id, "poplar::Target::getGlobalExchangeConstraints()__CXXMethod") && (valid = false; reason = "getGlobalExchangeConstraints_blacklisted")
@@ -576,7 +618,7 @@ function gen_bindings(headers::Vector{String}, blacklist::Vector{String})
         println(io, "#include <$(header)>")
     end
 
-    includes = get_system_includes()
+    includes = [joinpath(@__DIR__, "wrapper", "3.3", "include")]
     ctx = DefaultBindgenContext()
     ctx.searched_headers = resolve_headers(headers, includes)
     ctx.blacklisted_headers = resolve_headers(blacklist, includes)
@@ -588,7 +630,14 @@ function gen_bindings(headers::Vector{String}, blacklist::Vector{String})
     tus = []
     symbol_names = String[]
     # add compiler flags
-    clang_args = ["-I"*inc for inc in includes]
+    # clang_args = ["-I"*inc for inc in includes]
+    # cross-compiling setup for DEBUG:
+    args = get_default_args("x86_64-linux-gnu", is_cxx=true, version=v"9.1.0")
+    append!(args, ["-I"*inc for inc in includes])
+    push!(args, "-nostdinc++", "-nostdlib++")
+    push!(args, "-xc++")
+    # push!(args, "-v")
+    clang_args = args
     for h in ctx.searched_headers
         tu = Clang.TranslationUnit(idx, h, clang_args, flags)
         push!(tus, tu)
@@ -629,3 +678,5 @@ function generate_wrapper()
 
     return nothing
 end
+
+generate_wrapper()
