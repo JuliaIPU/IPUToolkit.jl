@@ -18,12 +18,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - julia_version: "1.9"
-            docker_image: graphcore/poplar:2.5.1-ubuntu-20.04-20220629
+          # - julia_version: "1.9"
+          #   docker_image: graphcore/poplar:2.5.1-ubuntu-20.04-20220629
+          #   build_docs: false
+          # - julia_version: "1.10"
+          #   docker_image: graphcore/poplar:3.2.0-ubuntu-20.04-20230314
+          #   build_docs: true
+          - julia_version: "^1.11.0-0"
+            docker_image: graphcore/poplar:3.3.0-ubuntu-20.04-20230703
             build_docs: false
-          - julia_version: "1.10"
-            docker_image: graphcore/poplar:3.2.0-ubuntu-20.04-20230314
-            build_docs: true
     steps:
       - name: "Install, g++, git, jq"
         # g++ is needed to build the wrapper, git to publish the docs, jq for
@@ -35,6 +38,7 @@ jobs:
           DEBIAN_FRONTEND: noninteractive
       - uses: actions/checkout@v4
       - name: "Declare git repo safe"
+        if: ${{ matrix.build_docs }}
         # In the docker container the repo is owned by 1001:123, causing the
         # following error when running git commands:
         #
@@ -54,6 +58,19 @@ jobs:
           cache-artifacts: "true"
           cache-packages: "true"
           cache-compiled: "true"
+      - name: "Export environment variables"
+        # Starting from graphcore/poplar:3.3.0 some environment variables like `CPATH` and
+        # `LD_LIBRARY_PATH`, which we need for building the bindings, are only set with the
+        # `bash` shell, while GHA uses by default `sh` for steps inside containers.  So we
+        # need to start a step with `shell: bash` and re-export the relevant variables for
+        # the following steps.
+        shell: bash
+        run: |
+          echo "PATH=${PATH}" >> "${GITHUB_ENV}"
+          echo "CPATH=${CPATH}" >> "${GITHUB_ENV}"
+          echo "LIBRARY_PATH=${LIBRARY_PATH}" >> "${GITHUB_ENV}"
+          echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> "${GITHUB_ENV}"
+          echo "POPLAR_SDK_ENABLED=${POPLAR_SDK_ENABLED}" >> "${GITHUB_ENV}"
       - uses: julia-actions/julia-buildpkg@v1
         env:
           CXX: g++
