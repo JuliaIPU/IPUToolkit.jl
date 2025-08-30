@@ -19,10 +19,10 @@ jobs:
       matrix:
         include:
           - julia_version: "1.9"
-            docker_image: graphcore/poplar:2.5.1-ubuntu-20.04-20220629
+            docker_image: ghcr.io/juliaipu/poplar:2.5.1-ubuntu-20.04-20220629
             build_docs: false
           - julia_version: "1.10"
-            docker_image: graphcore/poplar:3.2.0-ubuntu-20.04-20230314
+            docker_image: ghcr.io/juliaipu/poplar:3.2.0-ubuntu-20.04-20230314
             build_docs: true
     steps:
       - name: "Install, g++, git, jq"
