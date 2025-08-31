@@ -71,3 +71,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
       - uses: julia-actions/julia-runtest@v1
+        with:
+            # Trying to support multiple Julia versions and involving packages
+            # which have their own strict Julia compat bounds makes always forcing
+            # latest compatible version impossible.
+            force_latest_compatible_version: false
