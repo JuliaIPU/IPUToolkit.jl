@@ -21,7 +21,7 @@ IPUCompiler.PROGRESS_SPINNER[] = false
 
 include("common.jl")
 
-∂(f, x) = first(first(autodiff_deferred(Reverse, f, Active(x))))
+∂(f, x) = first(first(autodiff_deferred(Reverse, Const(f), Active, Active(x))))
 
 # Define a non-const variable which will lead to a reference to a literal pointer in the IR
 # of a codelet below.
