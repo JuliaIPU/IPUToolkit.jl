@@ -17,9 +17,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - docker_image: graphcore/poplar:3.2.0-ubuntu-20.04-20230314
+          - docker_image: ghcr.io/juliaipu/poplar:3.2.0-ubuntu-20.04-20230314
             artifact_name: poplar-3.2.0
-          - docker_image: graphcore/poplar:3.3.0-ubuntu-20.04-20230703
+          - docker_image: ghcr.io/juliaipu/poplar:3.3.0-ubuntu-20.04-20230703
             artifact_name: poplar-3.3.0
     steps:
       - name: "Install, g++, jq"
@@ -30,11 +30,11 @@ jobs:
           apt-get install -y g++ jq
         env:
           DEBIAN_FRONTEND: noninteractive
-      - uses: actions/checkout@v4
-      - uses: julia-actions/setup-julia@v1
+      - uses: actions/checkout@v5
+      - uses: julia-actions/setup-julia@v2
         with:
           version: "1.7"
-      - uses: julia-actions/cache@v1
+      - uses: julia-actions/cache@v2
       - name: "Export environment variables"
         # Starting from graphcore/poplar:3.3.0 some environment variables like `CPATH` and
         # `LD_LIBRARY_PATH`, which we need for building the bindings, are only set with the
