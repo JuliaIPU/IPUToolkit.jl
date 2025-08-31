@@ -7,6 +7,12 @@ on:
   pull_request:
   release:
 
+concurrency:
+  # Skip intermediate builds: always.
+  # Cancel intermediate builds: only if it is a pull request build.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+
 # Note: ideally we'd have one job for running the tests and another for building
 # documentation, but running CI of this package is a bit expensive, the easiest
 # thing to do is to run everything together in a single job.
@@ -14,6 +20,7 @@ jobs:
   CI:
     runs-on: ubuntu-latest
     container: ${{ matrix.docker_image }}
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -55,6 +62,7 @@ jobs:
           cache-packages: "true"
           cache-compiled: "true"
       - uses: julia-actions/julia-buildpkg@v1
+        timeout-minutes: 30
         env:
           CXX: g++
       - uses: julia-actions/julia-docdeploy@v1
