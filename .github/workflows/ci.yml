@@ -76,3 +76,5 @@ jobs:
             # which have their own strict Julia compat bounds makes always forcing
             # latest compatible version impossible.
             force_latest_compatible_version: false
+        env:
+          JULIA_DEBUG: Enzyme
