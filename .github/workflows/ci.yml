@@ -70,6 +70,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
+      - name: Install Enzyme
+        shell: julia --project=test --color=yes {0}
+        run: |
+          using Pkg
+          Pkg.add(; name="Enzyme", rev="mg+vc/ipu")
       - uses: julia-actions/julia-runtest@v1
         with:
             # Trying to support multiple Julia versions and involving packages
