@@ -65,13 +65,8 @@ jobs:
         timeout-minutes: 30
         env:
           CXX: g++
-      - uses: julia-actions/julia-docdeploy@v1
-        if: ${{ matrix.build_docs }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
       - name: Install Enzyme
-        shell: julia --project=test --color=yes {0}
+        shell: julia --project=. --color=yes {0}
         run: |
           using Pkg
           Pkg.add(; name="Enzyme", rev="mg+vc/ipu")
