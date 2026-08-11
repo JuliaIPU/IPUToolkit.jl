@@ -1,0 +1,74 @@
+name: Build libpoplar wrapper
+
+on:
+  push:
+    branches: "main"
+    tags: ["*"]
+  pull_request:
+  release:
+
+jobs:
+  build-libpoplar:
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ matrix.docker_image }}
+      options: --privileged
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - docker_image: ghcr.io/juliaipu/poplar:3.2.0-ubuntu-20.04-20230314
+            artifact_name: poplar-3.2.0
+          - docker_image: ghcr.io/juliaipu/poplar:3.3.0-ubuntu-20.04-20230703
+            artifact_name: poplar-3.3.0
+    steps:
+      - name: "Install, g++, jq"
+        # g++ is needed to build the wrapper, jq for
+        # the `julia-actions/cache` workflow
+        run: |
+          apt-get update -y
+          apt-get install -y g++ jq
+        env:
+          DEBIAN_FRONTEND: noninteractive
+      - uses: actions/checkout@v5
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: "1.7"
+      - uses: julia-actions/cache@v2
+      - name: "Export environment variables"
+        # Starting from graphcore/poplar:3.3.0 some environment variables like `CPATH` and
+        # `LD_LIBRARY_PATH`, which we need for building the bindings, are only set with the
+        # `bash` shell, while GHA uses by default `sh` for steps inside containers.  So we
+        # need to start a step with `shell: bash` and re-export the relevant variables for
+        # the following steps.
+        shell: bash
+        run: |
+          echo "PATH=${PATH}" >> "${GITHUB_ENV}"
+          echo "CPATH=${CPATH}" >> "${GITHUB_ENV}"
+          echo "LIBRARY_PATH=${LIBRARY_PATH}" >> "${GITHUB_ENV}"
+          echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> "${GITHUB_ENV}"
+          echo "POPLAR_SDK_ENABLED=${POPLAR_SDK_ENABLED}" >> "${GITHUB_ENV}"
+      - name: Instantiate wrapper generation environment
+        working-directory: ${{ github.workspace }}/deps
+        run: |
+          julia --project=. --color=yes -e 'using Pkg; Pkg.instantiate(); Pkg.precompile()'
+      - name: Generate source code of libpoplar wrapper
+        working-directory: ${{ github.workspace }}/deps
+        shell: julia --project=. --color=yes {0}
+        run: |
+          include(joinpath(pwd(), "generate_wrapper.jl"))
+          generate_wrapper()
+        env:
+          CXX: g++
+      - name: Instantiate build environment
+        working-directory: ${{ github.workspace }}/deps/bb_recipe
+        run: |
+          julia --project=. --color=yes -e 'using Pkg; Pkg.instantiate(); Pkg.precompile()'
+      - name: Compile libpoplar wrapper
+        working-directory: ${{ github.workspace }}/deps/bb_recipe
+        run: |
+          julia --project=. --color=yes build_tarballs.jl --verbose
+      - uses: actions/upload-artifact@v4
+        with:
+          name: products-${{ matrix.artifact_name }}
+          path: ${{ github.workspace }}/deps/bb_recipe/products
