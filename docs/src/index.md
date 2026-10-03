@@ -17,7 +17,7 @@ This package was initially created by Emily Dietrich and Luk Burchard, and later
 
 This package requires
 
-* Julia v1.6+ (currently tested up to Julia v1.10),
+* Julia v1.10+ (currently tested with Julia v1.10),
 * the Poplar SDK v1.3 or v2.0-v3.2 including the `popc` compiler,
 * a C++ compiler supporting C++17 standard for compiling the wrapper around the Poplar SDK (e.g. G++ 9 or following releases).
 

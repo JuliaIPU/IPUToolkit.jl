@@ -1,11 +1,7 @@
 module IPURuntime
 
 import ..IPUCompiler: @device_override, @ipuprintf, @ipuprintln, get_scount_l, get_tile_id, randn2!, VertexVector, Out, InOut
-using GPUCompiler: reset_runtime
 import LinearAlgebra
-
-# reset the runtime cache from global scope, so that any change triggers recompilation
-reset_runtime()
 
 # dummy methods
 signal_exception() = nothing

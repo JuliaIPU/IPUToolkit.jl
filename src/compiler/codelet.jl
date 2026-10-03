@@ -283,7 +283,10 @@ function __build_codelet(graph::Poplar.GraphAllocated, kernel, origKernel::Funct
     job = CompilerJob(source, config)
     llvm_ir = JuliaContext() do ctx
         try
-            string(GPUCompiler.compile(:llvm, job)[1])
+            # we own the compiled IR: print it, then dispose of it
+            @dispose mod=GPUCompiler.compile(:llvm, job)[1] begin
+                string(mod)
+            end
         catch err
             if err isa InvalidIRError && DEBUG_COMPILATION_ERRORS[]
                 code_typed(err; interactive = true)

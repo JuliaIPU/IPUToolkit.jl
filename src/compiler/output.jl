@@ -1,7 +1,7 @@
 # Formatted Output.  Adapted from
 # <https://github.com/JuliaGPU/CUDA.jl/blob/8ffdf3723ed6224ee7e2c7188ef6ab8d5a498905/src/device/intrinsics/output.jl>.
 
-using LLVM
+using LLVM, LLVM.IR, LLVM.Build
 using LLVM.Interop
 using Core: LLVMPtr
 
@@ -68,67 +68,21 @@ macro ipuprintf(fmt::String, args...)
     return :(_ipuprintf($fmt_val, $(map(arg -> :(promote_c_argument($arg)), esc.(args))...)))
 end
 
-# Single argument calls can use `puts`, which has a simpler signature.
-@generated function _ipuprintf(::Val{fmt}) where {fmt}
-    @dispose ctx=Context() begin
+@llvmgenerated builder function _ipuprintf(::Val{fmt}, argspec...)::Int32 where {fmt}
+    T_int32 = LLVM.Int32Type()
+    T_pint8 = LLVM.PointerType(LLVM.Int8Type())
 
-        T_void = LLVM.VoidType()
-        T_int32 = LLVM.Int32Type()
-        T_pint8 = LLVM.PointerType(LLVM.Int8Type())
+    str = globalstring_ptr!(builder, String(fmt))
 
-        # create functions
-        llvm_f, llvm_ft = create_function(T_int32, LLVMType[])
-        mod = LLVM.parent(llvm_f)
-
-        # generate IR
-        @dispose builder=IRBuilder() begin
-            entry = BasicBlock(llvm_f, "entry")
-            position!(builder, entry)
-
-            str = globalstring_ptr!(builder, String(fmt))
-
-            # invoke puts and return
-            puts_typ = LLVM.FunctionType(T_int32, [T_pint8])
-            puts = LLVM.Function(mod, "puts", puts_typ)
-            chars = call!(builder, puts_typ, puts, [str])
-
-            ret!(builder, chars)
-        end
-
-        call_function(llvm_f, Int32, Tuple{})
-    end
-end
-
-@generated function _ipuprintf(::Val{fmt}, argspec1, argspec...) where {fmt}
-    @dispose ctx=Context() begin
-        arg_exprs = vcat(:( argspec1 ), [:( argspec[$i] ) for i in 1:length(argspec)])
-        arg_types = [argspec1, argspec...]
-
-        T_void = LLVM.VoidType()
-        T_int32 = LLVM.Int32Type()
-        T_pint8 = LLVM.PointerType(LLVM.Int8Type())
-
-        # create functions
-        param_types = LLVMType[convert(LLVMType, typ) for typ in arg_types]
-        llvm_f, llvm_ft = create_function(T_int32, param_types)
-        mod = LLVM.parent(llvm_f)
-
-        # generate IR
-        @dispose builder=IRBuilder() begin
-            entry = BasicBlock(llvm_f, "entry")
-            position!(builder, entry)
-
-            str = globalstring_ptr!(builder, String(fmt))
-
-            # invoke printf and return
-            printf_typ = LLVM.FunctionType(T_int32, [T_pint8]; vararg=true)
-            printf = LLVM.Function(mod, "printf", printf_typ)
-            chars = call!(builder, printf_typ, printf, [str, parameters(llvm_f)...])
-
-            ret!(builder, chars)
-        end
-
-        call_function(llvm_f, Int32, Tuple{arg_types...}, arg_exprs...)
+    if isempty(argspec)
+        # Single argument calls can use `puts`, which has a simpler signature.
+        puts_typ = LLVM.FunctionType(T_int32, [T_pint8])
+        puts = LLVM.Function(current_module(builder), "puts", puts_typ)
+        call!(builder, puts_typ, puts, [str])
+    else
+        printf_typ = LLVM.FunctionType(T_int32, [T_pint8]; vararg=true)
+        printf = LLVM.Function(current_module(builder), "printf", printf_typ)
+        call!(builder, printf_typ, printf, [str, argspec...])
     end
 end
 
